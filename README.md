@@ -4,7 +4,7 @@ A tiny sandbox repo for practicing the GitHub pull request workflow.
 
 ## What is this?
 
-This repo exsits so you can practice: fork/branch, make a small change,
+This repo exists so you can practice: fork/branch, make a small change,
 and open your first pull request without any risk to real code.
 
 ## How to use it
