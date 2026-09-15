@@ -10,7 +10,8 @@
     "setup-automod": "node scripts/setup-automod.js",
     "restyle": "node scripts/restyle-server.js",
     "setup-onboarding": "node scripts/setup-onboarding.js",
-    "setup-afk-zone": "node scripts/setup-afk-zone.js"
+    "setup-afk-zone": "node scripts/setup-afk-zone.js",
+    "rename-ranks": "node scripts/rename-ranks.js"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",

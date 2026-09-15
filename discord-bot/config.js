@@ -8,7 +8,7 @@ const STAFF_ROLES = [
   { name: 'Helper', color: 'Grey', hoist: true, permissions: [PermissionFlagsBits.ManageMessages] },
 ];
 
-const RANK_LADDER = ['Recruit', 'Private', 'Corporal', 'Sergeant', 'Lieutenant', 'Captain', 'Major', 'Commander'];
+const RANK_LADDER = ['Newbie', 'Stalker', 'Veteran', 'Marksman', 'Trapper', 'Bandit Killer', 'Zone Master', 'Legend of the Zone'];
 // Cumulative XP needed to reach the rank at the same index in RANK_LADDER.
 const RANK_THRESHOLDS = [0, 100, 300, 700, 1500, 3000, 6000, 12000];
 
