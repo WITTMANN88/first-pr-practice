@@ -58,9 +58,14 @@ async function findOrCreateCategory(guild, name, permissionOverwrites) {
 async function findOrCreateChannel(guild, name, type, parent, extra = {}) {
   const existing = guild.channels.cache.find((c) => c.type === type && c.name === name && c.parentId === parent.id);
   if (existing) return existing;
-  const channel = await guild.channels.create({ name, type, parent: parent.id, ...extra });
-  console.log(`  + channel: ${name}`);
-  return channel;
+  try {
+    const channel = await guild.channels.create({ name, type, parent: parent.id, ...extra });
+    console.log(`  + channel: ${name}`);
+    return channel;
+  } catch (err) {
+    console.warn(`  ! skipped channel "${name}": ${err.message}`);
+    return null;
+  }
 }
 
 function gatedOverwrites(guild, allowedRoleIds) {
