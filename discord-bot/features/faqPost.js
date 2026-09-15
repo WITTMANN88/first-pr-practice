@@ -1,5 +1,7 @@
-// Posts the FAQ into #faq once (idempotent via footer marker, same
-// pattern as rulesPost.js and the other panels).
+// Posts the FAQ into #faq — edits the existing post in place if one's
+// already there (so updating QA here propagates on next restart),
+// otherwise sends a fresh one. Same footer-marker pattern as the
+// other panels, just upsert instead of post-once.
 const { EmbedBuilder } = require('discord.js');
 
 const MARKER = 'stakeout-faq-v1';
@@ -45,6 +47,18 @@ const QA = [
     q: 'Моей игры нет в списке ролей — что делать?',
     a: 'Бери роль `Other Games` — она открывает общую категорию для всего, что не попало в основной список.',
   },
+  {
+    q: 'Как быстро пожаловаться на конкретное сообщение?',
+    a: 'ПКМ (или зажать на телефоне) по сообщению → «Пожаловаться» → короткая форма с причиной. Создастся приватный канал с деталями — быстрее, чем открывать тикет вручную.',
+  },
+  {
+    q: 'Как перевести сообщение на свой язык?',
+    a: 'Поставь на него реакцию-флаг нужного языка (🇷🇺, 🇬🇧, 🇩🇪, 🇫🇷, 🇵🇱, 🇺🇦 и десятки других) — бот ответит переводом. Перевод работает через бесплатный неофициальный сервис, иногда может ошибаться или тормозить.',
+  },
+  {
+    q: 'Откуда берутся раздачи бесплатных игр в announcements?',
+    a: 'Бот сам проверяет актуальные бесплатные раздачи (Steam/Epic/GOG и т.д.) каждые 30 минут и постит новые — ничего делать не нужно, просто следи за каналом.',
+  },
 ];
 
 async function postFaq(guild) {
@@ -55,10 +69,9 @@ async function postFaq(guild) {
   }
 
   const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
+  const existing = recent.find(
     (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === MARKER),
   );
-  if (already) return;
 
   const embed = new EmbedBuilder()
     .setTitle('FAQ')
@@ -66,8 +79,13 @@ async function postFaq(guild) {
     .setColor(0x8b0000)
     .setFooter({ text: MARKER });
 
-  await channel.send({ embeds: [embed] });
-  console.log('Posted FAQ in #faq');
+  if (existing) {
+    await existing.edit({ embeds: [embed] });
+    console.log('Updated FAQ in #faq');
+  } else {
+    await channel.send({ embeds: [embed] });
+    console.log('Posted FAQ in #faq');
+  }
 }
 
 module.exports = { postFaq };
