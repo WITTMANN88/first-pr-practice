@@ -51,7 +51,7 @@ async function postRules(guild) {
 
   const recent = await channel.messages.fetch({ limit: 20 });
   const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds[0]?.footer?.text === MARKER,
+    (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === MARKER),
   );
   if (already) return;
 
