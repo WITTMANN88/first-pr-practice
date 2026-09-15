@@ -31,6 +31,8 @@ const {
   handleColorCommand,
   ensureBoosterRole,
 } = require('./features/boosters');
+const { handleMessage: handleEconomyCommand } = require('./features/economy');
+const { startStatTicker } = require('./features/statChannels');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -68,6 +70,7 @@ client.once('clientReady', async () => {
   startVoiceTicker(client);
   startTempbanTicker(client);
   startLeaderboardTicker(client, GUILD_ID);
+  startStatTicker(client, GUILD_ID);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
 });
 
@@ -88,6 +91,9 @@ client.on('messageCreate', (message) => {
   });
   handleColorCommand(message).catch((err) => {
     console.error('Color command failed:', err);
+  });
+  handleEconomyCommand(message).catch((err) => {
+    console.error('Economy command failed:', err);
   });
 });
 
