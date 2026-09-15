@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const { RANK_LADDER, RANK_THRESHOLDS } = require('../config');
+const { isBooster, XP_MULTIPLIER } = require('./boosters');
 
 const DATA_PATH = path.join(__dirname, '..', 'data', 'xp.json');
 const MESSAGE_COOLDOWN_MS = 60_000;
@@ -53,8 +54,9 @@ async function swapRankRole(member, oldRankName, newRankName) {
 }
 
 async function grantXp(member, amount) {
+  const boosted = isBooster(member) ? Math.round(amount * XP_MULTIPLIER) : amount;
   const entry = store[member.id] ?? { xp: 0, rank: RANK_LADDER[0] };
-  entry.xp += amount;
+  entry.xp += boosted;
   const newRank = rankNameForXp(entry.xp);
   const oldRank = entry.rank;
   entry.rank = newRank;

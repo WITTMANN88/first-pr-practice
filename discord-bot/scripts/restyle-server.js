@@ -15,16 +15,16 @@ if (!TOKEN || !GUILD_ID) {
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
-// Grey -> white -> accent-red progression, matching the field-manual palette.
+// White -> dark bordeaux progression, matching the field-manual palette.
 const RANK_STYLE = [
-  { color: '#4a4a4a', emoji: '🔘' }, // Recruit
-  { color: '#6b6862', emoji: '⚪' }, // Private
-  { color: '#8a847a', emoji: '🔸' }, // Corporal
-  { color: '#a9a59c', emoji: '🔶' }, // Sergeant
-  { color: '#c9c4b8', emoji: '🎖️' }, // Lieutenant
-  { color: '#e8e4d8', emoji: '🎖️' }, // Captain
-  { color: '#f2d9d9', emoji: '🥈' }, // Major
-  { color: '#8b0000', emoji: '🥇' }, // Commander
+  { color: '#ffffff', emoji: '🔘' }, // Recruit
+  { color: '#e5dbdb', emoji: '⚪' }, // Private
+  { color: '#cbb6b6', emoji: '🔸' }, // Corporal
+  { color: '#b19292', emoji: '🔶' }, // Sergeant
+  { color: '#986d6d', emoji: '🎖️' }, // Lieutenant
+  { color: '#7e4949', emoji: '🎖️' }, // Captain
+  { color: '#642424', emoji: '🥈' }, // Major
+  { color: '#4a0000', emoji: '🥇' }, // Commander
 ];
 
 const STAFF_EMOJI = { Admin: '👑', Moderator: '🛡️', Helper: '🔧' };

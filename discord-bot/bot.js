@@ -25,7 +25,11 @@ const { startTicker: startTempbanTicker } = require('./features/tempbans');
 const { lockStaffOnlyCategory, postCommandReference } = require('./features/staffDocs');
 const { startLeaderboardTicker } = require('./features/leaderboard');
 const { handleDelete: handleMessageLogDelete, handleEdit: handleMessageLogEdit } = require('./features/messageLog');
-const { handleMemberUpdate: handleBoosterUpdate, ensureBoosterRole } = require('./features/boosters');
+const {
+  handleMemberUpdate: handleBoosterUpdate,
+  handleColorCommand,
+  ensureBoosterRole,
+} = require('./features/boosters');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -79,6 +83,9 @@ client.on('messageCreate', (message) => {
   });
   handleInfoCommand(message).catch((err) => {
     console.error('Info command failed:', err);
+  });
+  handleColorCommand(message).catch((err) => {
+    console.error('Color command failed:', err);
   });
 });
 
