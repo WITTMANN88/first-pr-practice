@@ -14,6 +14,11 @@ const { handleMessage: handleXpMessage, startVoiceTicker } = require('./features
 const { handleVoiceStateUpdate } = require('./features/joinToCreate');
 const { handleMemberAdd } = require('./features/antiRaid');
 const { postMusicHelp, handleMessage: handleMusicMessage } = require('./features/music');
+const { postRules } = require('./features/rulesPost');
+const {
+  handleMemberAdd: handleWelcomeAdd,
+  handleMemberUpdate: handleWelcomeUpdate,
+} = require('./features/welcome');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -40,6 +45,7 @@ client.once('clientReady', async () => {
     await registerRolePanel(guild);
     await postTicketPanel(guild);
     await postMusicHelp(guild);
+    await postRules(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
@@ -61,6 +67,15 @@ client.on('messageCreate', (message) => {
 client.on('guildMemberAdd', (member) => {
   handleMemberAdd(member).catch((err) => {
     console.error('Anti-raid check failed:', err);
+  });
+  handleWelcomeAdd(member).catch((err) => {
+    console.error('Welcome greeting failed:', err);
+  });
+});
+
+client.on('guildMemberUpdate', (oldMember, newMember) => {
+  handleWelcomeUpdate(oldMember, newMember).catch((err) => {
+    console.error('Welcome greeting (post-screening) failed:', err);
   });
 });
 
