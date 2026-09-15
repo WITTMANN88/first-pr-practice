@@ -13,6 +13,7 @@ const {
 const { handleMessage: handleXpMessage, startVoiceTicker } = require('./features/xp');
 const { handleVoiceStateUpdate } = require('./features/joinToCreate');
 const { handleMemberAdd } = require('./features/antiRaid');
+const { postMusicHelp, handleMessage: handleMusicMessage } = require('./features/music');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -37,6 +38,7 @@ client.once('clientReady', async () => {
     const guild = await client.guilds.fetch(GUILD_ID);
     await registerRolePanel(guild);
     await postTicketPanel(guild);
+    await postMusicHelp(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
@@ -50,6 +52,9 @@ client.on('messageCreate', (message) => {
   } catch (err) {
     console.error('XP message handling failed:', err);
   }
+  handleMusicMessage(message).catch((err) => {
+    console.error('Music command failed:', err);
+  });
 });
 
 client.on('guildMemberAdd', (member) => {
