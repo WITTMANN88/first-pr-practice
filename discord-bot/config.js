@@ -10,7 +10,7 @@ const STAFF_ROLES = [
 
 const RANK_LADDER = ['Newbie', 'Stalker', 'Veteran', 'Marksman', 'Trapper', 'Bandit Killer', 'Zone Master', 'Legend of the Zone'];
 // Cumulative XP needed to reach the rank at the same index in RANK_LADDER.
-const RANK_THRESHOLDS = [0, 100, 300, 700, 1500, 3000, 6000, 12000];
+const RANK_THRESHOLDS = [0, 500, 1500, 3500, 7000, 12000, 20000, 35000];
 
 const GAMES = [
   { key: 'operator', name: 'Operator', emoji: '🎯' },

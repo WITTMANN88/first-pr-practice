@@ -47,9 +47,9 @@ async function swapRankRole(member, oldRankName, newRankName) {
   if (newRole && !member.roles.cache.has(newRole.id)) {
     await member.roles.add(newRole).catch(() => {});
   }
-  const general = guild.channels.cache.find((c) => c.name === 'general');
-  if (general?.isTextBased()) {
-    general.send(`🎖️ <@${member.id}> получает новое звание — **${newRankName}**!`).catch(() => {});
+  const leaderboard = guild.channels.cache.find((c) => c.name === 'leaderboard');
+  if (leaderboard?.isTextBased()) {
+    leaderboard.send(`🎖️ <@${member.id}> получает новое звание — **${newRankName}**!`).catch(() => {});
   }
 }
 
