@@ -1,9 +1,7 @@
 // Posts a Steam info card into a dedicated "-info" channel in each
 // game category — kept first in the category's channel order — plus a
-// separate trailer teaser message. Steam's public API no longer
-// exposes a direct playable video file (only DASH/HLS streaming
-// manifests, which Discord can't embed inline), so the trailer message
-// links out to Steam rather than claiming to play in-chat.
+// separate trailer teaser message that links out to the Steam page
+// (Steam's public API doesn't expose a file Discord can embed inline).
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { GAMES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
@@ -61,7 +59,6 @@ function buildTrailerEmbed(data, url) {
   return new EmbedBuilder()
     .setTitle(`🎬 Трейлер — ${movie.name || data.name}`)
     .setURL(url)
-    .setDescription('Steam больше не отдаёт трейлеры как обычный видеофайл (только потоковый формат, Discord его не проигрывает встроенно) — жми, чтобы посмотреть на странице игры.')
     .setImage(movie.thumbnail)
     .setColor(0x8b0000);
 }

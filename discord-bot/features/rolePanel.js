@@ -32,12 +32,17 @@ async function registerRolePanel(guild) {
   }
 
   const embed = new EmbedBuilder()
-    .setTitle('Выбери роли')
+    .setTitle('Выбери роли / Choose your roles')
     .setDescription(
       'Каждая роль открывает свою категорию каналов — пока роль не взята, категории не видно вообще. ' +
         'Ничего страшного, если передумаешь: можно менять выбор в любой момент.\n\n' +
         '**Игры** — открывает чат, LFG-форум и голосовые той игры.\n' +
-        '**Дополнительно** — Politics открывает SERIOUS TALK, Other Games — категорию для всего остального.',
+        '**Дополнительно** — Politics открывает SERIOUS TALK, Other Games — категорию для всего остального.\n\n' +
+        '— — —\n\n' +
+        "Each role unlocks its own category of channels — until you take the role, the category isn't visible at all. " +
+        'No worries if you change your mind: you can update your picks any time.\n\n' +
+        '**Games** — unlocks the chat, LFG forum and voice channels for that game.\n' +
+        '**Extra** — Politics unlocks SERIOUS TALK, Other Games unlocks the catch-all category for everything else.',
     )
     .setColor(0x8b0000);
 

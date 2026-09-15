@@ -56,21 +56,35 @@ async function postRules(guild) {
 
   const enEmbed = new EmbedBuilder().setTitle('Rules — EN').setDescription(numbered(EN_ARTICLES)).setColor(0x8b0000);
 
-  const punishmentEmbed = new EmbedBuilder()
-    .setTitle('Наказания / Enforcement')
+  const ruPunishmentEmbed = new EmbedBuilder()
+    .setTitle('Наказания')
     .addFields(
       {
-        name: 'Стандартная лестница / Standard escalation',
+        name: 'Стандартная лестница',
         value: 'Warn → Mute → Kick → Ban\n_Статьи 1 (повторно), 2, 4, 5, 6, 8, 9, 10_',
       },
       {
         name: 'Zero tolerance',
-        value: 'Мгновенный бан / Instant ban\n_Статьи 3.1, 3.2, 3.3, 3.4, 7 (все причастные аккаунты)_',
+        value: 'Мгновенный бан\n_Статьи 3.1, 3.2, 3.3, 3.4, 7 (все причастные аккаунты)_',
       },
     )
     .setColor(0x8b0000);
 
-  await upsertPanel(channel, 'rules', { embeds: [ruEmbed, enEmbed, punishmentEmbed] });
+  const enPunishmentEmbed = new EmbedBuilder()
+    .setTitle('Enforcement')
+    .addFields(
+      {
+        name: 'Standard escalation',
+        value: 'Warn → Mute → Kick → Ban\n_Articles 1 (repeat), 2, 4, 5, 6, 8, 9, 10_',
+      },
+      {
+        name: 'Zero tolerance',
+        value: 'Instant ban\n_Articles 3.1, 3.2, 3.3, 3.4, 7 (every account involved)_',
+      },
+    )
+    .setColor(0x8b0000);
+
+  await upsertPanel(channel, 'rules', { embeds: [ruEmbed, ruPunishmentEmbed, enEmbed, enPunishmentEmbed] });
   console.log('Rules synced in #rules');
 }
 
