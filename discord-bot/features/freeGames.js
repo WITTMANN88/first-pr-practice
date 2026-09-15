@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { EmbedBuilder } = require('discord.js');
+const COLORS = require('./colors');
 
 const DATA_PATH = path.join(__dirname, '..', 'data', 'free-games-seen.json');
 const API_URL = 'https://www.gamerpower.com/api/giveaways?platform=pc';
@@ -62,7 +63,7 @@ async function checkFreeGames(guild) {
         { name: 'Тип', value: g.type || 'game', inline: true },
         { name: 'Обычная цена', value: g.worth || 'N/A', inline: true },
       )
-      .setColor(0x8b0000);
+      .setColor(COLORS.SUCCESS);
     if (g.image) embed.setImage(g.image);
 
     await channel.send({ embeds: [embed] }).catch(() => {});

@@ -3,6 +3,7 @@
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const { GAMES, EXTRA_ROLES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 function gamesSelectMenu() {
   return new StringSelectMenuBuilder()
@@ -44,7 +45,7 @@ async function registerRolePanel(guild) {
         '**Games** — unlocks the chat, LFG forum and voice channels for that game.\n' +
         '**Extra** — Politics unlocks SERIOUS TALK, Other Games unlocks the catch-all category for everything else.',
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   await upsertPanel(channel, 'role-panel', {
     embeds: [embed],

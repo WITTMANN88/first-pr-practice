@@ -8,6 +8,7 @@
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { GAMES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const SCREENSHOT_COUNT = 4;
 
@@ -61,7 +62,7 @@ function buildInfoEmbeds(data, url) {
     .setTitle(data.name)
     .setURL(url)
     .setDescription((data.short_description || '').slice(0, 500))
-    .setColor(0x8b0000)
+    .setColor(COLORS.BRAND)
     .setImage(data.header_image)
     .addFields(
       { name: 'Steam', value: `[Открыть страницу](${url})`, inline: true },
@@ -69,7 +70,7 @@ function buildInfoEmbeds(data, url) {
     );
 
   const gallery = (data.screenshots || []).slice(0, SCREENSHOT_COUNT).map((s) =>
-    new EmbedBuilder().setURL(url).setImage(s.path_full).setColor(0x8b0000),
+    new EmbedBuilder().setURL(url).setImage(s.path_full).setColor(COLORS.BRAND),
   );
 
   return [main, ...gallery];
@@ -82,7 +83,7 @@ function buildTrailerEmbed(data, url) {
     .setTitle(`🎬 Трейлер — ${movie.name || data.name}`)
     .setURL(url)
     .setImage(movie.thumbnail)
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 }
 
 async function findOrCreateInfoChannel(guild, gameKey, gameEmoji, gameName) {

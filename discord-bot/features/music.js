@@ -9,6 +9,7 @@ const { EmbedBuilder } = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const PREFIX = '!';
 
@@ -59,7 +60,7 @@ async function postMusicHelp(guild) {
         'Работает с YouTube и SoundCloud напрямую; Spotify-ссылки тоже принимаются — сам трек ищется на YouTube/SoundCloud, Spotify отдаёт только название.',
       ].join('\n'),
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   await upsertPanel(channel, 'music-help', { embeds: [embed] });
   console.log('Music help synced in #music-commands');

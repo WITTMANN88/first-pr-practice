@@ -3,6 +3,7 @@
 // a visible marker).
 const { EmbedBuilder } = require('discord.js');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const RU_ARTICLES = [
   'Политика в любом виде (обсуждения, мемы, вбросы, провокации) запрещена везде, кроме категории **SERIOUS TALK**, доступной по роли `Politics` — и там тоже под усиленной модерацией.',
@@ -52,9 +53,9 @@ async function postRules(guild) {
   const ruEmbed = new EmbedBuilder()
     .setTitle('Правила — RU')
     .setDescription(numbered(RU_ARTICLES))
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
-  const enEmbed = new EmbedBuilder().setTitle('Rules — EN').setDescription(numbered(EN_ARTICLES)).setColor(0x8b0000);
+  const enEmbed = new EmbedBuilder().setTitle('Rules — EN').setDescription(numbered(EN_ARTICLES)).setColor(COLORS.BRAND);
 
   const ruPunishmentEmbed = new EmbedBuilder()
     .setTitle('Наказания')
@@ -68,7 +69,7 @@ async function postRules(guild) {
         value: 'Мгновенный бан\n_Статьи 3.1, 3.2, 3.3, 3.4, 7 (все причастные аккаунты)_',
       },
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.DANGER);
 
   const enPunishmentEmbed = new EmbedBuilder()
     .setTitle('Enforcement')
@@ -82,7 +83,7 @@ async function postRules(guild) {
         value: 'Instant ban\n_Articles 3.1, 3.2, 3.3, 3.4, 7 (every account involved)_',
       },
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.DANGER);
 
   await upsertPanel(channel, 'rules', { embeds: [ruEmbed, ruPunishmentEmbed, enEmbed, enPunishmentEmbed] });
   console.log('Rules synced in #rules');

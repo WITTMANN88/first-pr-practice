@@ -14,6 +14,7 @@ const {
 } = require('discord.js');
 const { STAFF_ROLES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const TICKETS_CATEGORY_NAME = '🎫 Tickets';
 
@@ -41,7 +42,7 @@ async function postTicketPanel(guild) {
   const embed = new EmbedBuilder()
     .setTitle('Открыть тикет')
     .setDescription('Выбери категорию — откроется приватный канал, который видишь только ты и персонал.')
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   const row = new ActionRowBuilder().addComponents(
     CATEGORIES.map((c) =>
@@ -113,7 +114,7 @@ async function handleTicketModalSubmit(interaction) {
     .setTitle(`Тикет — ${categoryLabel(categoryId)}`)
     .setDescription(description)
     .addFields({ name: 'Открыл', value: `<@${interaction.user.id}>` })
-    .setColor(0x8b0000)
+    .setColor(COLORS.SUCCESS)
     .setTimestamp();
 
   const closeRow = new ActionRowBuilder().addComponents(

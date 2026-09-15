@@ -3,6 +3,7 @@
 // on next restart. Bilingual: RU and EN embeds in the same message.
 const { EmbedBuilder } = require('discord.js');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const QA_RU = [
   {
@@ -31,7 +32,7 @@ const QA_RU = [
   },
   {
     q: 'Что даёт буст сервера?',
-    a: 'Роль **STAKEOUT FRIEND**: свой цвет ника командой `!color #RRGGBB` и ×1.5 к опыту.',
+    a: 'Роль **STAKEOUT FRIEND**: свой цвет ника командой `!color #RRGGBB` и ×1.5 к опыту и монетам за `!daily`.',
   },
   {
     q: 'Как пожаловаться на нарушителя?',
@@ -86,7 +87,7 @@ const QA_EN = [
   },
   {
     q: 'What does boosting the server give me?',
-    a: 'The **STAKEOUT FRIEND** role: your own nickname color via `!color #RRGGBB` and ×1.5 XP.',
+    a: 'The **STAKEOUT FRIEND** role: your own nickname color via `!color #RRGGBB` and ×1.5 XP and `!daily` coins.',
   },
   {
     q: 'How do I report a rule-breaker?',
@@ -124,12 +125,12 @@ async function postFaq(guild) {
   const ruEmbed = new EmbedBuilder()
     .setTitle('FAQ — RU')
     .addFields(QA_RU.map((item) => ({ name: `❓ ${item.q}`, value: item.a })))
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   const enEmbed = new EmbedBuilder()
     .setTitle('FAQ — EN')
     .addFields(QA_EN.map((item) => ({ name: `❓ ${item.q}`, value: item.a })))
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   await upsertPanel(channel, 'faq', { embeds: [ruEmbed, enEmbed] });
   console.log('FAQ synced in #faq');

@@ -3,6 +3,7 @@
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { STAFF_ROLES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const STAFF_CATEGORY_NAME = '🔐 STAFF ONLY';
 
@@ -52,7 +53,7 @@ async function postCommandReference(guild) {
         `\`!warn @user [причина]\` — выдать варн. При ${'`3`'} — автокик, при ${'`5`'} — автобан.`,
       ].join('\n'),
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   const cleanupEmbed = new EmbedBuilder()
     .setTitle('🧹 Очистка и нарушения — Admin / Moderator')
@@ -62,7 +63,7 @@ async function postCommandReference(guild) {
         '`!clear-all-infractions @user` — стереть всю историю варнов участника.',
       ].join('\n'),
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   const infoEmbed = new EmbedBuilder()
     .setTitle('⚙️ Настройки и информация — Admin / Moderator / Helper')
@@ -75,7 +76,7 @@ async function postCommandReference(guild) {
         '`!role-info <название роли>` — цвет, число участников, права роли.',
       ].join('\n'),
     )
-    .setColor(0x8b0000);
+    .setColor(COLORS.BRAND);
 
   await upsertPanel(channel, 'staff-commands', { embeds: [punishEmbed, cleanupEmbed, infoEmbed] });
   console.log('Command reference synced in #bot-commands');

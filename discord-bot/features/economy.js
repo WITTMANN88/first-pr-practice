@@ -2,6 +2,7 @@
 // coins are just for fun (daily claim, coinflip, paying other people).
 const fs = require('fs');
 const path = require('path');
+const { isBooster, XP_MULTIPLIER } = require('./boosters');
 
 const DATA_PATH = path.join(__dirname, '..', 'data', 'economy.json');
 const DAILY_COOLDOWN_MS = 24 * 60 * 60 * 1000;
@@ -64,12 +65,18 @@ async function handleMessage(message) {
         const hoursLeft = Math.ceil((DAILY_COOLDOWN_MS - (now - entry.lastDaily)) / 3_600_000);
         return void message.reply(`Уже забирал сегодня — заходи через ${hoursLeft}ч.`);
       }
-      const amount = DAILY_MIN + Math.floor(Math.random() * (DAILY_MAX - DAILY_MIN + 1));
+      const base = DAILY_MIN + Math.floor(Math.random() * (DAILY_MAX - DAILY_MIN + 1));
+      const boosted = isBooster(message.member);
+      const amount = boosted ? Math.round(base * XP_MULTIPLIER) : base;
       entry.balance += amount;
       entry.lastDaily = now;
       store[userId] = entry;
       save();
-      message.reply(`🪙 Получено ${amount} монет. Баланс: ${entry.balance}.`);
+      message.reply(
+        boosted
+          ? `🪙 Получено ${amount} монет (буст ×${XP_MULTIPLIER}). Баланс: ${entry.balance}.`
+          : `🪙 Получено ${amount} монет. Баланс: ${entry.balance}.`,
+      );
       break;
     }
     case 'balance': {

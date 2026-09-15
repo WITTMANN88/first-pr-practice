@@ -4,6 +4,7 @@
 // surfaces suspicious activity in #alt-flags for a human to act on.
 const { EmbedBuilder } = require('discord.js');
 const { STAFF_ROLES } = require('../config');
+const COLORS = require('./colors');
 
 const NEW_ACCOUNT_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const RAID_WINDOW_MS = 10_000;
@@ -36,7 +37,7 @@ async function checkNewAccount(member) {
     .setTitle('⚠️ Свежий аккаунт')
     .setDescription(`<@${member.id}> — аккаунту ${days === 0 ? 'меньше суток' : `${days} дн.`}`)
     .addFields({ name: 'Создан', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:F>` })
-    .setColor(0x8b0000)
+    .setColor(COLORS.WARNING)
     .setTimestamp();
 
   await channel.send({ embeds: [embed] }).catch(() => {});
@@ -62,7 +63,7 @@ async function checkRaidBurst(member) {
         new EmbedBuilder()
           .setTitle('🚨 Похоже на рейд')
           .setDescription(`${recentJoins.length} входов за последние ${RAID_WINDOW_MS / 1000}с. Проверьте вручную.`)
-          .setColor(0x8b0000)
+          .setColor(COLORS.DANGER)
           .setTimestamp(),
       ],
     })

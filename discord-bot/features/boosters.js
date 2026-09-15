@@ -39,7 +39,7 @@ async function handleMemberUpdate(oldMember, newMember) {
     await welcome
       .send(
         `🚀 <@${newMember.id}> забустил сервер — спасибо! Получена роль **${ROLE_NAME}**: свой цвет ника ` +
-          `(\`!color #RRGGBB\`) и ×${XP_MULTIPLIER} к опыту.`,
+          `(\`!color #RRGGBB\`) и ×${XP_MULTIPLIER} к опыту и монетам за \`!daily\`.`,
       )
       .catch(() => {});
   }

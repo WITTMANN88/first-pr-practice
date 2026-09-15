@@ -4,6 +4,7 @@
 const { EmbedBuilder } = require('discord.js');
 const { getInfractions } = require('./infractions');
 const { STAFF_ROLES } = require('../config');
+const COLORS = require('./colors');
 
 const PREFIX = '!';
 const STAFF_ROLE_NAMES = STAFF_ROLES.map((r) => r.name);
@@ -47,7 +48,7 @@ async function handleMessage(message) {
             .map((w, i) => `**${i + 1}.** ${w.reason} — <t:${Math.floor(w.at / 1000)}:d> (выдал ${w.moderatorTag})`)
             .join('\n'),
         )
-        .setColor(0x8b0000);
+        .setColor(COLORS.WARNING);
       message.reply({ embeds: [embed] });
       break;
     }
@@ -76,7 +77,7 @@ async function handleMessage(message) {
           },
           { name: `Роли (${roles.length})`, value: roles.join(', ') || '_нет_' },
         )
-        .setColor(0x8b0000);
+        .setColor(COLORS.BRAND);
       message.reply({ embeds: [embed] });
       break;
     }
@@ -93,7 +94,7 @@ async function handleMessage(message) {
           { name: 'Создан', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:D>`, inline: true },
           { name: 'Владелец', value: `<@${guild.ownerId}>`, inline: true },
         )
-        .setColor(0x8b0000);
+        .setColor(COLORS.BRAND);
       message.reply({ embeds: [embed] });
       break;
     }
@@ -112,7 +113,7 @@ async function handleMessage(message) {
           { name: 'Упоминаемая', value: role.mentionable ? 'да' : 'нет', inline: true },
           { name: 'Отдельно в списке', value: role.hoist ? 'да' : 'нет', inline: true },
         )
-        .setColor(role.color || 0x8b0000);
+        .setColor(role.color || COLORS.BRAND);
       message.reply({ embeds: [embed] });
       break;
     }

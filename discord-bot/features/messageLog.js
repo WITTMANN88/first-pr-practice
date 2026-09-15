@@ -3,6 +3,7 @@
 // messages the bot saw while running (Discord.js message cache), not
 // history from before it started or restarts.
 const { EmbedBuilder } = require('discord.js');
+const COLORS = require('./colors');
 
 function logChannel(guild) {
   return guild.channels.cache.find((c) => c.name === 'mod-logs');
@@ -20,7 +21,7 @@ async function handleDelete(message) {
       { name: 'Автор', value: message.author ? `<@${message.author.id}>` : 'неизвестно', inline: true },
       { name: 'Канал', value: `<#${message.channel.id}>`, inline: true },
     )
-    .setColor(0x8b0000)
+    .setColor(COLORS.DANGER)
     .setTimestamp();
 
   await channel.send({ embeds: [embed] }).catch(() => {});
@@ -40,7 +41,7 @@ async function handleEdit(oldMessage, newMessage) {
       { name: 'Было', value: (oldMessage.content || '_пусто_').slice(0, 1024) },
       { name: 'Стало', value: (newMessage.content || '_пусто_').slice(0, 1024) },
     )
-    .setColor(0x8b0000)
+    .setColor(COLORS.WARNING)
     .setTimestamp();
 
   await channel.send({ embeds: [embed] }).catch(() => {});

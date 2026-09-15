@@ -15,6 +15,7 @@ const {
   MessageFlags,
 } = require('discord.js');
 const { findOrCreateTicketsCategory, staffRoleIdsOf } = require('./tickets');
+const COLORS = require('./colors');
 
 const COMMAND_NAME = 'Пожаловаться';
 // Modals can't carry full objects, only strings in the customId — stash
@@ -93,7 +94,7 @@ async function handleModalSubmit(interaction) {
       { name: 'Причина', value: reason },
       { name: 'Пожаловался', value: `<@${interaction.user.id}>` },
     )
-    .setColor(0x8b0000)
+    .setColor(COLORS.WARNING)
     .setTimestamp();
 
   const closeRow = new ActionRowBuilder().addComponents(

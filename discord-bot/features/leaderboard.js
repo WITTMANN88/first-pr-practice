@@ -4,6 +4,7 @@ const { EmbedBuilder, ChannelType, PermissionFlagsBits } = require('discord.js')
 const { getTopUsers } = require('./xp');
 const { getTopBalances } = require('./economy');
 const { upsertPanel } = require('./messageRegistry');
+const COLORS = require('./colors');
 
 const CATEGORY_NAME = '🎖️ RANKS & EVENTS';
 const CHANNEL_NAME = 'leaderboard';
@@ -44,7 +45,7 @@ async function updateXpBoard(channel, guild) {
   const embed = new EmbedBuilder()
     .setTitle('🏆 Топ по XP')
     .setDescription(lines.join('\n'))
-    .setColor(0x8b0000)
+    .setColor(COLORS.BRAND)
     .setTimestamp();
 
   await upsertPanel(channel, 'leaderboard-xp', { embeds: [embed] });
@@ -59,7 +60,7 @@ async function updateCoinsBoard(channel, guild) {
   const embed = new EmbedBuilder()
     .setTitle('🪙 Топ по монетам')
     .setDescription(lines.join('\n'))
-    .setColor(0x8b0000)
+    .setColor(COLORS.BRAND)
     .setTimestamp();
 
   await upsertPanel(channel, 'leaderboard-coins', { embeds: [embed] });
