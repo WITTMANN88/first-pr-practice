@@ -23,6 +23,9 @@ const { handleMessage: handleModCommand } = require('./features/modCommands');
 const { handleMessage: handleInfoCommand } = require('./features/infoCommands');
 const { startTicker: startTempbanTicker } = require('./features/tempbans');
 const { lockStaffOnlyCategory, postCommandReference } = require('./features/staffDocs');
+const { startLeaderboardTicker } = require('./features/leaderboard');
+const { handleDelete: handleMessageLogDelete, handleEdit: handleMessageLogEdit } = require('./features/messageLog');
+const { handleMemberUpdate: handleBoosterUpdate, ensureBoosterRole } = require('./features/boosters');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -52,11 +55,13 @@ client.once('clientReady', async () => {
     await postRules(guild);
     await lockStaffOnlyCategory(guild);
     await postCommandReference(guild);
+    await ensureBoosterRole(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
   startVoiceTicker(client);
   startTempbanTicker(client);
+  startLeaderboardTicker(client, GUILD_ID);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
 });
 
@@ -89,6 +94,21 @@ client.on('guildMemberAdd', (member) => {
 client.on('guildMemberUpdate', (oldMember, newMember) => {
   handleWelcomeUpdate(oldMember, newMember).catch((err) => {
     console.error('Welcome greeting (post-screening) failed:', err);
+  });
+  handleBoosterUpdate(oldMember, newMember).catch((err) => {
+    console.error('Booster role assignment failed:', err);
+  });
+});
+
+client.on('messageDelete', (message) => {
+  handleMessageLogDelete(message).catch((err) => {
+    console.error('Message-delete logging failed:', err);
+  });
+});
+
+client.on('messageUpdate', (oldMessage, newMessage) => {
+  handleMessageLogEdit(oldMessage, newMessage).catch((err) => {
+    console.error('Message-edit logging failed:', err);
   });
 });
 

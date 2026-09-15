@@ -96,6 +96,13 @@ function getProfile(userId) {
   return store[userId] ?? { xp: 0, rank: RANK_LADDER[0] };
 }
 
+function getTopUsers(limit) {
+  return Object.entries(store)
+    .map(([userId, entry]) => ({ userId, ...entry }))
+    .sort((a, b) => b.xp - a.xp)
+    .slice(0, limit);
+}
+
 load();
 
-module.exports = { handleMessage, startVoiceTicker, getProfile };
+module.exports = { handleMessage, startVoiceTicker, getProfile, getTopUsers };
