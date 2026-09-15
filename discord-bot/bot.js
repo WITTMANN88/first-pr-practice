@@ -1,0 +1,44 @@
+// STAKEOUT — the persistent bot. Unlike provision.js this stays running:
+// it keeps the role panel in sync and will grow more features over time
+// (tickets, XP, join-to-create, ...) as separate modules under ./features.
+require('dotenv').config();
+const { Client, GatewayIntentBits } = require('discord.js');
+const { registerRolePanel, handleRoleSelect } = require('./features/rolePanel');
+
+const TOKEN = process.env.DISCORD_TOKEN;
+const GUILD_ID = process.env.GUILD_ID;
+
+if (!TOKEN || !GUILD_ID) {
+  console.error('Missing DISCORD_TOKEN or GUILD_ID — copy .env.example to .env and fill both in.');
+  process.exit(1);
+}
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+});
+
+client.once('clientReady', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+  try {
+    const guild = await client.guilds.fetch(GUILD_ID);
+    await registerRolePanel(guild);
+  } catch (err) {
+    console.error('Startup setup failed:', err);
+  }
+  console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
+});
+
+client.on('interactionCreate', async (interaction) => {
+  try {
+    if (interaction.isStringSelectMenu()) {
+      await handleRoleSelect(interaction);
+    }
+  } catch (err) {
+    console.error('Interaction failed:', err);
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply('Что-то пошло не так, попробуй ещё раз.').catch(() => {});
+    }
+  }
+});
+
+client.login(TOKEN);

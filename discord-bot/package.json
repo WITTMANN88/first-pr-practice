@@ -5,7 +5,8 @@
   "description": "Provisioning script and future custom bots for the STAKEOUT Discord server",
   "main": "provision.js",
   "scripts": {
-    "provision": "node provision.js"
+    "provision": "node provision.js",
+    "bot": "node bot.js"
   },
   "dependencies": {
     "discord.js": "^14.15.3",
