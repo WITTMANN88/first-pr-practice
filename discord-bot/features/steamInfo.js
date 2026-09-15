@@ -1,7 +1,10 @@
 // Posts a Steam info card into a dedicated "-info" channel in each
 // game category — kept first in the category's channel order — plus a
-// separate trailer teaser message that links out to the Steam page
-// (Steam's public API doesn't expose a file Discord can embed inline).
+// separate trailer message. Steam's own trailer files aren't playable
+// inline in Discord (streaming-only manifests), but a plain YouTube
+// link IS auto-embedded by Discord as a playable inline video, so the
+// trailer message posts a hand-picked official YouTube trailer link
+// per game instead of a Steam thumbnail-and-click-through.
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { GAMES } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
@@ -22,6 +25,25 @@ const STEAM_APPIDS = {
   grayzone: [2479810],
   battlefield: [2807960],
   dayz: [221100],
+};
+
+// Curated official trailers, keyed by Steam appid — picked by hand so
+// the right video shows up (an automated search can't reliably tell an
+// official trailer apart from fan content or a same-named game).
+const YOUTUBE_TRAILERS = {
+  1913370: 'f_hfe80mVXo', // OPERATOR — Early Access Gameplay Trailer
+  1144200: '0PH_f3zo5_A', // Ready or Not — Official Gameplay Trailer
+  107410: 'M1YBZUxMX8g', // Arma 3 — Launch Trailer
+  1874880: 'mO499F5sUqc', // Arma Reforger — Official 1.0 Launch Trailer
+  3932890: 'tFw0a3Ob4ME', // Escape from Tarkov — Official Gameplay 1.0 Launch Trailer
+  16900: 'XDvSbktCyko', // Ground Branch — Official 1.0 Launch Trailer
+  393380: 'UDnUD73gRXk', // Squad — Launch Trailer
+  581320: 'tXc2M0ZHhYA', // Insurgency: Sandstorm — Launch Trailer
+  2406770: 'OJtv52GuSWM', // Bodycam — Official Launch Trailer
+  1938090: 'DU_3bKwO0nI', // Call of Duty: Black Ops 7 — Official Gameplay Reveal Trailer
+  2479810: 'SOvNIeOtoqA', // Gray Zone Warfare — Official Early Access Launch Trailer
+  2807960: 'pgNCgJG0vnY', // Battlefield 6 — Official Reveal Trailer
+  221100: 'hUH2rrHtnFs', // DayZ — Every Day Is a New Story (Cinematic Trailer)
 };
 
 async function fetchAppDetails(appid) {
@@ -116,10 +138,19 @@ async function postSteamInfo(guild) {
       await upsertPanel(channel, `steam-info-${appid}`, { embeds: buildInfoEmbeds(data, url) });
       console.log(`  synced Steam info: ${data.name} -> #${channel.name}`);
 
-      const trailerEmbed = buildTrailerEmbed(data, url);
-      if (trailerEmbed) {
-        await upsertPanel(channel, `steam-trailer-${appid}`, { embeds: [trailerEmbed] });
-        console.log(`  synced trailer: ${data.name} -> #${channel.name}`);
+      const youtubeId = YOUTUBE_TRAILERS[appid];
+      if (youtubeId) {
+        await upsertPanel(channel, `steam-trailer-${appid}`, {
+          content: `https://www.youtube.com/watch?v=${youtubeId}`,
+          embeds: [],
+        });
+        console.log(`  synced trailer (YouTube): ${data.name} -> #${channel.name}`);
+      } else {
+        const trailerEmbed = buildTrailerEmbed(data, url);
+        if (trailerEmbed) {
+          await upsertPanel(channel, `steam-trailer-${appid}`, { content: '', embeds: [trailerEmbed] });
+          console.log(`  synced trailer (Steam): ${data.name} -> #${channel.name}`);
+        }
       }
     }
   }
