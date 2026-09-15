@@ -15,6 +15,7 @@ const { handleVoiceStateUpdate } = require('./features/joinToCreate');
 const { handleMemberAdd } = require('./features/antiRaid');
 const { postMusicHelp, handleMessage: handleMusicMessage } = require('./features/music');
 const { postRules } = require('./features/rulesPost');
+const { postFaq } = require('./features/faqPost');
 const {
   handleMemberAdd: handleWelcomeAdd,
   handleMemberUpdate: handleWelcomeUpdate,
@@ -57,6 +58,7 @@ client.once('clientReady', async () => {
     await postTicketPanel(guild);
     await postMusicHelp(guild);
     await postRules(guild);
+    await postFaq(guild);
     await lockStaffOnlyCategory(guild);
     await postCommandReference(guild);
     await ensureBoosterRole(guild);
