@@ -20,6 +20,9 @@ const {
   handleMemberUpdate: handleWelcomeUpdate,
 } = require('./features/welcome');
 const { handleMessage: handleModCommand } = require('./features/modCommands');
+const { handleMessage: handleInfoCommand } = require('./features/infoCommands');
+const { startTicker: startTempbanTicker } = require('./features/tempbans');
+const { lockStaffOnlyCategory, postCommandReference } = require('./features/staffDocs');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -47,10 +50,13 @@ client.once('clientReady', async () => {
     await postTicketPanel(guild);
     await postMusicHelp(guild);
     await postRules(guild);
+    await lockStaffOnlyCategory(guild);
+    await postCommandReference(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
   startVoiceTicker(client);
+  startTempbanTicker(client);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
 });
 
@@ -65,6 +71,9 @@ client.on('messageCreate', (message) => {
   });
   handleModCommand(message).catch((err) => {
     console.error('Mod command failed:', err);
+  });
+  handleInfoCommand(message).catch((err) => {
+    console.error('Info command failed:', err);
   });
 });
 
