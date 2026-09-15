@@ -19,6 +19,7 @@ const {
   handleMemberAdd: handleWelcomeAdd,
   handleMemberUpdate: handleWelcomeUpdate,
 } = require('./features/welcome');
+const { handleMessage: handleModCommand } = require('./features/modCommands');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -61,6 +62,9 @@ client.on('messageCreate', (message) => {
   }
   handleMusicMessage(message).catch((err) => {
     console.error('Music command failed:', err);
+  });
+  handleModCommand(message).catch((err) => {
+    console.error('Mod command failed:', err);
   });
 });
 

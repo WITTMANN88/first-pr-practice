@@ -7,7 +7,8 @@
   "scripts": {
     "provision": "node provision.js",
     "bot": "node bot.js",
-    "setup-automod": "node scripts/setup-automod.js"
+    "setup-automod": "node scripts/setup-automod.js",
+    "restyle": "node scripts/restyle-server.js"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",

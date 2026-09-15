@@ -121,7 +121,7 @@ async function main() {
       gatedOverwrites(guild, [role.id, ...staffRoleIds]),
     );
     await findOrCreateChannel(guild, `${g.key}-chat`, ChannelType.GuildText, category);
-    await findOrCreateChannel(guild, `${g.key}-lfg`, ChannelType.GuildForum, category, {
+    await findOrCreateChannel(guild, `${g.key}-squad`, ChannelType.GuildForum, category, {
       availableTags: LFG_TAGS.map((t) => ({ name: t })),
     });
     await findOrCreateChannel(guild, 'Squad 1', ChannelType.GuildVoice, category);
@@ -137,7 +137,7 @@ async function main() {
     gatedOverwrites(guild, [otherGamesRole.id, ...staffRoleIds]),
   );
   await findOrCreateChannel(guild, 'other-games-chat', ChannelType.GuildText, otherGames);
-  await findOrCreateChannel(guild, 'other-games-lfg', ChannelType.GuildForum, otherGames, {
+  await findOrCreateChannel(guild, 'other-games-squad', ChannelType.GuildForum, otherGames, {
     availableTags: LFG_TAGS.map((t) => ({ name: t })),
   });
   await findOrCreateChannel(guild, '🔊 Other Games', ChannelType.GuildVoice, otherGames);
