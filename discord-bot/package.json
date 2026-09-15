@@ -1,0 +1,14 @@
+{
+  "name": "stakeout-discord-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Provisioning script and future custom bots for the STAKEOUT Discord server",
+  "main": "provision.js",
+  "scripts": {
+    "provision": "node provision.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  }
+}
