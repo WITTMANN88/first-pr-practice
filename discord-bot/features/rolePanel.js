@@ -1,6 +1,6 @@
 // Posts a self-service role menu in #choose-your-roles and keeps a
 // member's access roles in sync with what they pick.
-const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const { GAMES, EXTRA_ROLES } = require('../config');
 
 const PANEL_MARKER = 'stakeout-role-panel-v1';
@@ -64,7 +64,7 @@ async function handleRoleSelect(interaction) {
   const isExtra = interaction.customId === 'roles-extra';
   if (!isGames && !isExtra) return;
 
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
   const pool = (isGames ? GAMES : EXTRA_ROLES).map((r) => r.name);
   const selected = new Set(interaction.values);
