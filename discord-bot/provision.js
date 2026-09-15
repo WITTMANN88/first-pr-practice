@@ -102,7 +102,6 @@ async function main() {
   await findOrCreateChannel(guild, 'nsfw-uncensored', ChannelType.GuildText, community, { nsfw: true });
   await findOrCreateChannel(guild, '🔊 Lounge', ChannelType.GuildVoice, community);
   await findOrCreateChannel(guild, '🔊 Chill', ChannelType.GuildVoice, community);
-  await findOrCreateChannel(guild, '💤 AFK', ChannelType.GuildVoice, community);
 
   console.log('== SERIOUS TALK ==');
   const serious = await findOrCreateCategory(
@@ -157,6 +156,12 @@ async function main() {
   await findOrCreateChannel(guild, 'mod-logs', ChannelType.GuildText, staffOnly);
   await findOrCreateChannel(guild, 'ban-list', ChannelType.GuildText, staffOnly);
   await findOrCreateChannel(guild, 'alt-flags', ChannelType.GuildText, staffOnly);
+
+  console.log('== AFK ZONE ==');
+  const afkZone = await findOrCreateCategory(guild, '💤 AFK ZONE');
+  const afkChannel = await findOrCreateChannel(guild, '💤 AFK', ChannelType.GuildVoice, afkZone);
+  await guild.setAFKChannel(afkChannel);
+  await guild.setAFKTimeout(300);
 
   console.log('\nDone — server structure provisioned.');
   process.exit(0);

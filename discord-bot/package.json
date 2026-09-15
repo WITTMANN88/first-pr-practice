@@ -9,7 +9,8 @@
     "bot": "node bot.js",
     "setup-automod": "node scripts/setup-automod.js",
     "restyle": "node scripts/restyle-server.js",
-    "setup-onboarding": "node scripts/setup-onboarding.js"
+    "setup-onboarding": "node scripts/setup-onboarding.js",
+    "setup-afk-zone": "node scripts/setup-afk-zone.js"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",
