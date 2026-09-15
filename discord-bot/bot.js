@@ -39,6 +39,8 @@ const {
   handleContextMenu: handleReportContextMenu,
   handleModalSubmit: handleReportModalSubmit,
 } = require('./features/quickReport');
+const { handleReactionAdd: handleTranslateReaction } = require('./features/translate');
+const { startFreeGamesTicker } = require('./features/freeGames');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -55,6 +57,7 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessageReactions,
   ],
 });
 
@@ -78,6 +81,7 @@ client.once('clientReady', async () => {
   startTempbanTicker(client);
   startLeaderboardTicker(client, GUILD_ID);
   startStatTicker(client, GUILD_ID);
+  startFreeGamesTicker(client, GUILD_ID);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
 });
 
@@ -140,6 +144,12 @@ client.on('messageDelete', (message) => {
 client.on('messageUpdate', (oldMessage, newMessage) => {
   handleMessageLogEdit(oldMessage, newMessage).catch((err) => {
     console.error('Message-edit logging failed:', err);
+  });
+});
+
+client.on('messageReactionAdd', (reaction, user) => {
+  handleTranslateReaction(reaction, user).catch((err) => {
+    console.error('Translate reaction failed:', err);
   });
 });
 
