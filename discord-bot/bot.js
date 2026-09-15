@@ -11,6 +11,7 @@ const {
   handleTicketClose,
 } = require('./features/tickets');
 const { handleMessage: handleXpMessage, startVoiceTicker } = require('./features/xp');
+const { handleVoiceStateUpdate } = require('./features/joinToCreate');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -48,6 +49,12 @@ client.on('messageCreate', (message) => {
   } catch (err) {
     console.error('XP message handling failed:', err);
   }
+});
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+  handleVoiceStateUpdate(oldState, newState).catch((err) => {
+    console.error('Join-to-Create failed:', err);
+  });
 });
 
 client.on('interactionCreate', async (interaction) => {
