@@ -141,7 +141,7 @@ async function postSteamInfo(guild) {
       const youtubeId = YOUTUBE_TRAILERS[appid];
       if (youtubeId) {
         await upsertPanel(channel, `steam-trailer-${appid}`, {
-          content: `https://www.youtube.com/watch?v=${youtubeId}`,
+          content: `🎬 Смотри трейлер ниже\nhttps://www.youtube.com/watch?v=${youtubeId}`,
           embeds: [],
         });
         console.log(`  synced trailer (YouTube): ${data.name} -> #${channel.name}`);
