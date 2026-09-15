@@ -2,7 +2,13 @@
 // for role/category names so they never drift apart.
 const { PermissionFlagsBits } = require('discord.js');
 
+// Owner is created first so it lands above Admin in the role hierarchy
+// on a fresh provision (each new role is inserted just above
+// @everyone, pushing earlier-created roles up — so create order here
+// is highest-to-lowest). On the already-live server, the migration
+// script repositions it explicitly instead.
 const STAFF_ROLES = [
+  { name: 'Owner', color: '#FFFFFF', hoist: true, permissions: [PermissionFlagsBits.Administrator] },
   { name: 'Admin', color: 'DarkRed', hoist: true, permissions: [PermissionFlagsBits.Administrator] },
   { name: 'Moderator', color: 'Red', hoist: true, permissions: [PermissionFlagsBits.ModerateMembers, PermissionFlagsBits.ManageMessages, PermissionFlagsBits.KickMembers] },
   { name: 'Helper', color: 'Grey', hoist: true, permissions: [PermissionFlagsBits.ManageMessages] },

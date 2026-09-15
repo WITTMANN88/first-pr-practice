@@ -13,7 +13,8 @@
     "setup-afk-zone": "node scripts/setup-afk-zone.js",
     "rename-ranks": "node scripts/rename-ranks.js",
     "rename-categories": "node scripts/rename-categories-and-add-creator.js",
-    "seed-panel-registry": "node scripts/seed-panel-registry.js"
+    "seed-panel-registry": "node scripts/seed-panel-registry.js",
+    "add-owner-role": "node scripts/add-owner-role.js"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",

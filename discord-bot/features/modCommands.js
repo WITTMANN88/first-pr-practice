@@ -4,7 +4,7 @@ const { addWarn, clearInfractions } = require('./infractions');
 const tempbans = require('./tempbans');
 
 const PREFIX = '!';
-const PUNISH_ROLE_NAMES = ['Admin', 'Moderator'];
+const PUNISH_ROLE_NAMES = ['Owner', 'Admin', 'Moderator'];
 const COMMANDS = ['ban', 'tempban', 'unban', 'kick', 'mute', 'tempmute', 'unmute', 'warn', 'clear-all-infractions', 'clear'];
 const DURATION_MULTIPLIERS = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
 const MAX_TIMEOUT_MS = 28 * DURATION_MULTIPLIERS.d; // Discord's own timeout ceiling

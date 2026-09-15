@@ -27,7 +27,7 @@ const RANK_STYLE = [
   { color: '#4a0000', emoji: '🥇' }, // Commander
 ];
 
-const STAFF_EMOJI = { Admin: '👑', Moderator: '🛡️', Helper: '🔧' };
+const STAFF_EMOJI = { Owner: '⭐', Admin: '👑', Moderator: '🛡️', Helper: '🔧' };
 
 async function styleRole(guild, name, { color, emoji }) {
   const role = guild.roles.cache.find((r) => r.name === name);
