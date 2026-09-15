@@ -33,6 +33,12 @@ const {
 } = require('./features/boosters');
 const { handleMessage: handleEconomyCommand } = require('./features/economy');
 const { startStatTicker } = require('./features/statChannels');
+const { handleMemberRemove: handleStickyRemove, handleMemberAdd: handleStickyAdd } = require('./features/stickyRoles');
+const {
+  registerCommand: registerReportCommand,
+  handleContextMenu: handleReportContextMenu,
+  handleModalSubmit: handleReportModalSubmit,
+} = require('./features/quickReport');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -64,6 +70,7 @@ client.once('clientReady', async () => {
     await lockStaffOnlyCategory(guild);
     await postCommandReference(guild);
     await ensureBoosterRole(guild);
+    await registerReportCommand(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
@@ -104,6 +111,15 @@ client.on('guildMemberAdd', (member) => {
   handleWelcomeAdd(member).catch((err) => {
     console.error('Welcome greeting failed:', err);
   });
+  handleStickyAdd(member).catch((err) => {
+    console.error('Sticky role restore failed:', err);
+  });
+});
+
+client.on('guildMemberRemove', (member) => {
+  handleStickyRemove(member).catch((err) => {
+    console.error('Sticky role save failed:', err);
+  });
 });
 
 client.on('guildMemberUpdate', (oldMember, newMember) => {
@@ -143,6 +159,10 @@ client.on('interactionCreate', async (interaction) => {
       await handleTicketClose(interaction);
     } else if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket-modal-')) {
       await handleTicketModalSubmit(interaction);
+    } else if (interaction.isMessageContextMenuCommand()) {
+      await handleReportContextMenu(interaction);
+    } else if (interaction.isModalSubmit() && interaction.customId.startsWith('report-modal-')) {
+      await handleReportModalSubmit(interaction);
     }
   } catch (err) {
     console.error('Interaction failed:', err);

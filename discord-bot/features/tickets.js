@@ -136,4 +136,11 @@ async function handleTicketClose(interaction) {
   setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
 }
 
-module.exports = { postTicketPanel, handleTicketButton, handleTicketModalSubmit, handleTicketClose };
+module.exports = {
+  postTicketPanel,
+  handleTicketButton,
+  handleTicketModalSubmit,
+  handleTicketClose,
+  findOrCreateTicketsCategory,
+  staffRoleIdsOf,
+};
