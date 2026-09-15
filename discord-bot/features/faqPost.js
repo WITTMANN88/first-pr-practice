@@ -1,10 +1,8 @@
-// Posts the FAQ into #faq — edits the existing post in place if one's
-// already there (so updating QA here propagates on next restart),
-// otherwise sends a fresh one. Same footer-marker pattern as the
-// other panels, just upsert instead of post-once.
+// Posts the FAQ into #faq — edits the existing post in place (tracked
+// by message ID via messageRegistry) so updating QA here propagates
+// on next restart.
 const { EmbedBuilder } = require('discord.js');
-
-const MARKER = 'stakeout-faq-v1';
+const { upsertPanel } = require('./messageRegistry');
 
 const QA = [
   {
@@ -68,24 +66,13 @@ async function postFaq(guild) {
     return;
   }
 
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const existing = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === MARKER),
-  );
-
   const embed = new EmbedBuilder()
     .setTitle('FAQ')
     .addFields(QA.map((item) => ({ name: `❓ ${item.q}`, value: item.a })))
-    .setColor(0x8b0000)
-    .setFooter({ text: MARKER });
+    .setColor(0x8b0000);
 
-  if (existing) {
-    await existing.edit({ embeds: [embed] });
-    console.log('Updated FAQ in #faq');
-  } else {
-    await channel.send({ embeds: [embed] });
-    console.log('Posted FAQ in #faq');
-  }
+  await upsertPanel(channel, 'faq', { embeds: [embed] });
+  console.log('FAQ synced in #faq');
 }
 
 module.exports = { postFaq };

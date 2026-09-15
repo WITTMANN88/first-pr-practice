@@ -2,8 +2,7 @@
 // member's access roles in sync with what they pick.
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
 const { GAMES, EXTRA_ROLES } = require('../config');
-
-const PANEL_MARKER = 'stakeout-role-panel-v1';
+const { upsertPanel } = require('./messageRegistry');
 
 function gamesSelectMenu() {
   return new StringSelectMenuBuilder()
@@ -32,12 +31,6 @@ async function registerRolePanel(guild) {
     return;
   }
 
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds[0]?.footer?.text === PANEL_MARKER,
-  );
-  if (already) return;
-
   const embed = new EmbedBuilder()
     .setTitle('Выбери роли')
     .setDescription(
@@ -46,17 +39,16 @@ async function registerRolePanel(guild) {
         '**Игры** — открывает чат, LFG-форум и голосовые той игры.\n' +
         '**Дополнительно** — Politics открывает SERIOUS TALK, Other Games — категорию для всего остального.',
     )
-    .setColor(0x8b0000)
-    .setFooter({ text: PANEL_MARKER });
+    .setColor(0x8b0000);
 
-  await channel.send({
+  await upsertPanel(channel, 'role-panel', {
     embeds: [embed],
     components: [
       new ActionRowBuilder().addComponents(gamesSelectMenu()),
       new ActionRowBuilder().addComponents(extraSelectMenu()),
     ],
   });
-  console.log('Posted role panel in #choose-your-roles');
+  console.log('Role panel synced in #choose-your-roles');
 }
 
 async function handleRoleSelect(interaction) {

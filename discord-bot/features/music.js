@@ -8,9 +8,9 @@
 const { EmbedBuilder } = require('discord.js');
 const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
+const { upsertPanel } = require('./messageRegistry');
 
 const PREFIX = '!';
-const HELP_MARKER = 'stakeout-music-help-v1';
 
 let player;
 
@@ -46,12 +46,6 @@ async function postMusicHelp(guild) {
   const channel = guild.channels.cache.find((c) => c.name === 'music-commands');
   if (!channel) return;
 
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds[0]?.footer?.text === HELP_MARKER,
-  );
-  if (already) return;
-
   const embed = new EmbedBuilder()
     .setTitle('Команды музыки')
     .setDescription(
@@ -65,11 +59,10 @@ async function postMusicHelp(guild) {
         'Работает с YouTube и SoundCloud напрямую; Spotify-ссылки тоже принимаются — сам трек ищется на YouTube/SoundCloud, Spotify отдаёт только название.',
       ].join('\n'),
     )
-    .setColor(0x8b0000)
-    .setFooter({ text: HELP_MARKER });
+    .setColor(0x8b0000);
 
-  await channel.send({ embeds: [embed] });
-  console.log('Posted music help in #music-commands');
+  await upsertPanel(channel, 'music-help', { embeds: [embed] });
+  console.log('Music help synced in #music-commands');
 }
 
 async function handleMessage(message) {

@@ -13,8 +13,8 @@ const {
   MessageFlags,
 } = require('discord.js');
 const { STAFF_ROLES } = require('../config');
+const { upsertPanel } = require('./messageRegistry');
 
-const PANEL_MARKER = 'stakeout-ticket-panel-v1';
 const TICKETS_CATEGORY_NAME = '🎫 Tickets';
 
 const CATEGORIES = [
@@ -38,17 +38,10 @@ async function postTicketPanel(guild) {
     console.warn('open-a-ticket channel not found — skipping ticket panel');
     return;
   }
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds[0]?.footer?.text === PANEL_MARKER,
-  );
-  if (already) return;
-
   const embed = new EmbedBuilder()
     .setTitle('Открыть тикет')
     .setDescription('Выбери категорию — откроется приватный канал, который видишь только ты и персонал.')
-    .setColor(0x8b0000)
-    .setFooter({ text: PANEL_MARKER });
+    .setColor(0x8b0000);
 
   const row = new ActionRowBuilder().addComponents(
     CATEGORIES.map((c) =>
@@ -56,8 +49,8 @@ async function postTicketPanel(guild) {
     ),
   );
 
-  await channel.send({ embeds: [embed], components: [row] });
-  console.log('Posted ticket panel in #open-a-ticket');
+  await upsertPanel(channel, 'ticket-panel', { embeds: [embed], components: [row] });
+  console.log('Ticket panel synced in #open-a-ticket');
 }
 
 async function handleTicketButton(interaction) {

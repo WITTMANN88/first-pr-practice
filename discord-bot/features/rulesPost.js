@@ -1,8 +1,8 @@
-// Posts the RU+EN rules text into #rules once (idempotent via the
-// footer marker, same pattern as the other panels).
+// Posts the RU+EN rules text into #rules, editing the same message in
+// place on later runs (tracked by message ID via messageRegistry, not
+// a visible marker).
 const { EmbedBuilder } = require('discord.js');
-
-const MARKER = 'stakeout-rules-v1';
+const { upsertPanel } = require('./messageRegistry');
 
 const RU_ARTICLES = [
   'Политика в любом виде (обсуждения, мемы, вбросы, провокации) запрещена везде, кроме категории **SERIOUS TALK**, доступной по роли `Politics` — и там тоже под усиленной модерацией.',
@@ -49,12 +49,6 @@ async function postRules(guild) {
     return;
   }
 
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === MARKER),
-  );
-  if (already) return;
-
   const ruEmbed = new EmbedBuilder()
     .setTitle('Правила — RU')
     .setDescription(numbered(RU_ARTICLES))
@@ -74,11 +68,10 @@ async function postRules(guild) {
         value: 'Мгновенный бан / Instant ban\n_Статьи 3.1, 3.2, 3.3, 3.4, 7 (все причастные аккаунты)_',
       },
     )
-    .setColor(0x8b0000)
-    .setFooter({ text: MARKER });
+    .setColor(0x8b0000);
 
-  await channel.send({ embeds: [ruEmbed, enEmbed, punishmentEmbed] });
-  console.log('Posted rules in #rules');
+  await upsertPanel(channel, 'rules', { embeds: [ruEmbed, enEmbed, punishmentEmbed] });
+  console.log('Rules synced in #rules');
 }
 
 module.exports = { postRules };

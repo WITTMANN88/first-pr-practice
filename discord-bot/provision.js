@@ -3,7 +3,7 @@
 // Safe to re-run: skips anything that already exists by name.
 require('dotenv').config();
 const { Client, GatewayIntentBits, ChannelType, PermissionFlagsBits } = require('discord.js');
-const { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES, LFG_TAGS } = require('./config');
+const { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES, LFG_TAGS, CONTENT_CREATOR_ROLE } = require('./config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -82,6 +82,11 @@ async function main() {
   for (const g of GAMES) {
     gameRoles[g.key] = await findOrCreateRole(guild, g.name, { mentionable: false });
   }
+  const contentCreatorRole = await findOrCreateRole(guild, CONTENT_CREATOR_ROLE.name, {
+    color: CONTENT_CREATOR_ROLE.color,
+    hoist: true,
+    mentionable: false,
+  });
 
   console.log('== START HERE ==');
   const startHere = await findOrCreateCategory(guild, '📋 START HERE');
@@ -98,6 +103,13 @@ async function main() {
   await findOrCreateChannel(guild, 'clips-screenshots', ChannelType.GuildText, community);
   await findOrCreateChannel(guild, 'memes', ChannelType.GuildText, community);
   await findOrCreateChannel(guild, 'self-promo', ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, 'content-creators', ChannelType.GuildText, community, {
+    permissionOverwrites: [
+      { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.SendMessages] },
+      { id: contentCreatorRole.id, allow: [PermissionFlagsBits.SendMessages] },
+      ...staffRoleIds.map((id) => ({ id, allow: [PermissionFlagsBits.SendMessages] })),
+    ],
+  });
   await findOrCreateChannel(guild, 'music-commands', ChannelType.GuildText, community);
   await findOrCreateChannel(guild, 'nsfw-uncensored', ChannelType.GuildText, community, { nsfw: true });
   await findOrCreateChannel(guild, '🔊 Lounge', ChannelType.GuildVoice, community);
@@ -106,7 +118,7 @@ async function main() {
   console.log('== SERIOUS TALK ==');
   const serious = await findOrCreateCategory(
     guild,
-    '🌍 SERIOUS TALK',
+    '🌍 SERIOUS TALK / СЕРЬЁЗНЫЙ РАЗГОВОР',
     gatedOverwrites(guild, [politicsRole.id, ...staffRoleIds]),
   );
   await findOrCreateChannel(guild, 'politics-and-irl', ChannelType.GuildText, serious);
@@ -147,7 +159,7 @@ async function main() {
   await findOrCreateChannel(guild, 'Command Briefing', ChannelType.GuildStageVoice, ranksEvents);
 
   console.log('== SUPPORT ==');
-  const support = await findOrCreateCategory(guild, '🎫 SUPPORT');
+  const support = await findOrCreateCategory(guild, '🎫 SUPPORT / ПОДДЕРЖКА');
   await findOrCreateChannel(guild, 'open-a-ticket', ChannelType.GuildText, support);
 
   console.log('== STAFF ONLY ==');

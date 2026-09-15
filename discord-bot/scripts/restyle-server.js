@@ -54,7 +54,7 @@ async function reorderCategories(guild) {
     (a, b) => a.position - b.position,
   );
 
-  const moveNames = ['🎫 SUPPORT', '🔐 STAFF ONLY', '🎫 Tickets'];
+  const moveNames = ['🎫 SUPPORT / ПОДДЕРЖКА', '🔐 STAFF ONLY', '🎫 Tickets'];
   const toMove = categories.filter((c) => moveNames.includes(c.name));
   const rest = categories.filter((c) => !moveNames.includes(c.name));
 

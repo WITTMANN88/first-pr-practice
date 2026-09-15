@@ -34,4 +34,16 @@ const EXTRA_ROLES = [
 
 const LFG_TAGS = ['EU', 'NA', 'Casual', 'Hardcore', 'Need players', 'Full squad'];
 
-module.exports = { STAFF_ROLES, RANK_LADDER, RANK_THRESHOLDS, GAMES, EXTRA_ROLES, LFG_TAGS };
+// Manually granted by staff, not self-service via the role panel —
+// content creator status is vetted, not a free pick.
+const CONTENT_CREATOR_ROLE = { name: 'Content Creator', color: '#D4AF37' };
+
+module.exports = {
+  STAFF_ROLES,
+  RANK_LADDER,
+  RANK_THRESHOLDS,
+  GAMES,
+  EXTRA_ROLES,
+  LFG_TAGS,
+  CONTENT_CREATOR_ROLE,
+};

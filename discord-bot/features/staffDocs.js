@@ -1,10 +1,9 @@
 // Re-asserts the STAFF ONLY category lock (exactly Admin/Moderator/
-// Helper, nobody else) and posts a command reference inside it —
-// idempotent, same footer-marker pattern as the other panels.
+// Helper, nobody else) and posts a command reference inside it.
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { STAFF_ROLES } = require('../config');
+const { upsertPanel } = require('./messageRegistry');
 
-const MARKER = 'stakeout-staff-commands-v1';
 const STAFF_CATEGORY_NAME = '🔐 STAFF ONLY';
 
 async function lockStaffOnlyCategory(guild) {
@@ -38,12 +37,6 @@ async function postCommandReference(guild) {
     channel = await guild.channels.create({ name: 'bot-commands', type: ChannelType.GuildText, parent: category.id });
     console.log('+ channel: bot-commands');
   }
-
-  const recent = await channel.messages.fetch({ limit: 20 });
-  const already = recent.find(
-    (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === MARKER),
-  );
-  if (already) return;
 
   const punishEmbed = new EmbedBuilder()
     .setTitle('🚫 Наказания и блокировки — Admin / Moderator')
@@ -82,11 +75,10 @@ async function postCommandReference(guild) {
         '`!role-info <название роли>` — цвет, число участников, права роли.',
       ].join('\n'),
     )
-    .setColor(0x8b0000)
-    .setFooter({ text: MARKER });
+    .setColor(0x8b0000);
 
-  await channel.send({ embeds: [punishEmbed, cleanupEmbed, infoEmbed] });
-  console.log('Posted command reference in #bot-commands');
+  await upsertPanel(channel, 'staff-commands', { embeds: [punishEmbed, cleanupEmbed, infoEmbed] });
+  console.log('Command reference synced in #bot-commands');
 }
 
 module.exports = { lockStaffOnlyCategory, postCommandReference };

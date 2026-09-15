@@ -1,12 +1,13 @@
 // Posts a Steam info card into a dedicated "-info" channel in each
-// game category: store link, description, and a small screenshot
-// gallery (several embeds sharing one URL — Discord groups them into
-// a tiled gallery instead of stacking separate blocks). Steam's
-// appdetails API is public, no key needed.
+// game category — kept first in the category's channel order — plus a
+// separate trailer teaser message. Steam's public API no longer
+// exposes a direct playable video file (only DASH/HLS streaming
+// manifests, which Discord can't embed inline), so the trailer message
+// links out to Steam rather than claiming to play in-chat.
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const { GAMES } = require('../config');
+const { upsertPanel } = require('./messageRegistry');
 
-const MARKER_PREFIX = 'stakeout-steam-info-';
 const SCREENSHOT_COUNT = 4;
 
 // Some categories cover more than one Steam listing (Arma = 3 + Reforger).
@@ -35,8 +36,7 @@ async function fetchAppDetails(appid) {
   return entry.data;
 }
 
-function buildEmbeds(data) {
-  const url = `https://store.steampowered.com/app/${data.steam_appid}/`;
+function buildInfoEmbeds(data, url) {
   const main = new EmbedBuilder()
     .setTitle(data.name)
     .setURL(url)
@@ -55,6 +55,17 @@ function buildEmbeds(data) {
   return [main, ...gallery];
 }
 
+function buildTrailerEmbed(data, url) {
+  const movie = data.movies?.[0];
+  if (!movie) return null;
+  return new EmbedBuilder()
+    .setTitle(`🎬 Трейлер — ${movie.name || data.name}`)
+    .setURL(url)
+    .setDescription('Steam больше не отдаёт трейлеры как обычный видеофайл (только потоковый формат, Discord его не проигрывает встроенно) — жми, чтобы посмотреть на странице игры.')
+    .setImage(movie.thumbnail)
+    .setColor(0x8b0000);
+}
+
 async function findOrCreateInfoChannel(guild, gameKey, gameEmoji, gameName) {
   const category = guild.channels.cache.find(
     (c) => c.type === ChannelType.GuildCategory && c.name === `${gameEmoji} ${gameName}`,
@@ -71,7 +82,18 @@ async function findOrCreateInfoChannel(guild, gameKey, gameEmoji, gameName) {
     });
     console.log(`  + channel: ${gameKey}-info`);
   }
+
+  await moveToTopOfCategory(guild, category, channel);
   return channel;
+}
+
+async function moveToTopOfCategory(guild, category, channel) {
+  const siblings = [...category.children.cache.values()].sort((a, b) => a.position - b.position);
+  if (siblings[0]?.id === channel.id) return; // already first, nothing to do
+
+  const rest = siblings.filter((c) => c.id !== channel.id);
+  const newOrder = [channel, ...rest];
+  await guild.channels.setPositions(newOrder.map((c, i) => ({ channel: c.id, position: i })));
 }
 
 async function postSteamInfo(guild) {
@@ -86,23 +108,22 @@ async function postSteamInfo(guild) {
     }
 
     for (const appid of appids) {
-      const marker = `${MARKER_PREFIX}${appid}`;
-      const recent = await channel.messages.fetch({ limit: 20 });
-      const existing = recent.find(
-        (m) => m.author.id === guild.client.user.id && m.embeds.some((e) => e.footer?.text === marker),
-      );
-      if (existing) continue;
-
       const data = await fetchAppDetails(appid).catch((err) => {
         console.warn(`  ! Steam fetch failed for appid ${appid}: ${err.message}`);
         return null;
       });
       if (!data) continue;
 
-      const embeds = buildEmbeds(data);
-      embeds[embeds.length - 1].setFooter({ text: marker });
-      await channel.send({ embeds }).catch((err) => console.warn(`  ! failed to post ${data.name}: ${err.message}`));
-      console.log(`  posted Steam info: ${data.name} -> #${channel.name}`);
+      const url = `https://store.steampowered.com/app/${data.steam_appid}/`;
+
+      await upsertPanel(channel, `steam-info-${appid}`, { embeds: buildInfoEmbeds(data, url) });
+      console.log(`  synced Steam info: ${data.name} -> #${channel.name}`);
+
+      const trailerEmbed = buildTrailerEmbed(data, url);
+      if (trailerEmbed) {
+        await upsertPanel(channel, `steam-trailer-${appid}`, { embeds: [trailerEmbed] });
+        console.log(`  synced trailer: ${data.name} -> #${channel.name}`);
+      }
     }
   }
 }
