@@ -12,6 +12,7 @@ const {
 } = require('./features/tickets');
 const { handleMessage: handleXpMessage, startVoiceTicker } = require('./features/xp');
 const { handleVoiceStateUpdate } = require('./features/joinToCreate');
+const { handleMemberAdd } = require('./features/antiRaid');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -49,6 +50,12 @@ client.on('messageCreate', (message) => {
   } catch (err) {
     console.error('XP message handling failed:', err);
   }
+});
+
+client.on('guildMemberAdd', (member) => {
+  handleMemberAdd(member).catch((err) => {
+    console.error('Anti-raid check failed:', err);
+  });
 });
 
 client.on('voiceStateUpdate', (oldState, newState) => {
