@@ -42,6 +42,7 @@ const {
 const { handleReactionAdd: handleTranslateReaction } = require('./features/translate');
 const { startFreeGamesTicker } = require('./features/freeGames');
 const { postSteamInfo } = require('./features/steamInfo');
+const { startPresenceRotation } = require('./features/presence');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -83,6 +84,7 @@ client.once('clientReady', async () => {
   startTempbanTicker(client);
   startLeaderboardTicker(client, GUILD_ID);
   startStatTicker(client, GUILD_ID);
+  startPresenceRotation(client, GUILD_ID);
   startFreeGamesTicker(client, GUILD_ID);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
 });
