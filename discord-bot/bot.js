@@ -4,6 +4,12 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const { registerRolePanel, handleRoleSelect } = require('./features/rolePanel');
+const {
+  postTicketPanel,
+  handleTicketButton,
+  handleTicketModalSubmit,
+  handleTicketClose,
+} = require('./features/tickets');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -22,6 +28,7 @@ client.once('clientReady', async () => {
   try {
     const guild = await client.guilds.fetch(GUILD_ID);
     await registerRolePanel(guild);
+    await postTicketPanel(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
@@ -32,6 +39,12 @@ client.on('interactionCreate', async (interaction) => {
   try {
     if (interaction.isStringSelectMenu()) {
       await handleRoleSelect(interaction);
+    } else if (interaction.isButton() && interaction.customId.startsWith('ticket-open-')) {
+      await handleTicketButton(interaction);
+    } else if (interaction.isButton() && interaction.customId === 'ticket-close') {
+      await handleTicketClose(interaction);
+    } else if (interaction.isModalSubmit() && interaction.customId.startsWith('ticket-modal-')) {
+      await handleTicketModalSubmit(interaction);
     }
   } catch (err) {
     console.error('Interaction failed:', err);
