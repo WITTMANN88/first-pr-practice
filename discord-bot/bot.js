@@ -41,6 +41,7 @@ const {
 } = require('./features/quickReport');
 const { handleReactionAdd: handleTranslateReaction } = require('./features/translate');
 const { startFreeGamesTicker } = require('./features/freeGames');
+const { postSteamInfo } = require('./features/steamInfo');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -74,6 +75,7 @@ client.once('clientReady', async () => {
     await postCommandReference(guild);
     await ensureBoosterRole(guild);
     await registerReportCommand(guild);
+    await postSteamInfo(guild);
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
