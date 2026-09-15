@@ -10,6 +10,7 @@ const {
   handleTicketModalSubmit,
   handleTicketClose,
 } = require('./features/tickets');
+const { handleMessage: handleXpMessage, startVoiceTicker } = require('./features/xp');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -20,7 +21,12 @@ if (!TOKEN || !GUILD_ID) {
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
 });
 
 client.once('clientReady', async () => {
@@ -32,7 +38,16 @@ client.once('clientReady', async () => {
   } catch (err) {
     console.error('Startup setup failed:', err);
   }
+  startVoiceTicker(client);
   console.log('Bot is running. Leave this window open — closing it takes the role menu offline.');
+});
+
+client.on('messageCreate', (message) => {
+  try {
+    handleXpMessage(message);
+  } catch (err) {
+    console.error('XP message handling failed:', err);
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {

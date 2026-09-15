@@ -9,6 +9,8 @@ const STAFF_ROLES = [
 ];
 
 const RANK_LADDER = ['Recruit', 'Private', 'Corporal', 'Sergeant', 'Lieutenant', 'Captain', 'Major', 'Commander'];
+// Cumulative XP needed to reach the rank at the same index in RANK_LADDER.
+const RANK_THRESHOLDS = [0, 100, 300, 700, 1500, 3000, 6000, 12000];
 
 const GAMES = [
   { key: 'operator', name: 'Operator', emoji: '🎯' },
@@ -32,4 +34,4 @@ const EXTRA_ROLES = [
 
 const LFG_TAGS = ['EU', 'NA', 'Casual', 'Hardcore', 'Need players', 'Full squad'];
 
-module.exports = { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES, LFG_TAGS };
+module.exports = { STAFF_ROLES, RANK_LADDER, RANK_THRESHOLDS, GAMES, EXTRA_ROLES, LFG_TAGS };
