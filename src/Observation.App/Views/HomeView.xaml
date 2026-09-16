@@ -12,7 +12,7 @@
 
         <TextBlock Margin="0,0,0,8">
             <Run Foreground="{StaticResource Color.TextMuted}"
-                 Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePendingLabel}"/>
+                 Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomePendingLabel}"/>
             <Run Foreground="{StaticResource Color.Text}" FontWeight="Bold" Text="{Binding PendingCount, Mode=OneWay}"/>
         </TextBlock>
 
