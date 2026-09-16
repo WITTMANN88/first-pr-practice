@@ -27,7 +27,13 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!--
+      InvariantGlobalization ломает WPF: биндинги без явного ConverterCulture вызывают
+      XmlLanguage.GetSpecificCulture() на Language окна (по умолчанию en-US), а в invariant-режиме
+      доступна только invariant-культура — приложение падает на старте с XamlParseException
+      ("Cannot find non-neutral culture related to 'en-us'") на первом же таком биндинге.
+      Проверено вживую на реальной Windows-машине.
+    -->
   </PropertyGroup>
 
   <ItemGroup>

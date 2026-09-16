@@ -17,14 +17,18 @@ public sealed class DiscordHardwareAccelerationHandler : ITweakHandler
 {
     private const string KeyName = "enableHardwareAcceleration";
     private readonly string _settingsPath;
+    private readonly Func<bool> _isDiscordRunning;
 
-    public DiscordHardwareAccelerationHandler(string? settingsPathOverride = null) =>
+    public DiscordHardwareAccelerationHandler(string? settingsPathOverride = null, Func<bool>? isDiscordRunningOverride = null)
+    {
         _settingsPath = settingsPathOverride
             ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "discord", "settings.json");
+        _isDiscordRunning = isDiscordRunningOverride ?? IsDiscordRunning;
+    }
 
     public Task<HandlerApplyResult> ApplyAsync(TweakDefinition tweak, bool desiredOn, CancellationToken cancellationToken = default)
     {
-        if (IsDiscordRunning())
+        if (_isDiscordRunning())
             return Task.FromResult(new HandlerApplyResult(false, "Discord запущен — полностью закройте его (через трей), прежде чем применять этот твик"));
 
         if (!File.Exists(_settingsPath))
@@ -66,7 +70,7 @@ public sealed class DiscordHardwareAccelerationHandler : ITweakHandler
 
     public Task<HandlerApplyResult> RevertAsync(TweakDefinition tweak, string? capturedState, CancellationToken cancellationToken = default)
     {
-        if (IsDiscordRunning())
+        if (_isDiscordRunning())
             return Task.FromResult(new HandlerApplyResult(false, "Discord запущен — полностью закройте его (через трей), прежде чем откатывать этот твик"));
 
         if (!File.Exists(_settingsPath))

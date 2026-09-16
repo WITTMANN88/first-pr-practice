@@ -27,7 +27,7 @@ public class DiscordHardwareAccelerationHandlerTests : IDisposable
     public async Task Apply_SetsKey_AndPreservesUnrelatedKeys()
     {
         File.WriteAllText(_settingsPath, """{"enableHardwareAcceleration":false,"WINDOW_BOUNDS":{"x":0,"y":0},"audioSubsystem":"legacy"}""");
-        var handler = new DiscordHardwareAccelerationHandler(_settingsPath);
+        var handler = new DiscordHardwareAccelerationHandler(_settingsPath, isDiscordRunningOverride: () => false);
 
         var result = await handler.ApplyAsync(DummyTweak, desiredOn: true);
 
@@ -41,7 +41,7 @@ public class DiscordHardwareAccelerationHandlerTests : IDisposable
     public async Task Apply_CapturesPreviousValue_ForRevert()
     {
         File.WriteAllText(_settingsPath, """{"enableHardwareAcceleration":false}""");
-        var handler = new DiscordHardwareAccelerationHandler(_settingsPath);
+        var handler = new DiscordHardwareAccelerationHandler(_settingsPath, isDiscordRunningOverride: () => false);
 
         var applyResult = await handler.ApplyAsync(DummyTweak, desiredOn: true);
         var revertResult = await handler.RevertAsync(DummyTweak, applyResult.CapturedState);
