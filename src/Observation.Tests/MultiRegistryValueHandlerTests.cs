@@ -76,12 +76,12 @@ public class MultiRegistryValueHandlerTests
     }
 
     [Fact]
-    public async Task EdgeDebloat_UsesInvertedPolarity_ForEnabledPolicies()
+    public async Task EdgeDebloat_UsesPerPolicyOnOffValues_ForEnabledPolicies()
     {
         var registry = new FakeRegistryAccessor();
         var handler = EdgeDebloatHandler.Create(registry);
 
-        // desiredOn=true means "деблоат включён" => фичи должны быть выключены => *Enabled=0.
+        // desiredOn=true means "деблоат включён" => фичи должны быть выключены => *Enabled=0 (OnValue: 0).
         await handler.ApplyAsync(DummyTweak, desiredOn: true);
 
         Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "HubsSidebarEnabled", out var v, out _));

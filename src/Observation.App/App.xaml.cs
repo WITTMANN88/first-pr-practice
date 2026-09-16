@@ -15,6 +15,9 @@ using Observation.Core.Tweaks;
 using Observation.Handlers.Browsers;
 using Observation.Handlers.Discord;
 using Observation.Handlers.OneDrive;
+using Observation.Handlers.Perf;
+using Observation.Handlers.Privacy;
+using Observation.Handlers.Security;
 
 namespace Observation.App;
 
@@ -76,7 +79,13 @@ public partial class App : Application
         ["SetDiscordHardwareAcceleration"] = new DiscordHardwareAccelerationHandler(),
         ["BraveDebloat"] = BraveDebloatHandler.Create(registry),
         ["EdgeDebloat"] = EdgeDebloatHandler.Create(registry),
-        ["RemoveOneDrive"] = new OneDriveRemovalHandler(registry)
+        ["RemoveOneDrive"] = new OneDriveRemovalHandler(registry),
+        ["XboxGameBarOff"] = XboxGameBarHandler.Create(registry),
+        ["BrowserPerformance"] = BrowserPerformanceHandler.Create(registry),
+        ["UacSliderMin"] = UacSliderHandler.Create(registry),
+        ["WindowsCopilotOff"] = WindowsCopilotHandler.Create(registry),
+        ["ActivityHistoryOff"] = ActivityHistoryHandler.Create(registry),
+        ["WebSearchOff"] = WebSearchHandler.Create(registry)
     };
 
     /// <summary>

@@ -8,14 +8,16 @@ namespace Observation.Handlers;
 
 /// <summary>
 /// Общий обработчик для твиков вида «включить/выключить N реестровых DWORD-политик
-/// одним тумблером» (например «Деблоат Brave/Edge» — несколько политик под одним
-/// переключателем интерфейса). Invert=true — для политик вида "...Enabled", где 0
-/// означает выключенную функцию (противоположная полярность от "...Disabled"=1).
+/// одним тумблером» (например «Деблоат Brave/Edge», UAC-слайдер — несколько политик под
+/// одним переключателем интерфейса). Каждая политика задаёт свои OnValue/OffValue напрямую
+/// (не общий 0/1 с инверсией) — не все политики под одним тумблером имеют одинаковую пару
+/// значений: например, UAC ConsentPromptBehaviorAdmin включён/выключен как 0/5, а
+/// PromptOnSecureDesktop — как 0/1 (значения Windows по умолчанию подтверждены отдельно).
 /// CapturedState — JSON-массив предыдущих состояний всех политик, для restore-previous.
 /// </summary>
 public sealed class MultiRegistryValueHandler : ITweakHandler
 {
-    public sealed record PolicyValue(RegistryHive Hive, string Path, string ValueName, bool Invert = false);
+    public sealed record PolicyValue(RegistryHive Hive, string Path, string ValueName, int OnValue = 1, int OffValue = 0);
 
     private readonly IRegistryAccessor _registry;
     private readonly IReadOnlyList<PolicyValue> _policies;
@@ -113,7 +115,7 @@ public sealed class MultiRegistryValueHandler : ITweakHandler
         return Task.FromResult(new HandlerApplyResult(true, "Откачено"));
     }
 
-    private static int EffectiveValue(bool desiredOn, PolicyValue policy) => (desiredOn ^ policy.Invert) ? 1 : 0;
+    private static int EffectiveValue(bool desiredOn, PolicyValue policy) => desiredOn ? policy.OnValue : policy.OffValue;
 
     private sealed record CapturedPolicy(string ValueName, bool Existed, int Value);
 }

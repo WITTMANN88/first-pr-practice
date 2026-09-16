@@ -25,6 +25,48 @@
     "revert": { "type": "restore-previous" }
   },
   {
+    "id": "perf.hags",
+    "tab": "perf",
+    "group": { "ru": "GPU и экран", "en": "GPU & display" },
+    "name": { "ru": "Аппаратное планирование GPU (HAGS)", "en": "Hardware-accelerated GPU Scheduling (HAGS)" },
+    "description": {
+      "ru": "Передаёт часть планирования очереди GPU видеокарте напрямую. Эффект зависит от драйвера и игры — где-то плюс к FPS/задержке, где-то нет разницы.",
+      "en": "Hands part of GPU queue scheduling directly to the video card. Effect depends on driver and game — helps FPS/latency in some, no difference in others."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "minBuild": 18362 },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+      "value": "HwSchMode",
+      "valueType": "DWord",
+      "onData": 2,
+      "offData": 1
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "perf.xboxdvr",
+    "tab": "perf",
+    "group": { "ru": "Xbox и фон", "en": "Xbox & background" },
+    "name": { "ru": "Xbox Game Bar и Game DVR", "en": "Xbox Game Bar & Game DVR" },
+    "description": {
+      "ru": "Отключает фоновую запись игрового процесса (Game DVR) и связанные оверлеи Game Bar.",
+      "en": "Disables background gameplay recording (Game DVR) and the related Game Bar overlays."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "XboxGameBarOff" },
+    "verify": { "type": "handler", "handlerId": "XboxGameBarOff" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
     "id": "apps.discord.hwaccel",
     "tab": "perf",
     "group": { "ru": "Приложения", "en": "Applications" },
@@ -39,6 +81,191 @@
     "applicability": { "type": "always" },
     "apply": { "type": "handler", "handlerId": "SetDiscordHardwareAcceleration" },
     "verify": { "type": "handler", "handlerId": "SetDiscordHardwareAcceleration" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "perf.browserperf",
+    "tab": "perf",
+    "group": { "ru": "Приложения", "en": "Applications" },
+    "name": { "ru": "Chrome/Edge: ускорение и фоновые службы", "en": "Chrome/Edge: acceleration & background services" },
+    "description": {
+      "ru": "Отключает аппаратное ускорение и работу браузера в фоне после закрытия окна — для Chrome и Edge через групповые политики. Применится при следующем запуске браузера.",
+      "en": "Disables hardware acceleration and running in the background after closing the window — for Chrome and Edge via group policy. Takes effect on the browser's next launch."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "BrowserPerformance" },
+    "verify": { "type": "handler", "handlerId": "BrowserPerformance" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.diagtrack",
+    "tab": "privacy",
+    "group": { "ru": "Телеметрия и данные", "en": "Telemetry & data" },
+    "name": { "ru": "Отключить рекламный ID", "en": "Turn off advertising ID" },
+    "description": {
+      "ru": "Запрещает приложениям использовать рекламный идентификатор Windows для персонализации рекламы.",
+      "en": "Prevents apps from using the Windows advertising identifier for ad personalization."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+      "value": "Enabled",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.activityhistory",
+    "tab": "privacy",
+    "group": { "ru": "Телеметрия и данные", "en": "Telemetry & data" },
+    "name": { "ru": "Журнал действий (Activity History)", "en": "Activity History" },
+    "description": {
+      "ru": "Отключает сбор, публикацию и выгрузку журнала действий пользователя в Microsoft.",
+      "en": "Disables collecting, publishing, and uploading the user's activity history to Microsoft."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "ActivityHistoryOff" },
+    "verify": { "type": "handler", "handlerId": "ActivityHistoryOff" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.websearch",
+    "tab": "privacy",
+    "group": { "ru": "Поиск и ИИ-функции", "en": "Search & AI features" },
+    "name": { "ru": "Веб-результаты в поиске Windows", "en": "Web results in Windows Search" },
+    "description": {
+      "ru": "Убирает результаты Bing и подсказки из поиска Windows — только локальный поиск по файлам и приложениям. Одна из настроек, которую чаще всего откатывают обновления Windows.",
+      "en": "Removes Bing results and suggestions from Windows Search — local file/app search only. One of the settings most often reset by Windows updates."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "WebSearchOff" },
+    "verify": { "type": "handler", "handlerId": "WebSearchOff" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.copilot",
+    "tab": "privacy",
+    "group": { "ru": "Поиск и ИИ-функции", "en": "Search & AI features" },
+    "name": { "ru": "Windows Copilot", "en": "Windows Copilot" },
+    "description": {
+      "ru": "Отключает Windows Copilot. Значение продублировано в HKCU и HKLM для надёжности на разных сборках Windows.",
+      "en": "Disables Windows Copilot. The value is duplicated in HKCU and HKLM for reliability across Windows builds."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "WindowsCopilotOff" },
+    "verify": { "type": "handler", "handlerId": "WindowsCopilotOff" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.geolocation",
+    "tab": "privacy",
+    "group": { "ru": "Локация и категории", "en": "Location & categories" },
+    "name": { "ru": "Отслеживание геолокации", "en": "Location tracking" },
+    "description": {
+      "ru": "Полностью запрещает системе и приложениям определять местоположение устройства.",
+      "en": "Fully blocks the system and apps from determining the device's location."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors",
+      "value": "DisableLocation",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.camera",
+    "tab": "privacy",
+    "group": { "ru": "Локация и категории", "en": "Location & categories" },
+    "name": { "ru": "Доступ приложений к камере", "en": "App access to the camera" },
+    "description": {
+      "ru": "Запрещает приложениям использовать камеру устройства (кроме случаев, где приложение всё равно попросит явное разрешение отдельно).",
+      "en": "Blocks apps from using the device camera (except where an app separately asks for explicit permission anyway)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\webcam",
+      "value": "Value",
+      "valueType": "String",
+      "onData": "Deny",
+      "offData": "Allow"
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.microphone",
+    "tab": "privacy",
+    "group": { "ru": "Локация и категории", "en": "Location & categories" },
+    "name": { "ru": "Доступ приложений к микрофону", "en": "App access to the microphone" },
+    "description": {
+      "ru": "Запрещает приложениям использовать микрофон устройства (кроме случаев, где приложение всё равно попросит явное разрешение отдельно).",
+      "en": "Blocks apps from using the device microphone (except where an app separately asks for explicit permission anyway)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone",
+      "value": "Value",
+      "valueType": "String",
+      "onData": "Deny",
+      "offData": "Allow"
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "security.uac",
+    "tab": "security",
+    "group": { "ru": "Учётные записи и вход", "en": "Accounts & sign-in" },
+    "name": { "ru": "UAC: никогда не уведомлять", "en": "UAC: never notify" },
+    "description": {
+      "ru": "Отключает запрос повышения прав для администратора. Реальное снижение защиты, а не косметика — сама служба UAC остаётся включённой, обычным пользователям пароль всё ещё нужен.",
+      "en": "Disables the elevation prompt for administrators. A real reduction in protection, not cosmetic — UAC itself stays on, standard users still need a password."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "UacSliderMin" },
+    "verify": { "type": "handler", "handlerId": "UacSliderMin" },
     "revert": { "type": "restore-previous" }
   }
 ]
