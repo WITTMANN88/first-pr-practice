@@ -3,6 +3,7 @@ using Observation.Core.Tweaks;
 using Observation.Handlers.Perf;
 using Observation.Handlers.Privacy;
 using Observation.Handlers.Security;
+using Observation.Handlers.Updates;
 using Observation.Tests.Fakes;
 using Xunit;
 
@@ -106,5 +107,24 @@ public class NewMultiValueHandlersTests
 
         Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "PublishUserActivities", out var v, out _));
         Assert.Equal(0, v);
+    }
+
+    [Fact]
+    public async Task DeferUpdates_WritesAllFourValues_WhenOn()
+    {
+        var registry = new FakeRegistryAccessor();
+        var handler = DeferUpdatesHandler.Create(registry);
+
+        await handler.ApplyAsync(DummyTweak, desiredOn: true);
+
+        const string path = @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate";
+        Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, path, "DeferFeatureUpdates", out var flag1, out _));
+        Assert.Equal(1, flag1);
+        Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, path, "DeferFeatureUpdatesPeriodInDays", out var period1, out _));
+        Assert.Equal(365, period1);
+        Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, path, "DeferQualityUpdates", out var flag2, out _));
+        Assert.Equal(1, flag2);
+        Assert.True(registry.TryReadValue(RegistryHive.LocalMachine, path, "DeferQualityUpdatesPeriodInDays", out var period2, out _));
+        Assert.Equal(4, period2);
     }
 }

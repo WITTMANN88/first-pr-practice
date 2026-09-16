@@ -18,6 +18,7 @@ using Observation.Handlers.OneDrive;
 using Observation.Handlers.Perf;
 using Observation.Handlers.Privacy;
 using Observation.Handlers.Security;
+using Observation.Handlers.Updates;
 
 namespace Observation.App;
 
@@ -92,7 +93,8 @@ public partial class App : Application
         ["ActivityHistoryOff"] = ActivityHistoryHandler.Create(registry),
         ["WebSearchOff"] = WebSearchHandler.Create(registry),
         ["ControlledFolderAccess"] = ControlledFolderAccessHandler.Create(commandRunner),
-        ["FirewallProfiles"] = FirewallProfileHandler.Create(commandRunner)
+        ["FirewallProfiles"] = FirewallProfileHandler.Create(commandRunner),
+        ["DeferUpdates"] = DeferUpdatesHandler.Create(registry)
     };
 
     /// <summary>

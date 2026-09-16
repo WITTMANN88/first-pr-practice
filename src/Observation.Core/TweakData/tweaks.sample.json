@@ -293,5 +293,423 @@
     "apply": { "type": "handler", "handlerId": "FirewallProfiles" },
     "verify": { "type": "handler", "handlerId": "FirewallProfiles" },
     "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "debloat.brave",
+    "tab": "debloat",
+    "group": { "ru": "Деблоат браузеров", "en": "Browser debloat" },
+    "name": { "ru": "Brave: Rewards/Wallet/VPN", "en": "Brave: Rewards/Wallet/VPN" },
+    "description": {
+      "ru": "Отключает Rewards, Wallet и VPN в Brave через политики браузера, не удаляя сам браузер.",
+      "en": "Disables Rewards, Wallet, and VPN in Brave via browser policy, without removing the browser itself."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "BraveDebloat" },
+    "verify": { "type": "handler", "handlerId": "BraveDebloat" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "debloat.edge",
+    "tab": "debloat",
+    "group": { "ru": "Деблоат браузеров", "en": "Browser debloat" },
+    "name": { "ru": "Edge: Sidebar/Shopping/Copilot", "en": "Edge: Sidebar/Shopping/Copilot" },
+    "description": {
+      "ru": "Отключает боковую панель, Shopping Assistant и значок Copilot в Edge через политики, не удаляя сам браузер.",
+      "en": "Disables the sidebar, Shopping Assistant, and the Copilot icon in Edge via policy, without removing the browser itself."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "EdgeDebloat" },
+    "verify": { "type": "handler", "handlerId": "EdgeDebloat" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "debloat.onedrive",
+    "tab": "debloat",
+    "group": { "ru": "Крупные компоненты", "en": "Major components" },
+    "name": { "ru": "Удалить OneDrive", "en": "Remove OneDrive" },
+    "description": {
+      "ru": "Полностью удаляет OneDrive (OneDriveSetup.exe /uninstall) и остаточные папки. Риск потери данных, если вы пользуетесь синхронизацией. Откат — только best-effort: переустановка через winget/Store, не гарантированное восстановление 1:1.",
+      "en": "Fully removes OneDrive (OneDriveSetup.exe /uninstall) and leftover folders. Risk of data loss if you use sync. Revert is best-effort only: reinstall via winget/Store, not a guaranteed 1:1 restore."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "RemoveOneDrive" },
+    "verify": { "type": "handler", "handlerId": "RemoveOneDrive" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "ui.hubmode",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "Убрать «Home» из проводника", "en": "Remove \"Home\" from Explorer" },
+    "description": {
+      "ru": "Убирает раздел «Home» из панели быстрого доступа проводника. Твик машинный (HKLM), а не per-user — влияет на всех пользователей ПК сразу.",
+      "en": "Removes the \"Home\" section from Explorer's quick access pane. This is a machine-wide (HKLM) tweak, not per-user — it affects all accounts on the PC at once."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+      "value": "HubMode",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "ui.gallery",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "Убрать «Gallery» из проводника", "en": "Remove \"Gallery\" from Explorer" },
+    "description": {
+      "ru": "Убирает раздел «Gallery» из панели быстрого доступа проводника. Отдельный ключ от «Home» — не связаны.",
+      "en": "Removes the \"Gallery\" section from Explorer's quick access pane. A separate key from \"Home\" — not related."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "value": "ShowGallery",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "ui.verbosestatus",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "Подробные сообщения при входе", "en": "Verbose status messages" },
+    "description": {
+      "ru": "Показывает подробные технические сообщения о ходе загрузки и входа в систему вместо обычных.",
+      "en": "Shows detailed technical messages during boot and sign-in instead of the usual ones."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "value": "VerboseStatus",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "ui.taskbarendtask",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "«Завершить задачу» в панели задач", "en": "\"End Task\" in the taskbar menu" },
+    "description": {
+      "ru": "Добавляет пункт «Завершить задачу» в контекстное меню значков панели задач. Доступно с Windows 11 22H2.",
+      "en": "Adds an \"End Task\" entry to the taskbar icons' right-click menu. Available since Windows 11 22H2."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "minBuild": 22621 },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings",
+      "value": "TaskbarEndTask",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "ui.transparency",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "Отключить прозрачность интерфейса", "en": "Disable UI transparency" },
+    "description": {
+      "ru": "Отключает прозрачность панели задач, меню Пуск и Параметров. Визуальный твик, не влияет на игровую производительность.",
+      "en": "Disables transparency in the taskbar, Start menu, and Settings. A visual tweak, no effect on gaming performance."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+      "value": "EnableTransparency",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "ui.lockscreen",
+    "tab": "ui",
+    "group": { "ru": "Start Menu и экран входа", "en": "Start Menu & sign-in screen" },
+    "name": { "ru": "Отключить экран блокировки", "en": "Disable the lock screen" },
+    "description": {
+      "ru": "Убирает экран блокировки перед экраном входа в систему.",
+      "en": "Removes the lock screen shown before the sign-in screen."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+      "value": "NoLockScreen",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "net.ipv4priority",
+    "tab": "net",
+    "group": { "ru": "Тонкие настройки", "en": "Fine-tuning" },
+    "name": { "ru": "Приоритет IPv4 над IPv6", "en": "Prioritize IPv4 over IPv6" },
+    "description": {
+      "ru": "Заставляет Windows предпочитать IPv4 вместо IPv6 при равном выборе (KB929852). Не отключает IPv6.",
+      "en": "Makes Windows prefer IPv4 over IPv6 when both are available (KB929852). Does not disable IPv6."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "value": "DisabledComponents",
+      "valueType": "DWord",
+      "onData": 32,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "net.ipv6disable",
+    "tab": "net",
+    "group": { "ru": "Риск", "en": "Risk" },
+    "name": { "ru": "Полностью отключить IPv6", "en": "Fully disable IPv6" },
+    "description": {
+      "ru": "Полностью отключает стек IPv6 (KB929852). Может сломать современный сетевой стек и приложения, которые на него рассчитывают.",
+      "en": "Fully disables the IPv6 stack (KB929852). Can break the modern network stack and apps that rely on it."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "value": "DisabledComponents",
+      "valueType": "DWord",
+      "onData": 255,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "autostart.utc",
+    "tab": "autostart",
+    "group": { "ru": "Автозагрузка и процессы", "en": "Startup & processes" },
+    "name": { "ru": "Хранить системное время в UTC", "en": "Store system clock in UTC" },
+    "description": {
+      "ru": "Нужно только при дуалбуте с Linux — иначе время в самой Windows будет отображаться неверно. Значение REG_QWORD (64-битная Windows).",
+      "en": "Only needed when dual-booting with Linux — otherwise Windows itself will show the wrong time. REG_QWORD value (64-bit Windows)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",
+      "value": "RealTimeIsUniversal",
+      "valueType": "QWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "autostart.sysmain",
+    "tab": "autostart",
+    "group": { "ru": "Службы", "en": "Services" },
+    "name": { "ru": "Служба SysMain (Superfetch) — ручной режим", "en": "SysMain (Superfetch) service — manual startup" },
+    "description": {
+      "ru": "Переводит службу SysMain в ручной режим запуска вместо автоматического.",
+      "en": "Sets the SysMain service to manual startup instead of automatic."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\SysMain",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "autostart.wsearch",
+    "tab": "autostart",
+    "group": { "ru": "Службы", "en": "Services" },
+    "name": { "ru": "Служба Windows Search — ручной режим", "en": "Windows Search service — manual startup" },
+    "description": {
+      "ru": "Переводит службу WSearch (индексация поиска) в ручной режим запуска вместо автоматического.",
+      "en": "Sets the WSearch service (search indexing) to manual startup instead of automatic."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\WSearch",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "autostart.spooler",
+    "tab": "autostart",
+    "group": { "ru": "Службы", "en": "Services" },
+    "name": { "ru": "Служба печати (Print Spooler) — ручной режим", "en": "Print Spooler service — manual startup" },
+    "description": {
+      "ru": "Переводит службу диспетчера печати в ручной режим запуска. Не трогайте, если у вас есть принтер.",
+      "en": "Sets the Print Spooler service to manual startup. Don't touch this if you have a printer."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Spooler",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "autostart.deliveryoptim",
+    "tab": "autostart",
+    "group": { "ru": "Службы", "en": "Services" },
+    "name": { "ru": "Служба Delivery Optimization — ручной режим", "en": "Delivery Optimization service — manual startup" },
+    "description": {
+      "ru": "Переводит службу DoSvc (P2P-раздача обновлений другим ПК) в ручной режим запуска.",
+      "en": "Sets the DoSvc service (P2P delivery of updates to other PCs) to manual startup."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\DoSvc",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "updates.defer",
+    "tab": "updates",
+    "group": { "ru": "Отложить, не отключать", "en": "Defer, don't disable" },
+    "name": { "ru": "Отложить обновления функций и качества", "en": "Defer feature & quality updates" },
+    "description": {
+      "ru": "Откладывает обновления функций (~365 дней) и качества (~4 дня). Оба периода вместе с булевыми флагами — без них периоды игнорируются.",
+      "en": "Defers feature updates (~365 days) and quality updates (~4 days). Both periods together with their boolean flags — without them, the periods are ignored."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "DeferUpdates" },
+    "verify": { "type": "handler", "handlerId": "DeferUpdates" },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "updates.excludedrivers",
+    "tab": "updates",
+    "group": { "ru": "Отложить, не отключать", "en": "Defer, don't disable" },
+    "name": { "ru": "Исключить драйверы из обновлений качества", "en": "Exclude drivers from quality updates" },
+    "description": {
+      "ru": "Не даёт Windows Update ставить обновления драйверов в составе обновлений качества.",
+      "en": "Stops Windows Update from installing driver updates bundled with quality updates."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "value": "ExcludeWUDriversInQualityUpdate",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
   }
 ]
