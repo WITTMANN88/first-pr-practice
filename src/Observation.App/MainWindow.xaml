@@ -1,0 +1,16 @@
+<Window x:Class="Observation.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Observation"
+        Height="720" Width="1180" MinHeight="560" MinWidth="820">
+    <!--
+        Плейсхолдер-окно. Безрамочный WindowChrome, сайдбар с 13 разделами,
+        titlebar со своими кнопками и applybar внизу — по кликабельному макету
+        (https://claude.ai/artifact/4uP7vEMyzwrWhusn3oRpFf) — реализуются на
+        следующем шаге, не здесь. Сейчас важно только то, что решение собирается
+        и запускает окно.
+    -->
+    <Grid>
+        <TextBlock Text="Observation" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"/>
+    </Grid>
+</Window>

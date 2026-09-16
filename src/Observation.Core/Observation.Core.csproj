@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.Core</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Движок: модель твика, загрузка JSON-реестра твиков, накопительная очередь,
+    apply/verify/revert, журнал — см. «Архитектура кода» в плане.
+    Классы появятся на следующем шаге; сейчас это пустая, но собираемая
+    библиотека, на которую уже можно ссылаться из App/Handlers/Tests.
+  -->
+
+</Project>

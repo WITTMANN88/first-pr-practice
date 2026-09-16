@@ -1,0 +1,14 @@
+<Application x:Class="Observation.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!--
+            Заготовка. Токены палитры/шрифтов из раздела «Дизайн-система» плана
+            (фон, акценты, семантика safe/situational/risky) переедут сюда
+            ResourceDictionary'ями на этапе реализации интерфейса — не раньше,
+            чем будет решено, как их лучше организовать в XAML (Theme.xaml
+            + отдельные словари под компоненты).
+        -->
+    </Application.Resources>
+</Application>

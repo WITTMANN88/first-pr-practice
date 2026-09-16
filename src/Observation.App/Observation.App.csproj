@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.App</RootNamespace>
+    <AssemblyName>Observation</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- ApplicationIcon появится, когда исходник знака будет упакован в .ico (см. «Знак программы» в плане) -->
+
+    <!--
+      Портативная self-contained сборка в один exe — см. «Архитектура кода» в плане.
+      RuntimeIdentifier здесь фиксирован под win-x64 для публикации;
+      для обычной разработки (dotnet build без -r) он не мешает.
+    -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
+    <ProjectReference Include="..\Observation.Handlers\Observation.Handlers.csproj" />
+  </ItemGroup>
+
+</Project>

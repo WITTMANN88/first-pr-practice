@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.Handlers</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Процедурные обработчики твиков, которые не описываются одним реестровым
+    значением (OneDrive, деблоат Edge/Brave, мастер DDU, скрипты) — реализуют
+    ITweakHandler (Apply/Verify/Revert) из Observation.Core. См. «Архитектура
+    кода» и «Схема твика (JSON)» в плане.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
+  </ItemGroup>
+
+</Project>
