@@ -39,6 +39,13 @@ public sealed class HomeTabViewModel : ViewModelBase
         private set => SetField(ref _resultMessage, value);
     }
 
+    private bool _resultHasFailures;
+    public bool ResultHasFailures
+    {
+        get => _resultHasFailures;
+        private set => SetField(ref _resultHasFailures, value);
+    }
+
     public RelayCommand ApplyCommand { get; }
 
     public HomeTabViewModel(ILocalizationService localization, TweakLibrary library, BatchRunner batchRunner,
@@ -79,11 +86,13 @@ public sealed class HomeTabViewModel : ViewModelBase
         IsApplying = true;
         ApplyCommand.NotifyCanExecuteChanged();
         ResultMessage = null;
+        ResultHasFailures = false;
 
         try
         {
             var result = await _library.ApplyPendingAsync(_batchRunner, _systemContext);
             var failed = result.Outcomes.Count(o => !o.Success);
+            ResultHasFailures = failed > 0;
             ResultMessage = failed == 0
                 ? $"Применено успешно: {result.Outcomes.Count}"
                 : $"Применено: {result.Outcomes.Count - failed} из {result.Outcomes.Count}, ошибок: {failed}";

@@ -22,7 +22,7 @@
                     <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="11" Margin="0,0,0,3">
                         <Run Text="{Binding Name, Mode=OneWay}"/>
                         <Run Text=" → "/>
-                        <Run Text="{Binding IsOn, Mode=OneWay}"/>
+                        <Run Text="{Binding IsOnLabel, Mode=OneWay}"/>
                     </TextBlock>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -45,7 +45,18 @@
             </Button.Style>
         </Button>
 
-        <TextBlock Text="{Binding ResultMessage}" Foreground="{StaticResource Color.Ok}" Margin="0,12,0,0"
-                   Visibility="{Binding ResultMessage, Converter={StaticResource NullOrEmptyToVisibility}}"/>
+        <TextBlock Text="{Binding ResultMessage}" Margin="0,12,0,0"
+                   Visibility="{Binding ResultMessage, Converter={StaticResource NullOrEmptyToVisibility}}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{StaticResource Color.Ok}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ResultHasFailures}" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource Color.Danger}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
     </StackPanel>
 </UserControl>

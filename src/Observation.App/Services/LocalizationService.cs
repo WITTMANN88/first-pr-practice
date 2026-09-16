@@ -38,7 +38,9 @@ public sealed class LocalizationService : ILocalizationService
         ["TweakListEmpty"] = "Для этой вкладки пока нет твиков в загруженном реестре.",
         ["SeveritySafe"] = "безопасно",
         ["SeveritySituational"] = "по ситуации",
-        ["SeverityRisky"] = "риск"
+        ["SeverityRisky"] = "риск",
+        ["StateOn"] = "вкл",
+        ["StateOff"] = "выкл"
     };
 
     private static readonly Dictionary<string, string> En = new()
@@ -67,7 +69,9 @@ public sealed class LocalizationService : ILocalizationService
         ["TweakListEmpty"] = "No tweaks for this tab in the loaded registry yet.",
         ["SeveritySafe"] = "safe",
         ["SeveritySituational"] = "situational",
-        ["SeverityRisky"] = "risky"
+        ["SeverityRisky"] = "risky",
+        ["StateOn"] = "on",
+        ["StateOff"] = "off"
     };
 
     public string this[string key] => (_currentLanguage == "en" ? En : Ru).TryGetValue(key, out var value) ? value : key;

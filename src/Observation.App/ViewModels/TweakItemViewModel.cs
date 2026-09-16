@@ -26,11 +26,17 @@ public sealed class TweakItemViewModel : ViewModelBase
         _ => "SeverityRisky"
     }];
 
+    public string IsOnLabel => _localization[IsOn ? "StateOn" : "StateOff"];
+
     private bool _isOn;
     public bool IsOn
     {
         get => _isOn;
-        set => SetField(ref _isOn, value);
+        set
+        {
+            if (SetField(ref _isOn, value))
+                OnPropertyChanged(nameof(IsOnLabel));
+        }
     }
 
     public bool BaselineOn { get; private set; }
@@ -62,6 +68,7 @@ public sealed class TweakItemViewModel : ViewModelBase
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(Description));
             OnPropertyChanged(nameof(SeverityLabel));
+            OnPropertyChanged(nameof(IsOnLabel));
         }
     }
 }
