@@ -15,3 +15,15 @@ and open your first pull request without any risk to real code.
 4. Review and merge it
 
 Have fun shipping your first PR!
+
+## cleanup.sh
+
+A small bash script for clearing temporary files and reclaiming disk
+space on Linux/macOS: system temp files, user cache, trash, and common
+package-manager caches (apt, brew, npm, pip).
+
+```
+./cleanup.sh --dry-run   # preview what would be removed
+./cleanup.sh             # run it (asks for confirmation)
+./cleanup.sh --yes       # run without the confirmation prompt
+```
