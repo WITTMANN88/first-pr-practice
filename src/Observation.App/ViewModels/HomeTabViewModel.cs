@@ -4,15 +4,17 @@ using Observation.App.Services;
 using Observation.Core.Batch;
 using Observation.Core.Conflicts;
 using Observation.Core.Engine;
+using Observation.Core.Journal;
 using Observation.Core.SystemAccess;
 
 namespace Observation.App.ViewModels;
 
 /// <summary>
 /// «Главная»: очередь изменённых твиков (из TweakLibrary, по всем вкладкам), «Применить»
-/// через ConflictDetector+BatchRunner, и «активные твики» из журнала — «Проверить состояние»
-/// (мех. надёжности №1) и точечный откат конкретного твика к состоянию «до». Пресеты/
-/// статистика системы из ui-preview.html сюда ещё не переехали — отдельный проход стилизации.
+/// через ConflictDetector+BatchRunner, «активные твики» из журнала — «Проверить состояние»
+/// (мех. надёжности №1) и точечный откат конкретного твика к состоянию «до», пресеты (только
+/// выставляют тумблеры, не применяют), карточка характеристик ПК и панель последних записей
+/// журнала (история, отдельно от «активных твиков» — там только restore-previous/additive-tagged).
 /// </summary>
 public sealed class HomeTabViewModel : ViewModelBase
 {
@@ -23,11 +25,23 @@ public sealed class HomeTabViewModel : ViewModelBase
     private readonly BatchRunner _batchRunner;
     private readonly ConflictDetector _conflictDetector;
     private readonly SystemContext _systemContext;
+    private readonly IJournalStore _journal;
 
     public IReadOnlyList<TweakItemViewModel> PendingChanges => _library.PendingChanges;
     public int PendingCount => PendingChanges.Count;
 
     public IReadOnlyList<TweakItemViewModel> ActiveTweaks => _library.GetRevertibleTweaks();
+    public IReadOnlyList<PresetViewModel> Presets { get; }
+    public PcSpecs PcSpecs { get; }
+
+    public IReadOnlyList<JournalEntryDisplay> RecentJournalEntries =>
+        _journal.GetRecentEntries(20)
+            .Select(e => new JournalEntryDisplay(
+                _library.ItemsById.TryGetValue(e.TweakId, out var item) ? item.Name : e.TweakId,
+                e.Timestamp,
+                e.Success,
+                e.Message))
+            .ToList();
 
     private bool _isApplying;
     public bool IsApplying
@@ -53,9 +67,10 @@ public sealed class HomeTabViewModel : ViewModelBase
     public RelayCommand ApplyCommand { get; }
     public RelayCommand VerifyCommand { get; }
     public RelayCommand RevertCommand { get; }
+    public RelayCommand ApplyPresetCommand { get; }
 
     public HomeTabViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
-        ConflictDetector conflictDetector, SystemContext systemContext)
+        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs)
     {
         Localization = localization;
         _library = library;
@@ -63,10 +78,14 @@ public sealed class HomeTabViewModel : ViewModelBase
         _batchRunner = batchRunner;
         _conflictDetector = conflictDetector;
         _systemContext = systemContext;
+        _journal = journal;
+        PcSpecs = pcSpecs;
+        Presets = library.Presets.Select(p => new PresetViewModel(p, localization)).ToList();
 
         ApplyCommand = new RelayCommand(async () => await ApplyAsync(), () => !IsApplying && PendingCount > 0);
         VerifyCommand = new RelayCommand(async () => await VerifyAsync(), () => !IsApplying);
         RevertCommand = new RelayCommand(async id => await RevertAsync((string)id!), _ => !IsApplying);
+        ApplyPresetCommand = new RelayCommand(id => _library.ApplyPreset((string)id!));
         _library.PendingChanged += OnPendingChanged;
     }
 
@@ -104,6 +123,7 @@ public sealed class HomeTabViewModel : ViewModelBase
 
         OnPendingChanged(this, EventArgs.Empty);
         OnPropertyChanged(nameof(ActiveTweaks));
+        OnPropertyChanged(nameof(RecentJournalEntries));
     }
 
     private async Task VerifyAsync()
@@ -131,6 +151,7 @@ public sealed class HomeTabViewModel : ViewModelBase
         });
 
         OnPropertyChanged(nameof(ActiveTweaks));
+        OnPropertyChanged(nameof(RecentJournalEntries));
     }
 
     private async Task RunExclusiveAsync(Func<Task> action)
@@ -155,3 +176,6 @@ public sealed class HomeTabViewModel : ViewModelBase
         }
     }
 }
+
+/// <summary>Одна запись панели журнала на «Главной» — с уже разрешённым именем твика вместо сырого id.</summary>
+public sealed record JournalEntryDisplay(string TweakName, DateTimeOffset Timestamp, bool Success, string? Message);

@@ -1,5 +1,6 @@
 using Observation.Core.Tweaks;
 using Observation.Handlers;
+using Observation.Handlers.Privacy;
 using Observation.Handlers.Security;
 using Observation.Tests.Fakes;
 using Xunit;
@@ -105,5 +106,30 @@ public class PowerShellToggleHandlerTests
         await handler.ApplyAsync(DummyTweak, desiredOn: true);
 
         Assert.Contains(runner.Calls[0].Arguments, a => a.Contains("Set-NetFirewallProfile"));
+    }
+
+    [Fact]
+    public async Task DiagTrack_OnScript_SetsPolicyAndStopsService()
+    {
+        var runner = new FakeCommandRunner();
+        var handler = DiagTrackHandler.Create(runner);
+
+        await handler.ApplyAsync(DummyTweak, desiredOn: true);
+
+        var script = string.Join(" ", runner.Calls[0].Arguments);
+        Assert.Contains("AllowTelemetry", script);
+        Assert.Contains("Stop-Service DiagTrack", script);
+    }
+
+    [Fact]
+    public async Task DiagTrack_OffScript_RestoresAutomaticStartup()
+    {
+        var runner = new FakeCommandRunner();
+        var handler = DiagTrackHandler.Create(runner);
+
+        await handler.ApplyAsync(DummyTweak, desiredOn: false);
+
+        var script = string.Join(" ", runner.Calls[0].Arguments);
+        Assert.Contains("Start-Service DiagTrack", script);
     }
 }

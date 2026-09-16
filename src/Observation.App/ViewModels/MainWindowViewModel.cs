@@ -3,6 +3,7 @@ using Observation.App.Services;
 using Observation.Core.Batch;
 using Observation.Core.Conflicts;
 using Observation.Core.Engine;
+using Observation.Core.Journal;
 using Observation.Core.SystemAccess;
 
 namespace Observation.App.ViewModels;
@@ -24,6 +25,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly BatchRunner _batchRunner;
     private readonly ConflictDetector _conflictDetector;
     private readonly SystemContext _systemContext;
+    private readonly IJournalStore _journal;
+    private readonly PcSpecs _pcSpecs;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -58,7 +61,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand SetLanguageCommand { get; }
 
     public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
-        ConflictDetector conflictDetector, SystemContext systemContext)
+        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs)
     {
         Localization = localization;
         _library = library;
@@ -66,6 +69,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         _batchRunner = batchRunner;
         _conflictDetector = conflictDetector;
         _systemContext = systemContext;
+        _journal = journal;
+        _pcSpecs = pcSpecs;
         NavItems = BuildNavItems();
         _tabFactory = CreateTab;
 
@@ -96,6 +101,6 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private object CreateTab(string tabId) =>
         tabId == "home"
-            ? new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext)
+            ? new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs)
             : new TweakListTabViewModel(_library.GroupsForTab(tabId));
 }

@@ -13,6 +13,7 @@
 
             <conv:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
             <conv:SeverityToBrushConverter x:Key="SeverityToBrush"/>
+            <conv:BoolToStatusBrushConverter x:Key="BoolToStatusBrush"/>
 
             <!--
                 Localization/LocalizedText/LocalizedTextMulti регистрируются в App.xaml.cs

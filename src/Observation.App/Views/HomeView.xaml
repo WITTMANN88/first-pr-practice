@@ -3,12 +3,63 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
         Реальная очередь применения (TweakLibrary.PendingChanges по всем вкладкам) и кнопка
-        «Применить» через BatchRunner — без пресетов/статистики/журнала из ui-preview.html,
-        это отдельный, более поздний проход стилизации (см. HomeTabViewModel).
+        «Применить» через BatchRunner, плюс карточка характеристик ПК (только чтение),
+        пресеты (только выставляют тумблеры) и панель последних записей журнала.
     -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel>
         <TextBlock Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,18"
                    Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePlaceholder}"/>
+
+        <!-- Характеристики ПК — только чтение (Get-CimInstance Win32_OperatingSystem/Win32_Processor/... из плана). -->
+        <Border Background="{StaticResource Color.SurfaceSolid}" BorderBrush="{StaticResource Color.Border}"
+                BorderThickness="1" CornerRadius="8" Padding="14,12" Margin="0,0,0,18">
+            <StackPanel>
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}"
+                           Margin="0,0,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsLabel}"/>
+                <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsOs}"/>
+                    <Run Text=": "/><Run Text="{Binding PcSpecs.OsCaption, Mode=OneWay}"/>
+                </TextBlock>
+                <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsCpu}"/>
+                    <Run Text=": "/><Run Text="{Binding PcSpecs.CpuName, Mode=OneWay}"/>
+                </TextBlock>
+                <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsGpu}"/>
+                    <Run Text=": "/><Run Text="{Binding PcSpecs.GpuName, Mode=OneWay}"/>
+                </TextBlock>
+                <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsRam}"/>
+                    <Run Text=": "/><Run Text="{Binding PcSpecs.RamTotal, Mode=OneWay}"/>
+                </TextBlock>
+                <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}">
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsDisk}"/>
+                    <Run Text=": "/><Run Text="{Binding PcSpecs.DiskInfo, Mode=OneWay}"/>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- Пресеты — только выставляют тумблеры по вкладкам, не применяют (см. план). -->
+        <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,8"
+                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePresetsLabel}"/>
+        <ItemsControl ItemsSource="{Binding Presets}" Margin="0,0,0,18">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Padding="12,6" Margin="0,0,8,8" Cursor="Hand" BorderThickness="1"
+                            BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                            ToolTip="{Binding Description}" Content="{Binding Name}"
+                            Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding Id}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <TextBlock Margin="0,0,0,8">
             <Run Foreground="{StaticResource Color.TextMuted}"
@@ -104,5 +155,47 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <!-- Панель журнала — последние записи из journal.jsonl, история отдельно от «активных твиков». -->
+        <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,18,0,8"
+                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeJournalLabel}"/>
+
+        <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="12" Margin="0,0,0,8"
+                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeJournalEmpty}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding RecentJournalEntries.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <ItemsControl ItemsSource="{Binding RecentJournalEntries}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                   Foreground="{StaticResource Color.TextMuted}" Margin="0,0,10,0" VerticalAlignment="Top"
+                                   Text="{Binding Timestamp, StringFormat='{}{0:g}'}"/>
+
+                        <TextBlock Grid.Column="1" FontSize="12">
+                            <Run Text="{Binding TweakName, Mode=OneWay}" Foreground="{StaticResource Color.Text}"/>
+                            <Run Text=" — "/>
+                            <Run Text="{Binding Message, Mode=OneWay}" Foreground="{Binding Success, Converter={StaticResource BoolToStatusBrush}}"/>
+                        </TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </StackPanel>
+    </ScrollViewer>
 </UserControl>

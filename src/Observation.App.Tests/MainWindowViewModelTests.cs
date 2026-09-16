@@ -47,8 +47,9 @@ public class MainWindowViewModelTests : IDisposable
         var library = new TweakLibrary(localization, tweaks ?? SampleTweaks(), journal);
         var batchRunner = new BatchRunner(engine, journal);
         var systemContext = new SystemContext(0, "Core", "1.0", null);
+        var pcSpecs = new PcSpecs("неизвестно", "неизвестно", "неизвестно", "неизвестно", "неизвестно");
 
-        return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext);
+        return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs);
     }
 
     [Fact]

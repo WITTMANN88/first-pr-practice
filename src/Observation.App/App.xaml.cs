@@ -10,6 +10,7 @@ using Observation.Core.Conflicts;
 using Observation.Core.Engine;
 using Observation.Core.Handlers;
 using Observation.Core.Journal;
+using Observation.Core.Presets;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 using Observation.Handlers.Browsers;
@@ -56,7 +57,9 @@ public partial class App : Application
         var conflictDetector = new ConflictDetector();
 
         var tweaks = LoadTweakRegistry();
-        var library = new TweakLibrary(localization, tweaks, journal);
+        var presets = LoadPresets();
+        var library = new TweakLibrary(localization, tweaks, journal, presets);
+        var pcSpecsProvider = new PcSpecsProvider();
 
         // Блокирующий вызов на старте: набор твиков пока небольшой (JSON-реестр), полноценный
         // splash/async-старт — отдельная задача, не в этом проходе (подключение реального применения).
@@ -66,7 +69,8 @@ public partial class App : Application
         Task.Run(() => library.ProbeInitialStatesAsync(engine)).GetAwaiter().GetResult();
         HandleCrashRecovery(journal, batchRunner, tweaks);
 
-        var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext);
+        var pcSpecs = pcSpecsProvider.GetCurrent();
+        var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext, journal, pcSpecs);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
@@ -94,7 +98,8 @@ public partial class App : Application
         ["WebSearchOff"] = WebSearchHandler.Create(registry),
         ["ControlledFolderAccess"] = ControlledFolderAccessHandler.Create(commandRunner),
         ["FirewallProfiles"] = FirewallProfileHandler.Create(commandRunner),
-        ["DeferUpdates"] = DeferUpdatesHandler.Create(registry)
+        ["DeferUpdates"] = DeferUpdatesHandler.Create(registry),
+        ["DiagTrackOff"] = DiagTrackHandler.Create(commandRunner)
     };
 
     /// <summary>
@@ -134,6 +139,20 @@ public partial class App : Application
         {
             // Честный пустой список вкладок вместо падения на старте.
             return Array.Empty<TweakDefinition>();
+        }
+    }
+
+    private static IReadOnlyList<PresetDefinition> LoadPresets()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "TweakData", "presets.sample.json");
+        try
+        {
+            return File.Exists(path) ? PresetLoader.LoadFromFile(path) : Array.Empty<PresetDefinition>();
+        }
+        catch (Exception)
+        {
+            // Честный пустой список пресетов вместо падения на старте.
+            return Array.Empty<PresetDefinition>();
         }
     }
 }

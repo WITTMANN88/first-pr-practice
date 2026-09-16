@@ -15,6 +15,9 @@ public interface IJournalStore
     /// <summary>Последняя успешная запись по конкретному твику — источник PreviousValueJson для точечного отката вне пакета.</summary>
     JournalEntry? GetLatestEntryForTweak(string tweakId);
 
+    /// <summary>Последние N записей твиков (успешных и неудачных) по всем пакетам, для панели журнала на «Главной».</summary>
+    IReadOnlyList<JournalEntry> GetRecentEntries(int count);
+
     IReadOnlyList<ActiveTweakState> GetActiveTweaks();
     void UpsertActiveTweak(ActiveTweakState state);
     void RemoveActiveTweak(string tweakId, string? userSid);

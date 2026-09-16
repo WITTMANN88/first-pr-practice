@@ -3,6 +3,7 @@ using Observation.App.ViewModels;
 using Observation.Core.Batch;
 using Observation.Core.Engine;
 using Observation.Core.Journal;
+using Observation.Core.Presets;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 
@@ -21,6 +22,7 @@ public sealed class TweakLibrary
 
     public IReadOnlyList<TweakDefinition> AllTweaks { get; }
     public IReadOnlyDictionary<string, TweakItemViewModel> ItemsById { get; }
+    public IReadOnlyList<PresetDefinition> Presets { get; }
 
     /// <summary>Твик в очереди на применение — его IsOn отличается от последнего известного фактического состояния.</summary>
     public IReadOnlyList<TweakItemViewModel> PendingChanges =>
@@ -29,11 +31,13 @@ public sealed class TweakLibrary
     /// <summary>Поднимается при изменении IsOn любого твика — вкладка «Главная» обновляет счётчик очереди.</summary>
     public event EventHandler? PendingChanged;
 
-    public TweakLibrary(ILocalizationService localization, IReadOnlyList<TweakDefinition> allTweaks, IJournalStore journal)
+    public TweakLibrary(ILocalizationService localization, IReadOnlyList<TweakDefinition> allTweaks, IJournalStore journal,
+        IReadOnlyList<PresetDefinition>? presets = null)
     {
         _localization = localization;
         _journal = journal;
         AllTweaks = allTweaks;
+        Presets = presets ?? Array.Empty<PresetDefinition>();
 
         var items = new Dictionary<string, TweakItemViewModel>();
         foreach (var tweak in allTweaks)
@@ -48,6 +52,20 @@ public sealed class TweakLibrary
         }
 
         ItemsById = items;
+    }
+
+    /// <summary>Выставляет IsOn=true для твиков пресета (только тех, что реально есть в реестре) — ничего не применяет и не трогает твики вне списка (см. план: «Пресет только выставляет тумблеры»).</summary>
+    public void ApplyPreset(string presetId)
+    {
+        var preset = Presets.FirstOrDefault(p => p.Id == presetId);
+        if (preset is null)
+            return;
+
+        foreach (var tweakId in preset.TweakIds)
+        {
+            if (ItemsById.TryGetValue(tweakId, out var item))
+                item.IsOn = true;
+        }
     }
 
     public IReadOnlyList<TweakGroupViewModel> GroupsForTab(string tabId) =>

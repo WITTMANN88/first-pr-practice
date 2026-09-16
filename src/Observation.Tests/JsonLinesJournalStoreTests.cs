@@ -45,6 +45,42 @@ public class JsonLinesJournalStoreTests : IDisposable
     }
 
     [Fact]
+    public void GetRecentEntries_ReturnsNewestFirst_AcrossBatches()
+    {
+        var store = CreateStore();
+        var batchA = Guid.NewGuid();
+        var batchB = Guid.NewGuid();
+
+        store.BeginBatch(batchA, 1);
+        store.AppendEntry(new JournalEntry { BatchId = batchA, TweakId = "perf.gamemode", Timestamp = DateTimeOffset.UtcNow.AddMinutes(-10), Success = true });
+        store.CompleteBatch(batchA);
+
+        store.BeginBatch(batchB, 1);
+        store.AppendEntry(new JournalEntry { BatchId = batchB, TweakId = "privacy.diagtrack", Timestamp = DateTimeOffset.UtcNow, Success = false, Message = "ошибка" });
+        store.CompleteBatch(batchB);
+
+        var recent = store.GetRecentEntries(10);
+
+        Assert.Equal(2, recent.Count);
+        Assert.Equal("privacy.diagtrack", recent[0].TweakId);
+        Assert.Equal("perf.gamemode", recent[1].TweakId);
+    }
+
+    [Fact]
+    public void GetRecentEntries_RespectsCountLimit()
+    {
+        var store = CreateStore();
+        var batchId = Guid.NewGuid();
+
+        store.BeginBatch(batchId, 3);
+        for (var i = 0; i < 3; i++)
+            store.AppendEntry(new JournalEntry { BatchId = batchId, TweakId = $"tweak{i}", Timestamp = DateTimeOffset.UtcNow.AddSeconds(i), Success = true });
+        store.CompleteBatch(batchId);
+
+        Assert.Equal(2, store.GetRecentEntries(2).Count);
+    }
+
+    [Fact]
     public void FindIncompleteBatch_ReturnsNull_AfterCompleteBatch()
     {
         var store = CreateStore();

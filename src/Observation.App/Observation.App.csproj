@@ -46,6 +46,9 @@
     <Content Include="..\Observation.Core\TweakData\tweaks.sample.json" Link="TweakData\tweaks.sample.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Observation.Core\TweakData\presets.sample.json" Link="TweakData\presets.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!--

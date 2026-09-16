@@ -105,6 +105,19 @@ public sealed class JsonLinesJournalStore : IJournalStore
         }
     }
 
+    public IReadOnlyList<JournalEntry> GetRecentEntries(int count)
+    {
+        lock (_lock)
+        {
+            return ReadAllLines()
+                .Where(l => l.Kind == "entry")
+                .OrderByDescending(l => l.Timestamp)
+                .Take(count)
+                .Select(ToJournalEntry)
+                .ToList();
+        }
+    }
+
     public IReadOnlyList<ActiveTweakState> GetActiveTweaks()
     {
         lock (_lock)

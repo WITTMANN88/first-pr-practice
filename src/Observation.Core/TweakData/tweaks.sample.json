@@ -93,7 +93,7 @@
     "revert": { "type": "restore-previous" }
   },
   {
-    "id": "privacy.diagtrack",
+    "id": "privacy.advertising",
     "tab": "privacy",
     "group": { "ru": "Телеметрия и данные", "en": "Telemetry & data" },
     "name": { "ru": "Отключить рекламный ID", "en": "Turn off advertising ID" },
@@ -116,6 +116,23 @@
     },
     "verify": { "type": "registry-read", "matchesApply": true },
     "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "privacy.diagtrack",
+    "tab": "privacy",
+    "group": { "ru": "Телеметрия и данные", "en": "Telemetry & data" },
+    "name": { "ru": "Отключить телеметрию (DiagTrack)", "en": "Disable telemetry (DiagTrack)" },
+    "description": {
+      "ru": "Останавливает и отключает службу диагностических данных DiagTrack и минимизирует уровень телеметрии через политику AllowTelemetry. На изданиях, отличных от Enterprise/Education, минимальный уровень телеметрии, который реально принимает Windows, может быть выше нуля.",
+      "en": "Stops and disables the DiagTrack diagnostics service and sets telemetry to the minimum via the AllowTelemetry policy. On editions other than Enterprise/Education, the minimum level Windows actually accepts may be above zero."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "DiagTrackOff" },
+    "verify": { "type": "handler", "handlerId": "DiagTrackOff" },
+    "revert": { "type": "best-effort" }
   },
   {
     "id": "privacy.activityhistory",
