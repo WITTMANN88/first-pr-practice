@@ -45,8 +45,9 @@ public partial class App : Application
         // Композиция движка — см. «Архитектура кода» в плане. Прямой доступ к реестру
         // (Microsoft.Win32.Registry), без промежуточного PowerShell-хоста.
         var registry = new Win32RegistryAccessor();
+        var commandRunner = new ProcessCommandRunner();
         var systemContext = new WindowsSystemContextProvider(registry).GetCurrent();
-        var handlers = BuildHandlers(registry);
+        var handlers = BuildHandlers(registry, commandRunner);
         var engine = new TweakEngine(registry, handlers);
         var dataFolder = Path.Combine(AppContext.BaseDirectory, "Observation_Data");
         var journal = new JsonLinesJournalStore(dataFolder);
@@ -74,8 +75,9 @@ public partial class App : Application
         base.OnExit(e);
     }
 
-    private static Dictionary<string, ITweakHandler> BuildHandlers(IRegistryAccessor registry) => new()
+    private static Dictionary<string, ITweakHandler> BuildHandlers(IRegistryAccessor registry, ICommandRunner commandRunner) => new()
     {
+        ["GameModeToggle"] = GameModeHandler.Create(registry),
         ["SetDiscordHardwareAcceleration"] = new DiscordHardwareAccelerationHandler(),
         ["BraveDebloat"] = BraveDebloatHandler.Create(registry),
         ["EdgeDebloat"] = EdgeDebloatHandler.Create(registry),
@@ -85,7 +87,9 @@ public partial class App : Application
         ["UacSliderMin"] = UacSliderHandler.Create(registry),
         ["WindowsCopilotOff"] = WindowsCopilotHandler.Create(registry),
         ["ActivityHistoryOff"] = ActivityHistoryHandler.Create(registry),
-        ["WebSearchOff"] = WebSearchHandler.Create(registry)
+        ["WebSearchOff"] = WebSearchHandler.Create(registry),
+        ["ControlledFolderAccess"] = ControlledFolderAccessHandler.Create(commandRunner),
+        ["FirewallProfiles"] = FirewallProfileHandler.Create(commandRunner)
     };
 
     /// <summary>

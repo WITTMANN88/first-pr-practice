@@ -12,16 +12,8 @@
     "controlType": "toggle",
     "requiresReboot": false,
     "applicability": { "type": "always" },
-    "apply": {
-      "type": "registry",
-      "hive": "HKCU",
-      "path": "Software\\Microsoft\\GameBar",
-      "value": "AllowAutoGameMode",
-      "valueType": "DWord",
-      "onData": 1,
-      "offData": 0
-    },
-    "verify": { "type": "registry-read", "matchesApply": true },
+    "apply": { "type": "handler", "handlerId": "GameModeToggle" },
+    "verify": { "type": "handler", "handlerId": "GameModeToggle" },
     "revert": { "type": "restore-previous" }
   },
   {
@@ -267,5 +259,39 @@
     "apply": { "type": "handler", "handlerId": "UacSliderMin" },
     "verify": { "type": "handler", "handlerId": "UacSliderMin" },
     "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "security.cfa",
+    "tab": "security",
+    "group": { "ru": "Windows Defender", "en": "Windows Defender" },
+    "name": { "ru": "Controlled Folder Access", "en": "Controlled Folder Access" },
+    "description": {
+      "ru": "Блокирует неавторизованным программам запись в защищённые папки (Документы, Рабочий стол и т.п.) — защита от шифровальщиков. Может мешать нестандартным программам, которым нужно писать в эти папки.",
+      "en": "Blocks unauthorized apps from writing to protected folders (Documents, Desktop, etc.) — ransomware protection. Can interfere with unusual apps that need to write there."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "ControlledFolderAccess" },
+    "verify": { "type": "handler", "handlerId": "ControlledFolderAccess" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "security.firewall",
+    "tab": "security",
+    "group": { "ru": "Файрвол и удалённый доступ", "en": "Firewall & remote access" },
+    "name": { "ru": "Брандмауэр Windows (все профили)", "en": "Windows Firewall (all profiles)" },
+    "description": {
+      "ru": "Включает/выключает брандмауэр Windows сразу для доменного, публичного и частного профилей сети.",
+      "en": "Turns Windows Firewall on/off for the domain, public, and private network profiles at once."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "FirewallProfiles" },
+    "verify": { "type": "handler", "handlerId": "FirewallProfiles" },
+    "revert": { "type": "best-effort" }
   }
 ]
