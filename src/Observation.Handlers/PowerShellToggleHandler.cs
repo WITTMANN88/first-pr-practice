@@ -29,7 +29,7 @@ public sealed class PowerShellToggleHandler : ITweakHandler
 
     public async Task<HandlerApplyResult> ApplyAsync(TweakDefinition tweak, bool desiredOn, CancellationToken cancellationToken = default)
     {
-        var result = await RunPowerShellAsync(desiredOn ? _onScript : _offScript, cancellationToken);
+        var result = await RunPowerShellAsync(desiredOn ? _onScript : _offScript, cancellationToken).ConfigureAwait(false);
         return result.Succeeded
             ? new HandlerApplyResult(true, null, null)
             : new HandlerApplyResult(false, $"Команда завершилась с ошибкой: {FirstNonEmptyLine(result.StandardError, result.StandardOutput)}");
@@ -37,7 +37,7 @@ public sealed class PowerShellToggleHandler : ITweakHandler
 
     public async Task<bool> VerifyAsync(TweakDefinition tweak, bool desiredOn, CancellationToken cancellationToken = default)
     {
-        var result = await RunPowerShellAsync(_verifyScript, cancellationToken);
+        var result = await RunPowerShellAsync(_verifyScript, cancellationToken).ConfigureAwait(false);
         if (!result.Succeeded)
             return false;
 

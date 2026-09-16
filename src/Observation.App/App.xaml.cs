@@ -59,7 +59,10 @@ public partial class App : Application
 
         // Блокирующий вызов на старте: набор твиков пока небольшой (JSON-реестр), полноценный
         // splash/async-старт — отдельная задача, не в этом проходе (подключение реального применения).
-        library.ProbeInitialStatesAsync(engine).GetAwaiter().GetResult();
+        // Task.Run — обязателен: без него continuation после реального await (PowerShellToggleHandler/
+        // ProcessCommandRunner для CFA/Firewall) пытается вернуться в захваченный DispatcherSynchronizationContext,
+        // а поток UI уже заблокирован на GetResult() — глухой deadlock до показа окна.
+        Task.Run(() => library.ProbeInitialStatesAsync(engine)).GetAwaiter().GetResult();
         HandleCrashRecovery(journal, batchRunner, tweaks);
 
         var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext);
@@ -113,7 +116,7 @@ public partial class App : Application
             "Незавершённый пакет", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
         if (revert == MessageBoxResult.Yes)
-            batchRunner.RevertBatchAsync(incomplete.BatchId, tweaksById).GetAwaiter().GetResult();
+            Task.Run(() => batchRunner.RevertBatchAsync(incomplete.BatchId, tweaksById)).GetAwaiter().GetResult();
 
         journal.AcknowledgeIncomplete(incomplete.BatchId);
     }
