@@ -13,7 +13,7 @@ public class MultiRegistryValueHandlerTests
     {
         Id = "apps.brave.debloat",
         Tab = "apps",
-        Group = "Приложения",
+        Group = new LocalizedText { Ru = "Приложения", En = "Applications" },
         Name = new LocalizedText { Ru = "...", En = "..." },
         Description = new LocalizedText { Ru = "...", En = "..." },
         Severity = Severity.Safe,

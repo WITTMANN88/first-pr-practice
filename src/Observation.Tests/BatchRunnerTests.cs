@@ -21,7 +21,7 @@ public class BatchRunnerTests : IDisposable
     {
         Id = "perf.gamemode",
         Tab = "performance",
-        Group = "Питание и режимы",
+        Group = new LocalizedText { Ru = "Питание и режимы", En = "Power & modes" },
         Name = new LocalizedText { Ru = "Режим игры", En = "Game Mode" },
         Description = new LocalizedText { Ru = "...", En = "..." },
         Severity = Severity.Safe,

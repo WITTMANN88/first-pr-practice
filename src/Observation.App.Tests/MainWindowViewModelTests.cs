@@ -11,7 +11,7 @@ public class MainWindowViewModelTests
     {
         Id = id,
         Tab = tab,
-        Group = group,
+        Group = new LocalizedText { Ru = group, En = group },
         Name = new LocalizedText { Ru = id, En = id },
         Description = new LocalizedText { Ru = "...", En = "..." },
         Severity = Severity.Safe,

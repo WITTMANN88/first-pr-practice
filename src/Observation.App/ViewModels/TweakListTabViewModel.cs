@@ -18,12 +18,13 @@ public sealed class TweakListTabViewModel : ViewModelBase
     {
         Localization = localization;
         Groups = tabTweaks
-            .GroupBy(t => t.Group)
-            .Select(g => new TweakGroupViewModel
-            {
-                GroupName = g.Key,
-                Items = g.Select(t => new TweakItemViewModel(t, localization)).ToList()
-            })
+            // Ru как стабильный ключ группировки — сам LocalizedText не Equatable,
+            // а Ru гарантированно заполнен схемой (required).
+            .GroupBy(t => t.Group.Ru)
+            .Select(g => new TweakGroupViewModel(
+                g.First().Group,
+                localization,
+                g.Select(t => new TweakItemViewModel(t, localization)).ToList()))
             .ToList();
     }
 }

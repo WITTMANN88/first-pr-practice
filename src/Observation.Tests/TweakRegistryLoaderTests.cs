@@ -11,7 +11,7 @@ public class TweakRegistryLoaderTests
       {
         "id": "perf.gamemode",
         "tab": "performance",
-        "group": "Питание и режимы",
+        "group": { "ru": "Питание и режимы", "en": "Power & modes" },
         "name": { "ru": "Режим игры (Game Mode)", "en": "Game Mode" },
         "description": { "ru": "...", "en": "..." },
         "severity": "safe",
@@ -33,7 +33,7 @@ public class TweakRegistryLoaderTests
       {
         "id": "apps.discord.hwaccel",
         "tab": "performance",
-        "group": "Приложения",
+        "group": { "ru": "Приложения", "en": "Applications" },
         "name": { "ru": "Discord: аппаратное ускорение", "en": "Discord: hardware acceleration" },
         "description": { "ru": "...", "en": "..." },
         "severity": "safe",

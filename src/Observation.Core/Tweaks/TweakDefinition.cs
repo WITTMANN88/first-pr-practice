@@ -5,7 +5,7 @@ public sealed class TweakDefinition
 {
     public required string Id { get; init; }
     public required string Tab { get; init; }
-    public required string Group { get; init; }
+    public required LocalizedText Group { get; init; }
     public required LocalizedText Name { get; init; }
     public required LocalizedText Description { get; init; }
     public required Severity Severity { get; init; }

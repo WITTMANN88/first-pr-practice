@@ -17,7 +17,7 @@ public class TweakEngineTests
     {
         Id = "perf.gamemode",
         Tab = "performance",
-        Group = "Питание и режимы",
+        Group = new LocalizedText { Ru = "Питание и режимы", En = "Power & modes" },
         Name = new LocalizedText { Ru = "Режим игры", En = "Game Mode" },
         Description = new LocalizedText { Ru = "...", En = "..." },
         Severity = Severity.Safe,
@@ -40,7 +40,7 @@ public class TweakEngineTests
     {
         Id = "apps.discord.hwaccel",
         Tab = "performance",
-        Group = "Приложения",
+        Group = new LocalizedText { Ru = "Приложения", En = "Applications" },
         Name = new LocalizedText { Ru = "Discord HW-ускорение", En = "Discord HW acceleration" },
         Description = new LocalizedText { Ru = "...", En = "..." },
         Severity = Severity.Safe,

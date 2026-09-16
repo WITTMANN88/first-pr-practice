@@ -2,7 +2,7 @@
   {
     "id": "perf.gamemode",
     "tab": "perf",
-    "group": "Питание и режимы",
+    "group": { "ru": "Питание и режимы", "en": "Power & modes" },
     "name": { "ru": "Режим игры (Game Mode)", "en": "Game Mode" },
     "description": {
       "ru": "Приоритизирует ресурсы CPU/GPU для игры в полноэкранном режиме.",
@@ -27,7 +27,7 @@
   {
     "id": "apps.discord.hwaccel",
     "tab": "perf",
-    "group": "Приложения",
+    "group": { "ru": "Приложения", "en": "Applications" },
     "name": { "ru": "Discord: аппаратное ускорение", "en": "Discord: hardware acceleration" },
     "description": {
       "ru": "Подтверждено экспериментально (diff-тест): ключ enableHardwareAcceleration в %AppData%\\discord\\settings.json. Discord должен быть полностью закрыт (через трей) на момент записи.",
