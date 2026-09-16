@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.App.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <!--
+    Отдельный от Observation.Tests проект: ссылка на Observation.App (UseWPF) требует
+    для ЗАПУСКА тестов реального рантайма Microsoft.WindowsDesktop.App, которого на
+    Linux не существует (в отличие от чисто компиляционных reference-сборок — dotnet
+    build здесь проходит, dotnet test падает с "You must install or update .NET").
+    Если объединить с Observation.Tests, та же проблема сломает и уже рабочие тесты
+    Core/Handlers. Поэтому ViewModels тестируются изолированно — соберётся и здесь,
+    запустится по-настоящему только на реальной Windows-машине.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
+    <ProjectReference Include="..\Observation.App\Observation.App.csproj" />
+  </ItemGroup>
+
+</Project>

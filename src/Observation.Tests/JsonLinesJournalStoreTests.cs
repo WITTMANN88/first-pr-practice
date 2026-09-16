@@ -1,3 +1,4 @@
+using System.IO;
 using Observation.Core.Journal;
 using Xunit;
 

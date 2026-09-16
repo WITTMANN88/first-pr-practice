@@ -1,7 +1,7 @@
 [
   {
     "id": "perf.gamemode",
-    "tab": "performance",
+    "tab": "perf",
     "group": "Питание и режимы",
     "name": { "ru": "Режим игры (Game Mode)", "en": "Game Mode" },
     "description": {
@@ -26,7 +26,7 @@
   },
   {
     "id": "apps.discord.hwaccel",
-    "tab": "performance",
+    "tab": "perf",
     "group": "Приложения",
     "name": { "ru": "Discord: аппаратное ускорение", "en": "Discord: hardware acceleration" },
     "description": {

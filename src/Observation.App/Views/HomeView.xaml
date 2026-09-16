@@ -1,0 +1,10 @@
+<UserControl x:Class="Observation.App.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Заглушка «Главной» (пресеты/сводка/применение из ui-preview.html) — по
+        договорённости не входит в этот архитектурный проход.
+    -->
+    <TextBlock Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="13"
+               Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePlaceholder}"/>
+</UserControl>

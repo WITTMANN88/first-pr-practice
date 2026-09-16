@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Палитра — портирована из опубликованного макета (ui-preview.html, :root .frame),
+        без изменений значений. Ключи названы как CSS-переменные оригинала, чтобы обе
+        стороны легко сверялись. Пиксель-точная стилизация (шрифты Cinzel/IBM Plex,
+        анимации, декоративные SVG) — отдельный проход позже, не в этом шаге.
+    -->
+
+    <SolidColorBrush x:Key="Color.Bg" Color="#FF070405"/>
+    <SolidColorBrush x:Key="Color.Surface" Color="#D2120A0C"/>
+    <SolidColorBrush x:Key="Color.SurfaceSolid" Color="#FF140C0E"/>
+    <SolidColorBrush x:Key="Color.Surface2" Color="#FF1B1013"/>
+    <SolidColorBrush x:Key="Color.Border" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Color.BorderStrong" Color="#FF2E1A1E"/>
+    <SolidColorBrush x:Key="Color.Text" Color="#FFF4E9EA"/>
+    <SolidColorBrush x:Key="Color.TextMuted" Color="#FFA68D92"/>
+    <SolidColorBrush x:Key="Color.Accent" Color="#FFA82A40"/>
+    <SolidColorBrush x:Key="Color.AccentStrong" Color="#FFC73F56"/>
+    <SolidColorBrush x:Key="Color.AccentPress" Color="#FF7C1F2E"/>
+    <SolidColorBrush x:Key="Color.AccentSoft" Color="#29A82A40"/>
+    <SolidColorBrush x:Key="Color.Ok" Color="#FF5FBF85"/>
+    <SolidColorBrush x:Key="Color.Warn" Color="#FFE0A94A"/>
+    <SolidColorBrush x:Key="Color.Danger" Color="#FFE2572C"/>
+
+</ResourceDictionary>

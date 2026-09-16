@@ -12,6 +12,13 @@
     <!-- ApplicationIcon появится, когда исходник знака будет упакован в .ico (см. «Знак программы» в плане) -->
 
     <!--
+      Позволяет собирать (не запускать) WPF-проект вне Windows — проверено вживую:
+      dotnet build здесь реально компилирует XAML. Условие ограничивает флаг только
+      не-Windows хостами, на реальной Windows-машине пользователя ничего не меняется.
+    -->
+    <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
+
+    <!--
       Портативная self-contained сборка в один exe — см. «Архитектура кода» в плане.
       RuntimeIdentifier здесь фиксирован под win-x64 для публикации;
       для обычной разработки (dotnet build без -r) он не мешает.
@@ -26,6 +33,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
     <ProjectReference Include="..\Observation.Handlers\Observation.Handlers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Тот же сэмпл-реестр твиков, что уже используется в Observation.Core/Observation.Tests. -->
+    <Content Include="..\Observation.Core\TweakData\tweaks.sample.json" Link="TweakData\tweaks.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

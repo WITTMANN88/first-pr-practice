@@ -1,3 +1,4 @@
+using System.IO;
 using Observation.Core.Tweaks;
 using Observation.Handlers.Discord;
 using Xunit;
