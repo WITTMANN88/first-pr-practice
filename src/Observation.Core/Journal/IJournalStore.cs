@@ -12,6 +12,9 @@ public interface IJournalStore
 
     IReadOnlyList<JournalEntry> GetEntriesForBatch(Guid batchId);
 
+    /// <summary>Последняя успешная запись по конкретному твику — источник PreviousValueJson для точечного отката вне пакета.</summary>
+    JournalEntry? GetLatestEntryForTweak(string tweakId);
+
     IReadOnlyList<ActiveTweakState> GetActiveTweaks();
     void UpsertActiveTweak(ActiveTweakState state);
     void RemoveActiveTweak(string tweakId, string? userSid);

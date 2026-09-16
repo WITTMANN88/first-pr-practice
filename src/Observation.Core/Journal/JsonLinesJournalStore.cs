@@ -93,6 +93,18 @@ public sealed class JsonLinesJournalStore : IJournalStore
         }
     }
 
+    public JournalEntry? GetLatestEntryForTweak(string tweakId)
+    {
+        lock (_lock)
+        {
+            return ReadAllLines()
+                .Where(l => l.Kind == "entry" && l.TweakId == tweakId && l.Success == true)
+                .OrderByDescending(l => l.Timestamp)
+                .Select(ToJournalEntry)
+                .FirstOrDefault();
+        }
+    }
+
     public IReadOnlyList<ActiveTweakState> GetActiveTweaks()
     {
         lock (_lock)

@@ -11,6 +11,40 @@ public class JsonLinesJournalStoreTests : IDisposable
     private JsonLinesJournalStore CreateStore() => new(_dataFolder);
 
     [Fact]
+    public void GetLatestEntryForTweak_ReturnsMostRecentSuccessfulEntry()
+    {
+        var store = CreateStore();
+        var batchA = Guid.NewGuid();
+        var batchB = Guid.NewGuid();
+
+        store.BeginBatch(batchA, 1);
+        store.AppendEntry(new JournalEntry { BatchId = batchA, TweakId = "perf.gamemode", Timestamp = DateTimeOffset.UtcNow.AddMinutes(-10), Success = true, PreviousValueJson = "old" });
+        store.CompleteBatch(batchA);
+
+        store.BeginBatch(batchB, 1);
+        store.AppendEntry(new JournalEntry { BatchId = batchB, TweakId = "perf.gamemode", Timestamp = DateTimeOffset.UtcNow, Success = true, PreviousValueJson = "newer" });
+        store.CompleteBatch(batchB);
+
+        var latest = store.GetLatestEntryForTweak("perf.gamemode");
+
+        Assert.NotNull(latest);
+        Assert.Equal("newer", latest!.PreviousValueJson);
+    }
+
+    [Fact]
+    public void GetLatestEntryForTweak_IgnoresFailedEntries()
+    {
+        var store = CreateStore();
+        var batchId = Guid.NewGuid();
+
+        store.BeginBatch(batchId, 1);
+        store.AppendEntry(new JournalEntry { BatchId = batchId, TweakId = "perf.gamemode", Timestamp = DateTimeOffset.UtcNow, Success = false, PreviousValueJson = "should-be-ignored" });
+        store.CompleteBatch(batchId);
+
+        Assert.Null(store.GetLatestEntryForTweak("perf.gamemode"));
+    }
+
+    [Fact]
     public void FindIncompleteBatch_ReturnsNull_AfterCompleteBatch()
     {
         var store = CreateStore();

@@ -2,6 +2,7 @@ using Observation.App.Services;
 using Observation.App.ViewModels;
 using Observation.Core.Batch;
 using Observation.Core.Engine;
+using Observation.Core.Journal;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 
@@ -10,11 +11,13 @@ namespace Observation.App.Runtime;
 /// <summary>
 /// Единственный источник правды по состоянию всех твиков — один TweakItemViewModel
 /// на твик, переиспользуемый всеми вкладками (см. TweakItemViewModel). Отсюда же —
-/// накопительная очередь (PendingChanges) и её применение через BatchRunner.
+/// накопительная очередь (PendingChanges) и её применение через BatchRunner, а также
+/// «активные твики» из журнала (перепроверка/точечный откат — мех. надёжности №1 из плана).
 /// </summary>
 public sealed class TweakLibrary
 {
     private readonly ILocalizationService _localization;
+    private readonly IJournalStore _journal;
 
     public IReadOnlyList<TweakDefinition> AllTweaks { get; }
     public IReadOnlyDictionary<string, TweakItemViewModel> ItemsById { get; }
@@ -26,9 +29,10 @@ public sealed class TweakLibrary
     /// <summary>Поднимается при изменении IsOn любого твика — вкладка «Главная» обновляет счётчик очереди.</summary>
     public event EventHandler? PendingChanged;
 
-    public TweakLibrary(ILocalizationService localization, IReadOnlyList<TweakDefinition> allTweaks)
+    public TweakLibrary(ILocalizationService localization, IReadOnlyList<TweakDefinition> allTweaks, IJournalStore journal)
     {
         _localization = localization;
+        _journal = journal;
         AllTweaks = allTweaks;
 
         var items = new Dictionary<string, TweakItemViewModel>();
@@ -96,6 +100,61 @@ public sealed class TweakLibrary
                 item.RevertToBaseline();
         }
 
+        // BatchRunner.RunAsync уже сам обновляет "активные твики" в журнале (restore-previous/
+        // additive-tagged) — здесь дублировать не нужно, GetRevertibleTweaks просто читает их обратно.
         return result;
+    }
+
+    /// <summary>«Активные твики» из журнала (мех. надёжности №1) — только с восстанавливаемым
+    /// откатом (restore-previous/additive-tagged), только для текущего пользователя (без SID).</summary>
+    public IReadOnlyList<TweakItemViewModel> GetRevertibleTweaks() =>
+        _journal.GetActiveTweaks()
+            .Where(a => a.UserSid is null)
+            .Select(a => ItemsById.TryGetValue(a.TweakId, out var item) ? item : null)
+            .Where(item => item is not null)
+            .Select(item => item!)
+            .ToList();
+
+    /// <summary>Перечитывает фактическое состояние каждого активного твика и сверяет с ожидаемым — «слетевшие» возвращаются с Verified=false.</summary>
+    public async Task<IReadOnlyList<(TweakItemViewModel Item, bool Verified)>> VerifyActiveTweaksAsync(TweakEngine engine)
+    {
+        var results = new List<(TweakItemViewModel, bool)>();
+        foreach (var item in GetRevertibleTweaks())
+        {
+            bool verified;
+            try
+            {
+                verified = await engine.VerifyAsync(item.Definition, item.BaselineOn);
+            }
+            catch (Exception)
+            {
+                verified = false;
+            }
+
+            results.Add((item, verified));
+        }
+
+        return results;
+    }
+
+    /// <summary>Точечный откат одного активного твика к состоянию "до" последнего успешного применения (не к offData).</summary>
+    public async Task<TweakOutcome> RevertTweakAsync(TweakEngine engine, string tweakId)
+    {
+        if (!ItemsById.TryGetValue(tweakId, out var item))
+            return TweakOutcome.Failed(tweakId, "Твик не найден в реестре");
+
+        var entry = _journal.GetLatestEntryForTweak(tweakId);
+        if (entry is null)
+            return TweakOutcome.Failed(tweakId, "Нет сохранённой записи для отката");
+
+        var outcome = await engine.RevertAsync(item.Definition, entry.PreviousValueJson);
+        if (outcome.Success)
+        {
+            _journal.RemoveActiveTweak(tweakId, userSid: null);
+            var isOnNow = await engine.VerifyAsync(item.Definition, desiredOn: true);
+            item.InitializeState(isOnNow);
+        }
+
+        return outcome;
     }
 }

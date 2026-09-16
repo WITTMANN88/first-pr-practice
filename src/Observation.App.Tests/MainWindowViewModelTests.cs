@@ -42,12 +42,13 @@ public class MainWindowViewModelTests : IDisposable
 
     private MainWindowViewModel CreateViewModel(ILocalizationService localization, IReadOnlyList<TweakDefinition>? tweaks = null)
     {
-        var library = new TweakLibrary(localization, tweaks ?? SampleTweaks());
+        var journal = new JsonLinesJournalStore(_dataFolder);
         var engine = new TweakEngine(new NoopRegistryAccessor(), new Dictionary<string, ITweakHandler>());
-        var batchRunner = new BatchRunner(engine, new JsonLinesJournalStore(_dataFolder));
+        var library = new TweakLibrary(localization, tweaks ?? SampleTweaks(), journal);
+        var batchRunner = new BatchRunner(engine, journal);
         var systemContext = new SystemContext(0, "Core", "1.0", null);
 
-        return new MainWindowViewModel(localization, library, batchRunner, new ConflictDetector(), systemContext);
+        return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext);
     }
 
     [Fact]

@@ -55,14 +55,14 @@ public partial class App : Application
         var conflictDetector = new ConflictDetector();
 
         var tweaks = LoadTweakRegistry();
-        var library = new TweakLibrary(localization, tweaks);
+        var library = new TweakLibrary(localization, tweaks, journal);
 
         // Блокирующий вызов на старте: набор твиков пока небольшой (JSON-реестр), полноценный
         // splash/async-старт — отдельная задача, не в этом проходе (подключение реального применения).
         library.ProbeInitialStatesAsync(engine).GetAwaiter().GetResult();
         HandleCrashRecovery(journal, batchRunner, tweaks);
 
-        var mainViewModel = new MainWindowViewModel(localization, library, batchRunner, conflictDetector, systemContext);
+        var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;

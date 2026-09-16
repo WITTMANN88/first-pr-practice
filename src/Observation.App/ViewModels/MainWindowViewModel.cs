@@ -2,6 +2,7 @@ using Observation.App.Runtime;
 using Observation.App.Services;
 using Observation.Core.Batch;
 using Observation.Core.Conflicts;
+using Observation.Core.Engine;
 using Observation.Core.SystemAccess;
 
 namespace Observation.App.ViewModels;
@@ -19,6 +20,7 @@ public sealed class MainWindowViewModel : ViewModelBase
     public IReadOnlyList<NavItem> NavItems { get; }
 
     private readonly TweakLibrary _library;
+    private readonly TweakEngine _engine;
     private readonly BatchRunner _batchRunner;
     private readonly ConflictDetector _conflictDetector;
     private readonly SystemContext _systemContext;
@@ -55,11 +57,12 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand ToggleSidebarCommand { get; }
     public RelayCommand SetLanguageCommand { get; }
 
-    public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, BatchRunner batchRunner,
+    public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
         ConflictDetector conflictDetector, SystemContext systemContext)
     {
         Localization = localization;
         _library = library;
+        _engine = engine;
         _batchRunner = batchRunner;
         _conflictDetector = conflictDetector;
         _systemContext = systemContext;
@@ -93,6 +96,6 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private object CreateTab(string tabId) =>
         tabId == "home"
-            ? new HomeTabViewModel(Localization, _library, _batchRunner, _conflictDetector, _systemContext)
+            ? new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext)
             : new TweakListTabViewModel(_library.GroupsForTab(tabId));
 }
