@@ -8,10 +8,21 @@
   </PropertyGroup>
 
   <!--
-    Движок: модель твика, загрузка JSON-реестра твиков, накопительная очередь,
-    apply/verify/revert, журнал — см. «Архитектура кода» в плане.
-    Классы появятся на следующем шаге; сейчас это пустая, но собираемая
-    библиотека, на которую уже можно ссылаться из App/Handlers/Tests.
+    Движок: модель твика, загрузка JSON-реестра твиков, apply/verify/revert (TweakEngine),
+    накопительный пакет (BatchRunner), журнал (JsonLinesJournalStore), обнаружение
+    конфликтов пар твиков, определение версии/редакции Windows и модели CPU
+    — см. «Архитектура кода» и «Дополнительные механизмы надёжности» в плане.
   -->
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TweakData\tweaks.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

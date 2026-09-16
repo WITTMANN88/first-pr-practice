@@ -1,0 +1,44 @@
+[
+  {
+    "id": "perf.gamemode",
+    "tab": "performance",
+    "group": "Питание и режимы",
+    "name": { "ru": "Режим игры (Game Mode)", "en": "Game Mode" },
+    "description": {
+      "ru": "Приоритизирует ресурсы CPU/GPU для игры в полноэкранном режиме.",
+      "en": "Prioritizes CPU/GPU resources for a fullscreen game."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\GameBar",
+      "value": "AllowAutoGameMode",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": { "type": "registry-read", "matchesApply": true },
+    "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "apps.discord.hwaccel",
+    "tab": "performance",
+    "group": "Приложения",
+    "name": { "ru": "Discord: аппаратное ускорение", "en": "Discord: hardware acceleration" },
+    "description": {
+      "ru": "Подтверждено экспериментально (diff-тест): ключ enableHardwareAcceleration в %AppData%\\discord\\settings.json. Discord должен быть полностью закрыт (через трей) на момент записи.",
+      "en": "Confirmed experimentally (diff test): enableHardwareAcceleration key in %AppData%\\discord\\settings.json. Discord must be fully closed (via tray) while writing."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "SetDiscordHardwareAcceleration" },
+    "verify": { "type": "handler", "handlerId": "SetDiscordHardwareAcceleration" },
+    "revert": { "type": "restore-previous" }
+  }
+]
