@@ -48,4 +48,14 @@
     </Content>
   </ItemGroup>
 
+  <!--
+    Шрифты макета (Cinzel, IBM Plex Sans/Mono) — Google Fonts, SIL Open Font License
+    (тексты лицензий рядом, Fonts/OFL-*.txt), встроены как WPF font resource, а не
+    подключены как веб-шрифт (в WPF нет аналога <link> на google fonts, только реальные
+    файлы). См. Themes/Fonts.xaml — там объявлены FontFamily-ресурсы по этим файлам.
+  -->
+  <ItemGroup>
+    <Resource Include="Fonts\*.ttf" />
+  </ItemGroup>
+
 </Project>

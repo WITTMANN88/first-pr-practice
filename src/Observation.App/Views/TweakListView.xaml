@@ -3,9 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
         Генератор списка твиков: группы из TweakDefinition.Group, строки из
-        TweakDefinition внутри группы — общий шаблон для всех вкладок с твиками,
-        без пиксель-точной стилизации карточек/чипов из ui-preview.html (это
-        отдельный, более поздний проход).
+        TweakDefinition внутри группы — общий шаблон для всех вкладок с твиками.
+        Заголовки групп и чип severity стилизованы под макет (IBM Plex Mono,
+        цветная пилюля по важности); фоновая иллюстрация/зерно/декоративные SVG
+        из ui-preview.html сюда сознательно не перенесены — не несут функции.
     -->
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel>
@@ -28,7 +29,7 @@
                     <DataTemplate>
                         <StackPanel Margin="0,0,0,18">
                             <TextBlock Text="{Binding GroupName}" Foreground="{StaticResource Color.TextMuted}"
-                                       FontWeight="SemiBold" FontSize="11" Margin="0,0,0,8"/>
+                                       FontFamily="{StaticResource Font.Mono}" FontSize="11" Margin="0,0,0,8"/>
                             <ItemsControl ItemsSource="{Binding Items}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -48,9 +49,12 @@
                                                                FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                                 </StackPanel>
 
-                                                <TextBlock Grid.Column="1" Text="{Binding SeverityLabel}"
-                                                           Foreground="{StaticResource Color.TextMuted}"
-                                                           FontSize="10" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                                <Border Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                        BorderThickness="1" CornerRadius="100" Padding="8,2"
+                                                        BorderBrush="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}">
+                                                    <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                               Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                </Border>
 
                                                 <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
                                                               Style="{StaticResource SwitchToggleStyle}"/>

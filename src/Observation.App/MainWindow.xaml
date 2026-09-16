@@ -5,13 +5,14 @@
         Title="Observation"
         Height="720" Width="1180" MinHeight="560" MinWidth="820"
         WindowStyle="None" ResizeMode="CanResizeWithGrip"
-        Background="{StaticResource Color.Bg}">
+        Background="{StaticResource Color.Bg}" FontFamily="{StaticResource Font.Body}">
 
     <!--
         Безрамочное окно с ресайзом через WindowChrome (см. «Хранение данных, окно,
-        локализация» в плане). Каркас: титлбар/сайдбар/контент — без пиксель-точной
-        стилизации макета (декоративные SVG, фоновая иллюстрация, шрифты Cinzel/IBM Plex,
-        анимации) — это отдельный, более поздний проход по договорённости.
+        локализация» в плане). Каркас: титлбар/сайдбар/контент, реальные шрифты макета
+        (Cinzel/IBM Plex) и анимированный тумблер — декоративные SVG (зерно, фоновая
+        иллюстрация, угловые глифы) сознательно не перенесены, это чистая декорация без
+        функции и следующий, отдельный проход, если вообще понадобится.
     -->
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0"/>
