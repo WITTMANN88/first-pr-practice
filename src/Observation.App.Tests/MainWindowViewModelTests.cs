@@ -1,12 +1,24 @@
+using System.IO;
+using System.Linq;
+using Microsoft.Win32;
+using Observation.App.Runtime;
 using Observation.App.Services;
 using Observation.App.ViewModels;
+using Observation.Core.Batch;
+using Observation.Core.Conflicts;
+using Observation.Core.Engine;
+using Observation.Core.Handlers;
+using Observation.Core.Journal;
+using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 using Xunit;
 
 namespace Observation.App.Tests;
 
-public class MainWindowViewModelTests
+public class MainWindowViewModelTests : IDisposable
 {
+    private readonly string _dataFolder = Path.Combine(Path.GetTempPath(), "ObservationAppTests_" + Guid.NewGuid());
+
     private static TweakDefinition MakeTweak(string id, string tab, string group) => new()
     {
         Id = id,
@@ -28,10 +40,20 @@ public class MainWindowViewModelTests
         MakeTweak("privacy.diagtrack", "privacy", "Телеметрия")
     };
 
+    private MainWindowViewModel CreateViewModel(ILocalizationService localization, IReadOnlyList<TweakDefinition>? tweaks = null)
+    {
+        var library = new TweakLibrary(localization, tweaks ?? SampleTweaks());
+        var engine = new TweakEngine(new NoopRegistryAccessor(), new Dictionary<string, ITweakHandler>());
+        var batchRunner = new BatchRunner(engine, new JsonLinesJournalStore(_dataFolder));
+        var systemContext = new SystemContext(0, "Core", "1.0", null);
+
+        return new MainWindowViewModel(localization, library, batchRunner, new ConflictDetector(), systemContext);
+    }
+
     [Fact]
     public void NavItems_Has13Tabs_StartingWithHome()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         Assert.Equal(13, vm.NavItems.Count);
         Assert.Equal("home", vm.NavItems[0].Id);
@@ -40,7 +62,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void InitialTab_IsHomeTabViewModel()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         Assert.IsType<HomeTabViewModel>(vm.CurrentTab);
     }
@@ -48,7 +70,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectingPerfTab_FiltersOnlyMatchingTweaks()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         vm.SelectedNav = vm.NavItems.Single(n => n.Id == "perf");
 
@@ -62,7 +84,7 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectingTabWithNoTweaks_ProducesEmptyTabViewModel()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         vm.SelectedNav = vm.NavItems.Single(n => n.Id == "diag");
 
@@ -71,9 +93,27 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
+    public void NavigatingAwayAndBack_PreservesToggleState()
+    {
+        var vm = CreateViewModel(new LocalizationService());
+
+        vm.SelectedNav = vm.NavItems.Single(n => n.Id == "perf");
+        var firstVisit = (TweakListTabViewModel)vm.CurrentTab!;
+        var item = firstVisit.Groups.SelectMany(g => g.Items).First(i => i.Definition.Id == "perf.gamemode");
+        item.IsOn = true;
+
+        vm.SelectedNav = vm.NavItems.Single(n => n.Id == "home");
+        vm.SelectedNav = vm.NavItems.Single(n => n.Id == "perf");
+
+        var secondVisit = (TweakListTabViewModel)vm.CurrentTab!;
+        var sameItem = secondVisit.Groups.SelectMany(g => g.Items).First(i => i.Definition.Id == "perf.gamemode");
+        Assert.True(sameItem.IsOn);
+    }
+
+    [Fact]
     public void ToggleSidebarCommand_FlipsIsSidebarCollapsed()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         vm.ToggleSidebarCommand.Execute(null);
         Assert.True(vm.IsSidebarCollapsed);
@@ -86,7 +126,7 @@ public class MainWindowViewModelTests
     public void SetLanguageCommand_DelegatesToLocalizationService()
     {
         var localization = new LocalizationService();
-        var vm = new MainWindowViewModel(localization, SampleTweaks());
+        var vm = CreateViewModel(localization);
 
         vm.SetLanguageCommand.Execute("en");
 
@@ -96,10 +136,34 @@ public class MainWindowViewModelTests
     [Fact]
     public void SelectNavCommand_ByStringId_SwitchesSelectedNav()
     {
-        var vm = new MainWindowViewModel(new LocalizationService(), SampleTweaks());
+        var vm = CreateViewModel(new LocalizationService());
 
         vm.SelectNavCommand.Execute("privacy");
 
         Assert.Equal("privacy", vm.SelectedNav.Id);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_dataFolder))
+            Directory.Delete(_dataFolder, recursive: true);
+    }
+
+    private sealed class NoopRegistryAccessor : IRegistryAccessor
+    {
+        public bool TryReadValue(RegistryHive hive, string path, string valueName, out object? data, out RegistryValueKind kind)
+        {
+            data = null;
+            kind = RegistryValueKind.Unknown;
+            return false;
+        }
+
+        public void WriteValue(RegistryHive hive, string path, string valueName, object data, RegistryValueKind kind)
+        {
+        }
+
+        public void DeleteValue(RegistryHive hive, string path, string valueName)
+        {
+        }
     }
 }

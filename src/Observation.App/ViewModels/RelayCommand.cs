@@ -19,13 +19,13 @@ public sealed class RelayCommand : ICommand
     {
     }
 
-    public event EventHandler? CanExecuteChanged
-    {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
-    }
+    public event EventHandler? CanExecuteChanged;
 
     public bool CanExecute(object? parameter) => _canExecute?.Invoke(parameter) ?? true;
 
     public void Execute(object? parameter) => _execute(parameter);
+
+    /// <summary>Вызывается вручную там, где известно, что условие CanExecute изменилось
+    /// (например, размер очереди твиков) — не полагаемся на CommandManager.RequerySuggested.</summary>
+    public void NotifyCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }

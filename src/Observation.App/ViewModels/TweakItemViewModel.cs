@@ -5,9 +5,11 @@ using Observation.Core.Tweaks;
 namespace Observation.App.ViewModels;
 
 /// <summary>
-/// Обёртка одного TweakDefinition для привязки в интерфейсе. IsOn пока лишь отражает
-/// состояние тумблера в UI — фактическое применение через TweakEngine/BatchRunner
-/// подключается на следующем шаге (сводка + применение), не в этом архитектурном проходе.
+/// Обёртка одного TweakDefinition для привязки в интерфейсе. Один экземпляр на твик,
+/// живёт в TweakLibrary и переиспользуется между вкладками — состояние тумблера не
+/// теряется при навигации. BaselineOn — последнее известное фактическое состояние
+/// (после probe при старте или после успешного применения); IsOn != BaselineOn значит
+/// твик в очереди на применение (см. TweakLibrary.PendingChanges).
 /// </summary>
 public sealed class TweakItemViewModel : ViewModelBase
 {
@@ -30,6 +32,21 @@ public sealed class TweakItemViewModel : ViewModelBase
         get => _isOn;
         set => SetField(ref _isOn, value);
     }
+
+    public bool BaselineOn { get; private set; }
+
+    /// <summary>Задаёт и IsOn, и BaselineOn — используется при первичном probe состояния системы.</summary>
+    public void InitializeState(bool isOn)
+    {
+        BaselineOn = isOn;
+        IsOn = isOn;
+    }
+
+    /// <summary>Твик успешно применён — текущее IsOn становится новым baseline.</summary>
+    public void CommitBaseline() => BaselineOn = IsOn;
+
+    /// <summary>Применение не удалось — тумблер в интерфейсе возвращается к фактическому состоянию.</summary>
+    public void RevertToBaseline() => IsOn = BaselineOn;
 
     public TweakItemViewModel(TweakDefinition definition, ILocalizationService localization)
     {

@@ -1,18 +1,27 @@
+using Observation.App.Runtime;
 using Observation.App.Services;
-using Observation.Core.Tweaks;
+using Observation.Core.Batch;
+using Observation.Core.Conflicts;
+using Observation.Core.SystemAccess;
 
 namespace Observation.App.ViewModels;
 
 /// <summary>
 /// Корневая модель окна: список вкладок сайдбара (13 штук, id — как в data-panel из
 /// ui-preview.html и в поле "tab" JSON-реестра), переключение текущей вкладки,
-/// сворачивание сайдбара, переключение языка.
+/// сворачивание сайдбара, переключение языка. Вкладки пересоздаются при каждой
+/// навигации, но состояние тумблеров не теряется — оно живёт в TweakLibrary, общей
+/// для всех вкладок и для «Главной».
 /// </summary>
 public sealed class MainWindowViewModel : ViewModelBase
 {
     public ILocalizationService Localization { get; }
     public IReadOnlyList<NavItem> NavItems { get; }
 
+    private readonly TweakLibrary _library;
+    private readonly BatchRunner _batchRunner;
+    private readonly ConflictDetector _conflictDetector;
+    private readonly SystemContext _systemContext;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -46,11 +55,16 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand ToggleSidebarCommand { get; }
     public RelayCommand SetLanguageCommand { get; }
 
-    public MainWindowViewModel(ILocalizationService localization, IReadOnlyList<TweakDefinition> tweaks)
+    public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, BatchRunner batchRunner,
+        ConflictDetector conflictDetector, SystemContext systemContext)
     {
         Localization = localization;
+        _library = library;
+        _batchRunner = batchRunner;
+        _conflictDetector = conflictDetector;
+        _systemContext = systemContext;
         NavItems = BuildNavItems();
-        _tabFactory = tabId => CreateTab(tabId, tweaks);
+        _tabFactory = CreateTab;
 
         SelectNavCommand = new RelayCommand(id => SelectedNav = NavItems.First(n => n.Id == (string)id!));
         ToggleSidebarCommand = new RelayCommand(() => IsSidebarCollapsed = !IsSidebarCollapsed);
@@ -77,8 +91,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         new NavItem { Id = "diag", LocalizationKey = "NavDiag" }
     };
 
-    private object CreateTab(string tabId, IReadOnlyList<TweakDefinition> allTweaks) =>
+    private object CreateTab(string tabId) =>
         tabId == "home"
-            ? new HomeTabViewModel(Localization)
-            : new TweakListTabViewModel(Localization, allTweaks.Where(t => t.Tab == tabId).ToList());
+            ? new HomeTabViewModel(Localization, _library, _batchRunner, _conflictDetector, _systemContext)
+            : new TweakListTabViewModel(_library.GroupsForTab(tabId));
 }

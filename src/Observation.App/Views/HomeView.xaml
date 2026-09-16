@@ -2,9 +2,50 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
-        Заглушка «Главной» (пресеты/сводка/применение из ui-preview.html) — по
-        договорённости не входит в этот архитектурный проход.
+        Реальная очередь применения (TweakLibrary.PendingChanges по всем вкладкам) и кнопка
+        «Применить» через BatchRunner — без пресетов/статистики/журнала из ui-preview.html,
+        это отдельный, более поздний проход стилизации (см. HomeTabViewModel).
     -->
-    <TextBlock Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="13"
-               Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePlaceholder}"/>
+    <StackPanel>
+        <TextBlock Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,18"
+                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePlaceholder}"/>
+
+        <TextBlock Margin="0,0,0,8">
+            <Run Foreground="{StaticResource Color.TextMuted}"
+                 Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePendingLabel}"/>
+            <Run Foreground="{StaticResource Color.Text}" FontWeight="Bold" Text="{Binding PendingCount, Mode=OneWay}"/>
+        </TextBlock>
+
+        <ItemsControl ItemsSource="{Binding PendingChanges}" Margin="0,0,0,14">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="11" Margin="0,0,0,3">
+                        <Run Text="{Binding Name, Mode=OneWay}"/>
+                        <Run Text=" → "/>
+                        <Run Text="{Binding IsOn, Mode=OneWay}"/>
+                    </TextBlock>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Button HorizontalAlignment="Left" Padding="16,8" Cursor="Hand" BorderThickness="0"
+                Background="{StaticResource Color.Accent}" Foreground="White"
+                Command="{Binding ApplyCommand}">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Content"
+                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeApplyBtn}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsApplying}" Value="True">
+                            <Setter Property="Content"
+                                    Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeApplyingBtn}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+
+        <TextBlock Text="{Binding ResultMessage}" Foreground="{StaticResource Color.Ok}" Margin="0,12,0,0"
+                   Visibility="{Binding ResultMessage, Converter={StaticResource NullOrEmptyToVisibility}}"/>
+    </StackPanel>
 </UserControl>
