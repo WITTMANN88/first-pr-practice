@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 
 namespace Observation.Handlers.Scripts;
 
@@ -16,6 +17,14 @@ public sealed class PowerShellScriptRunner
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            // Без явной кодировки .NET декодирует редиректнутый вывод как Console.OutputEncoding
+            // хост-процесса (OEM-кодовая страница, напр. 866 на русской Windows), а Windows
+            // PowerShell 5.1 сам по себе пишет в редиректнутый stdout активной кодовой страницей
+            // ANSI (напр. 1251) — несовпадение даёт «кракозябры» на кириллице (найдено вживую на
+            // реальной машине). [Console]::OutputEncoding в самом скрипте синхронизирует сторону
+            // записи с UTF8 здесь на стороне чтения.
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             UseShellExecute = false,
             CreateNoWindow = true
         };
@@ -24,7 +33,7 @@ public sealed class PowerShellScriptRunner
         startInfo.ArgumentList.Add("-ExecutionPolicy");
         startInfo.ArgumentList.Add("Bypass");
         startInfo.ArgumentList.Add("-Command");
-        startInfo.ArgumentList.Add(scriptText);
+        startInfo.ArgumentList.Add("[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; " + scriptText);
 
         using var process = new Process { StartInfo = startInfo };
         process.OutputDataReceived += (_, e) => { if (e.Data is not null) onOutputLine(e.Data); };
