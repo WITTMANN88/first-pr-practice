@@ -38,4 +38,15 @@ public sealed class FakeRegistryAccessor : IRegistryAccessor
 
     public void DeleteValue(RegistryHive hive, string path, string valueName) =>
         _values.Remove(new Key(hive, path, valueName));
+
+    public void DeleteKey(RegistryHive hive, string path)
+    {
+        var toRemove = _values.Keys
+            .Where(k => k.Hive == hive && (k.Path.Equals(path, StringComparison.OrdinalIgnoreCase)
+                || k.Path.StartsWith(path + "\\", StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+
+        foreach (var key in toRemove)
+            _values.Remove(key);
+    }
 }

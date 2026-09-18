@@ -17,6 +17,15 @@ public sealed class ScriptDefinition
     public required LocalizedText Name { get; init; }
     public required LocalizedText Description { get; init; }
     public required Severity Severity { get; init; }
-    public required string ScriptText { get; init; }
+
+    /// <summary>Встроенные скрипты из JSON-реестра. Ровно одно из ScriptText/FilePath должно
+    /// быть задано — см. FilePath для пользовательских .ps1/.bat, добавленных через диалог.</summary>
+    public string? ScriptText { get; init; }
+
+    /// <summary>Путь к пользовательскому .ps1/.bat/.cmd, добавленному через файловый диалог
+    /// на вкладке «Скрипты» — не хранится в JSON-реестре, живёт только в течение сессии
+    /// (см. ScriptsTabViewModel.AddCustomScriptCommand, сознательно без сохранения на диск).</summary>
+    public string? FilePath { get; init; }
+
     public bool RequiresReboot { get; init; }
 }

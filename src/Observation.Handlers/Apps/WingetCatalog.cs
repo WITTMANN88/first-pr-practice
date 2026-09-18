@@ -14,7 +14,12 @@ public static class WingetCatalog
         new WingetCatalogEntry("Office", "LibreOffice", "TheDocumentFoundation.LibreOffice"),
         new WingetCatalogEntry("Multimedia", "VLC media player", "VideoLAN.VLC"),
         new WingetCatalogEntry("Utilities", "7-Zip", "7zip.7zip"),
-        new WingetCatalogEntry("Communication", "Discord", "Discord.Discord")
+        new WingetCatalogEntry("Communication", "Discord", "Discord.Discord"),
+        // Полноценная стилизация панели задач (акрил/скругление/позиционирование иконок/per-monitor,
+        // см. «Вкладка 7 — Кастомизация интерфейса» в плане) требует DWM-хуков уровня StartAllBack —
+        // план сам предлагал не переизобретать это, а предложить готовый сторонний инструмент через
+        // каталог winget; TranslucentTB — открытый, активно поддерживаемый, именно этим и занимается.
+        new WingetCatalogEntry("Utilities", "TranslucentTB (кастомизация панели задач)", "TranslucentTB.TranslucentTB")
     };
 
     /// <summary>«Установка всех версий VC++ redist и .NET Desktop Runtime одной кнопкой» — из плана.</summary>

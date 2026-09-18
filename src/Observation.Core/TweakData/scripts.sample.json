@@ -115,5 +115,31 @@
     "severity": "safe",
     "requiresReboot": false,
     "scriptText": "Remove-Item \"$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Cache\\*\" -Recurse -Force -ErrorAction SilentlyContinue; Write-Output 'Готово'"
+  },
+  {
+    "id": "scripts.ddusafemodeenter",
+    "tab": "scripts",
+    "group": { "ru": "Переустановка GPU-драйвера (DDU)", "en": "GPU driver reinstall (DDU)" },
+    "name": { "ru": "Шаг 1: войти в безопасный режим", "en": "Step 1: enter Safe Mode" },
+    "description": {
+      "ru": "Часть мастера чистой переустановки видеодрайвера из плана: bcdedit /set {current} safeboot minimal, затем требуется перезагрузка (ПЕРЕЗАГРУЗИТЕ ПК ВРУЧНУЮ ПОСЛЕ ЗАПУСКА). После входа в безопасный режим скачайте и запустите DDU (Display Driver Uninstaller, https://www.wagnardsoft.com) вручную — сама Observation его не скачивает и не запускает. Когда закончите — выполните «Шаг 2» ниже и снова перезагрузитесь.",
+      "en": "Part of the plan's clean GPU-driver-reinstall wizard: bcdedit /set {current} safeboot minimal, then a restart is required (RESTART YOUR PC MANUALLY AFTER RUNNING THIS). Once in Safe Mode, download and run DDU (Display Driver Uninstaller, https://www.wagnardsoft.com) yourself — Observation does not download or launch it. When done, run \"Step 2\" below and restart again."
+    },
+    "severity": "risky",
+    "requiresReboot": true,
+    "scriptText": "bcdedit /set {current} safeboot minimal; Write-Output 'Безопасный режим включён — перезагрузите ПК вручную'"
+  },
+  {
+    "id": "scripts.ddusafemodeexit",
+    "tab": "scripts",
+    "group": { "ru": "Переустановка GPU-драйвера (DDU)", "en": "GPU driver reinstall (DDU)" },
+    "name": { "ru": "Шаг 2: выйти из безопасного режима", "en": "Step 2: exit Safe Mode" },
+    "description": {
+      "ru": "Убирает флаг безопасного режима (bcdedit /deletevalue {current} safeboot) после того, как DDU отработал. Требуется ещё одна перезагрузка вручную, чтобы вернуться в обычный режим. Если ПК случайно застрял в безопасном режиме без возможности запустить Observation — та же команда выполняется вручную из среды восстановления Windows.",
+      "en": "Removes the Safe Mode flag (bcdedit /deletevalue {current} safeboot) after DDU has finished. One more manual restart is needed to return to normal mode. If the PC ever gets stuck in Safe Mode without being able to run Observation, the same command can be run by hand from the Windows Recovery Environment."
+    },
+    "severity": "risky",
+    "requiresReboot": true,
+    "scriptText": "bcdedit /deletevalue {current} safeboot; Write-Output 'Безопасный режим выключен — перезагрузите ПК вручную'"
   }
 ]

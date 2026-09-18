@@ -37,6 +37,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IReadOnlyList<ScriptDefinition> _scripts;
     private readonly PowerShellScriptRunner _scriptRunner;
     private readonly IProblemDeviceScanner _problemDeviceScanner;
+    private readonly IDpcActivitySampler _dpcSampler;
+    private readonly IGpuDriverInfoProvider _gpuDriverProvider;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -73,7 +75,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
         ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs,
         IUwpPackageScanner uwpScanner, IWingetInstaller wingetInstaller, IReadOnlyList<ScriptDefinition> scripts,
-        PowerShellScriptRunner scriptRunner, IProblemDeviceScanner problemDeviceScanner)
+        PowerShellScriptRunner scriptRunner, IProblemDeviceScanner problemDeviceScanner, IDpcActivitySampler dpcSampler,
+        IGpuDriverInfoProvider gpuDriverProvider)
     {
         Localization = localization;
         _library = library;
@@ -88,6 +91,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         _scripts = scripts;
         _scriptRunner = scriptRunner;
         _problemDeviceScanner = problemDeviceScanner;
+        _dpcSampler = dpcSampler;
+        _gpuDriverProvider = gpuDriverProvider;
         NavItems = BuildNavItems();
         _tabFactory = CreateTab;
 
@@ -123,7 +128,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         "apps" => new AppsTabViewModel(Localization, _library.GroupsForTab(tabId), _wingetInstaller),
         "scripts" => new ScriptsTabViewModel(Localization, _scripts, _scriptRunner),
         "clean" => new CleanTabViewModel(Localization, _library.GroupsForTab(tabId), _scripts, _scriptRunner),
-        "diag" => new DiagTabViewModel(Localization, _library.GroupsForTab(tabId), _problemDeviceScanner),
+        "diag" => new DiagTabViewModel(Localization, _library.GroupsForTab(tabId), _problemDeviceScanner, _dpcSampler, _gpuDriverProvider),
         _ => new TweakListTabViewModel(_library.GroupsForTab(tabId))
     };
 }

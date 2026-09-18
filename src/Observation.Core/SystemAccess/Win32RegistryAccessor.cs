@@ -41,4 +41,10 @@ public sealed class Win32RegistryAccessor : IRegistryAccessor
         using var subKey = baseKey.OpenSubKey(path, writable: true);
         subKey?.DeleteValue(valueName, throwOnMissingValue: false);
     }
+
+    public void DeleteKey(RegistryHive hive, string path)
+    {
+        using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Default);
+        baseKey.DeleteSubKeyTree(path, throwOnMissingSubKey: false);
+    }
 }

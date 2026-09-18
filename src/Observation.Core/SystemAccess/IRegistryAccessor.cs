@@ -12,4 +12,9 @@ public interface IRegistryAccessor
     bool TryReadValue(RegistryHive hive, string path, string valueName, out object? data, out RegistryValueKind kind);
     void WriteValue(RegistryHive hive, string path, string valueName, object data, RegistryValueKind kind);
     void DeleteValue(RegistryHive hive, string path, string valueName);
+
+    /// <summary>Удаляет весь раздел реестра целиком (со всеми подразделами) — для твиков вроде
+    /// классического контекстного меню, где «выключить» означает не очистить значение, а
+    /// убрать сам CLSID-раздел (см. ClassicContextMenuHandler).</summary>
+    void DeleteKey(RegistryHive hive, string path);
 }

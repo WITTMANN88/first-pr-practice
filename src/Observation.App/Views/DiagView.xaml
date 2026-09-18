@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
         «Диагностика и драйверы»: тумблер классического меню F8 (из TweakLibrary) сверху,
-        реальный скан проблемных устройств (read-only, «искать в интернете» вместо
+        текущая загрузка DPC/прерываний (честная замена «задержки в мкс» — см.
+        PowerShellDpcActivitySampler) и версия драйвера видеокарты со ссылкой на страницу
+        вендора, реальный скан проблемных устройств (read-only, «искать в интернете» вместо
         «исправить» — см. DiagTabViewModel/PowerShellProblemDeviceScanner) и быстрые
         ссылки на системные GUI-инструменты снизу.
     -->
@@ -49,6 +51,71 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,4,0,10"
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagDpcHeader}"/>
+
+            <Border Margin="0,0,0,18">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDpcAvailable}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border Background="{StaticResource Color.SurfaceSolid}" BorderBrush="{StaticResource Color.Border}"
+                        BorderThickness="1" CornerRadius="8" Padding="14,12">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="% DPC Time" Foreground="{StaticResource Color.TextMuted}" FontFamily="{StaticResource Font.Mono}" FontSize="10"/>
+                                <TextBlock Foreground="{StaticResource Color.Text}" FontSize="15" Text="{Binding DpcPercent, StringFormat={}{0:0.00}%}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="% Interrupt Time" Foreground="{StaticResource Color.TextMuted}" FontFamily="{StaticResource Font.Mono}" FontSize="10"/>
+                                <TextBlock Foreground="{StaticResource Color.Text}" FontSize="15" Text="{Binding InterruptPercent, StringFormat={}{0:0.00}%}"/>
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="10.5" TextWrapping="Wrap" Margin="0,10,0,0"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagDpcNote}"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+
+            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,10"
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagGpuHeader}"/>
+
+            <ItemsControl ItemsSource="{Binding GpuDrivers}" Margin="0,0,0,18">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{StaticResource Color.SurfaceSolid}" BorderBrush="{StaticResource Color.Border}"
+                                BorderThickness="1" CornerRadius="8" Padding="14,10" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
+                                    <TextBlock Text="{Binding VersionLabel}" Foreground="{StaticResource Color.TextMuted}"
+                                               FontFamily="{StaticResource Font.Mono}" FontSize="10.5"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Padding="12,6" Cursor="Hand" BorderThickness="1" VerticalAlignment="Center"
+                                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                                        Command="{Binding OpenDriverPageCommand}"
+                                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagGpuOpenBtn}"/>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

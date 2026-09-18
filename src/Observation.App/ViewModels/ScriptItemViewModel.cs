@@ -40,7 +40,12 @@ public sealed class ScriptItemViewModel : ViewModelBase
 
     public RelayCommand RunCommand { get; }
 
-    public ScriptItemViewModel(ScriptDefinition definition, PowerShellScriptRunner runner, ILocalizationService localization)
+    /// <summary>Только у скриптов, добавленных через файловый диалог (см. ScriptsTabViewModel.AddCustomScriptCommand) — встроенные из JSON-реестра нельзя удалить из интерфейса.</summary>
+    public bool IsRemovable { get; }
+    public RelayCommand? RemoveCommand { get; }
+
+    public ScriptItemViewModel(ScriptDefinition definition, PowerShellScriptRunner runner, ILocalizationService localization,
+        Action<ScriptItemViewModel>? onRemove = null)
     {
         Definition = definition;
         _runner = runner;
@@ -48,6 +53,10 @@ public sealed class ScriptItemViewModel : ViewModelBase
         _localization.PropertyChanged += OnLocalizationChanged;
 
         RunCommand = new RelayCommand(async () => await RunAsync(), () => !IsRunning);
+
+        IsRemovable = onRemove is not null;
+        if (onRemove is not null)
+            RemoveCommand = new RelayCommand(() => onRemove(this), () => !IsRunning);
     }
 
     private async Task RunAsync()
@@ -69,8 +78,9 @@ public sealed class ScriptItemViewModel : ViewModelBase
             // marshaled back to the Dispatcher or WPF throws NotSupportedException and crashes
             // the process (confirmed on a real machine: the throw happens synchronously inside
             // the event handler, not inside the awaited Task, so it bypasses the catch below).
-            var exitCode = await _runner.RunAsync(Definition.ScriptText,
-                line => Application.Current.Dispatcher.Invoke(() => Log.Add(line)));
+            var exitCode = Definition.FilePath is not null
+                ? await _runner.RunFileAsync(Definition.FilePath, line => Application.Current.Dispatcher.Invoke(() => Log.Add(line)))
+                : await _runner.RunAsync(Definition.ScriptText!, line => Application.Current.Dispatcher.Invoke(() => Log.Add(line)));
             Log.Add(exitCode == 0 ? "— завершено успешно —" : $"— завершено с кодом {exitCode} —");
         }
         catch (Exception ex)

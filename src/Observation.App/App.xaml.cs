@@ -26,6 +26,7 @@ using Observation.Handlers.Perf;
 using Observation.Handlers.Privacy;
 using Observation.Handlers.Scripts;
 using Observation.Handlers.Security;
+using Observation.Handlers.Ui;
 using Observation.Handlers.Updates;
 
 namespace Observation.App;
@@ -90,8 +91,10 @@ public partial class App : Application
         var scripts = LoadScripts();
         var scriptRunner = new PowerShellScriptRunner();
         var problemDeviceScanner = new PowerShellProblemDeviceScanner(commandRunner);
+        var dpcSampler = new PowerShellDpcActivitySampler(commandRunner);
+        var gpuDriverProvider = new PowerShellGpuDriverInfoProvider(commandRunner);
         var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext,
-            journal, pcSpecs, uwpScanner, wingetInstaller, scripts, scriptRunner, problemDeviceScanner);
+            journal, pcSpecs, uwpScanner, wingetInstaller, scripts, scriptRunner, problemDeviceScanner, dpcSampler, gpuDriverProvider);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
@@ -149,7 +152,9 @@ public partial class App : Application
         ["CapabilityOpenSshServer"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Server~~~~0.0.1.0"),
         ["CapabilityOpenSshClient"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Client~~~~0.0.1.0"),
         ["ReservedStorageToggle"] = ReservedStorageHandler.Create(commandRunner),
-        ["LegacyBootMenu"] = LegacyBootMenuHandler.Create(commandRunner)
+        ["LegacyBootMenu"] = LegacyBootMenuHandler.Create(commandRunner),
+        ["ClassicContextMenu"] = new ClassicContextMenuHandler(registry, commandRunner),
+        ["StorageSenseToggle"] = StorageSenseHandler.Create(registry)
     };
 
     /// <summary>

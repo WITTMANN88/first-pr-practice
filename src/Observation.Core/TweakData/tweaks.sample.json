@@ -898,5 +898,39 @@
     "apply": { "type": "handler", "handlerId": "LegacyBootMenu" },
     "verify": { "type": "handler", "handlerId": "LegacyBootMenu" },
     "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "ui.classiccontextmenu",
+    "tab": "ui",
+    "group": { "ru": "Проводник", "en": "Explorer" },
+    "name": { "ru": "Классическое контекстное меню", "en": "Classic context menu" },
+    "description": {
+      "ru": "Возвращает полное контекстное меню Windows 10 вместо укороченного меню Windows 11 (reg add на пустое значение у специального CLSID). Explorer перезапускается автоматически сразу после переключения — рабочий стол и панель задач на секунду мигнут, это ожидаемо.",
+      "en": "Restores the full Windows 10 right-click menu instead of the shortened Windows 11 one (reg add on a special CLSID's default value). Explorer restarts automatically right after toggling — the desktop and taskbar will flicker for a second, that's expected."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "ClassicContextMenu" },
+    "verify": { "type": "handler", "handlerId": "ClassicContextMenu" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "clean.storagesense",
+    "tab": "clean",
+    "group": { "ru": "Риск", "en": "Risk" },
+    "name": { "ru": "Storage Sense", "en": "Storage Sense" },
+    "description": {
+      "ru": "Включает/выключает автоматическую очистку места на диске Windows (временные файлы, корзина, папка загрузок по расписанию). Значение параметра (\"01\" под StorageSense\\Parameters\\StoragePolicy) — широко используемый в сообществе твикеров формат, но официально Microsoft его не документирует; на части сборок реальным движком очистки может быть StorageSensorV2, игнорирующий этот ключ — см. известное ограничение в плане.",
+      "en": "Turns Windows' automatic disk cleanup (temp files, Recycle Bin, scheduled Downloads folder cleanup) on/off. The parameter (\"01\" under StorageSense\\Parameters\\StoragePolicy) is a widely used community-documented value, not officially documented by Microsoft; on some builds the actual cleanup engine may be StorageSensorV2, which can ignore this key — see the known limitation noted in the plan."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "StorageSenseToggle" },
+    "verify": { "type": "handler", "handlerId": "StorageSenseToggle" },
+    "revert": { "type": "best-effort" }
   }
 ]

@@ -80,7 +80,14 @@ public sealed class LocalizationService : ILocalizationService
         ["DiagSystemRestoreBtn"] = "Восстановление системы",
         ["DiagControlPanelBtn"] = "Панель управления",
         ["DiagSystemPropertiesBtn"] = "Свойства системы",
-        ["DiagProgramsFeaturesBtn"] = "Программы и компоненты"
+        ["DiagProgramsFeaturesBtn"] = "Программы и компоненты",
+        ["DiagDpcHeader"] = "Загрузка DPC/прерываний",
+        ["DiagDpcNote"] = "Процент времени CPU за последнюю секунду, не микросекундная задержка — полноценный анализ требует Windows Performance Analyzer.",
+        ["DiagGpuHeader"] = "Драйвер видеокарты",
+        ["DiagGpuOpenBtn"] = "Страница драйверов",
+        ["ScriptsCustomHeader"] = "Свои скрипты",
+        ["ScriptsAddCustomBtn"] = "Добавить .ps1/.bat",
+        ["ScriptRemoveBtn"] = "Удалить"
     };
 
     private static readonly Dictionary<string, string> En = new()
@@ -151,7 +158,14 @@ public sealed class LocalizationService : ILocalizationService
         ["DiagSystemRestoreBtn"] = "System Restore",
         ["DiagControlPanelBtn"] = "Control Panel",
         ["DiagSystemPropertiesBtn"] = "System Properties",
-        ["DiagProgramsFeaturesBtn"] = "Programs and Features"
+        ["DiagProgramsFeaturesBtn"] = "Programs and Features",
+        ["DiagDpcHeader"] = "DPC/interrupt load",
+        ["DiagDpcNote"] = "CPU time percentage over the last second, not a microsecond latency figure — a full analysis needs Windows Performance Analyzer.",
+        ["DiagGpuHeader"] = "GPU driver",
+        ["DiagGpuOpenBtn"] = "Driver page",
+        ["ScriptsCustomHeader"] = "Custom scripts",
+        ["ScriptsAddCustomBtn"] = "Add .ps1/.bat",
+        ["ScriptRemoveBtn"] = "Remove"
     };
 
     public string this[string key] => (_currentLanguage == "en" ? En : Ru).TryGetValue(key, out var value) ? value : key;

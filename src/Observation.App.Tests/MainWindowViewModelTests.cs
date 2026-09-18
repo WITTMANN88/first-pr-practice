@@ -56,7 +56,7 @@ public class MainWindowViewModelTests : IDisposable
 
         return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs,
             new NoopUwpPackageScanner(), new NoopWingetInstaller(), Array.Empty<ScriptDefinition>(), new PowerShellScriptRunner(),
-            new NoopProblemDeviceScanner());
+            new NoopProblemDeviceScanner(), new NoopDpcActivitySampler(), new NoopGpuDriverInfoProvider());
     }
 
     [Fact]
@@ -174,6 +174,10 @@ public class MainWindowViewModelTests : IDisposable
         public void DeleteValue(RegistryHive hive, string path, string valueName)
         {
         }
+
+        public void DeleteKey(RegistryHive hive, string path)
+        {
+        }
     }
 
     private sealed class NoopUwpPackageScanner : IUwpPackageScanner
@@ -199,5 +203,17 @@ public class MainWindowViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<ProblemDeviceInfo>> ScanAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<ProblemDeviceInfo>>(Array.Empty<ProblemDeviceInfo>());
+    }
+
+    private sealed class NoopDpcActivitySampler : IDpcActivitySampler
+    {
+        public Task<DpcActivitySample> SampleAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(new DpcActivitySample(0, 0));
+    }
+
+    private sealed class NoopGpuDriverInfoProvider : IGpuDriverInfoProvider
+    {
+        public Task<IReadOnlyList<GpuDriverInfo>> GetAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<GpuDriverInfo>>(Array.Empty<GpuDriverInfo>());
     }
 }
