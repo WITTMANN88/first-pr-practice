@@ -864,5 +864,39 @@
     "apply": { "type": "handler", "handlerId": "CapabilityOpenSshClient" },
     "verify": { "type": "handler", "handlerId": "CapabilityOpenSshClient" },
     "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "clean.reservedstorage",
+    "tab": "clean",
+    "group": { "ru": "Риск", "en": "Risk" },
+    "name": { "ru": "Отключить Reserved Storage", "en": "Disable Reserved Storage" },
+    "description": {
+      "ru": "Отключает резервирование места на диске под будущие обновления Windows (DISM /Online /Set-ReservedStorageState). На дисках с малым объёмом свободного места это освобождает несколько ГБ, но может привести к сбоям будущих обновлений. Верификация через Get-WindowsReservedStorageState — этот конкретный командлет не проверен вживую в этой сессии.",
+      "en": "Disables reserving disk space for future Windows updates (DISM /Online /Set-ReservedStorageState). Frees up a few GB on low-space disks, but can cause future update failures. Verified via Get-WindowsReservedStorageState — this specific cmdlet hasn't been confirmed live in this session."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "ReservedStorageToggle" },
+    "verify": { "type": "handler", "handlerId": "ReservedStorageToggle" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "diag.legacybootmenu",
+    "tab": "diag",
+    "group": { "ru": "Загрузка", "en": "Boot" },
+    "name": { "ru": "Классическое меню F8 при загрузке", "en": "Legacy F8 boot menu" },
+    "description": {
+      "ru": "Возвращает старое меню дополнительных вариантов загрузки (F8) вместо современного экрана восстановления (bcdedit /set bootmenupolicy Legacy).",
+      "en": "Restores the old Advanced Boot Options (F8) menu instead of the modern recovery screen (bcdedit /set bootmenupolicy Legacy)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "LegacyBootMenu" },
+    "verify": { "type": "handler", "handlerId": "LegacyBootMenu" },
+    "revert": { "type": "best-effort" }
   }
 ]

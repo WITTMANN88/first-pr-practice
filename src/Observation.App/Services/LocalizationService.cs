@@ -68,7 +68,19 @@ public sealed class LocalizationService : ILocalizationService
         ["AppsInstalledBtn"] = "Готово",
         ["AppsRetryBtn"] = "Повторить",
         ["AppsRuntimeBundleBtn"] = "Установить VC++ redist + .NET Desktop Runtime",
-        ["AppsLogHeader"] = "Журнал установки"
+        ["AppsLogHeader"] = "Журнал установки",
+        ["ScriptRunBtn"] = "Выполнить",
+        ["ScriptRunningBtn"] = "Выполняю…",
+        ["CleanActionsHeader"] = "Разовые действия",
+        ["DiagDevicesHeader"] = "Проблемные устройства",
+        ["DiagDevicesEmpty"] = "Проблемных устройств не найдено.",
+        ["DiagSearchBtn"] = "Искать в интернете",
+        ["DiagQuickLinksHeader"] = "Быстрые ссылки",
+        ["DiagDeviceManagerBtn"] = "Диспетчер устройств",
+        ["DiagSystemRestoreBtn"] = "Восстановление системы",
+        ["DiagControlPanelBtn"] = "Панель управления",
+        ["DiagSystemPropertiesBtn"] = "Свойства системы",
+        ["DiagProgramsFeaturesBtn"] = "Программы и компоненты"
     };
 
     private static readonly Dictionary<string, string> En = new()
@@ -127,7 +139,19 @@ public sealed class LocalizationService : ILocalizationService
         ["AppsInstalledBtn"] = "Done",
         ["AppsRetryBtn"] = "Retry",
         ["AppsRuntimeBundleBtn"] = "Install VC++ redist + .NET Desktop Runtime",
-        ["AppsLogHeader"] = "Install log"
+        ["AppsLogHeader"] = "Install log",
+        ["ScriptRunBtn"] = "Run",
+        ["ScriptRunningBtn"] = "Running…",
+        ["CleanActionsHeader"] = "One-off actions",
+        ["DiagDevicesHeader"] = "Problem devices",
+        ["DiagDevicesEmpty"] = "No problem devices found.",
+        ["DiagSearchBtn"] = "Search online",
+        ["DiagQuickLinksHeader"] = "Quick links",
+        ["DiagDeviceManagerBtn"] = "Device Manager",
+        ["DiagSystemRestoreBtn"] = "System Restore",
+        ["DiagControlPanelBtn"] = "Control Panel",
+        ["DiagSystemPropertiesBtn"] = "System Properties",
+        ["DiagProgramsFeaturesBtn"] = "Programs and Features"
     };
 
     public string this[string key] => (_currentLanguage == "en" ? En : Ru).TryGetValue(key, out var value) ? value : key;

@@ -4,9 +4,12 @@ using Observation.Core.Batch;
 using Observation.Core.Conflicts;
 using Observation.Core.Engine;
 using Observation.Core.Journal;
+using Observation.Core.Scripts;
 using Observation.Core.SystemAccess;
 using Observation.Handlers.Apps;
 using Observation.Handlers.Debloat;
+using Observation.Handlers.Diag;
+using Observation.Handlers.Scripts;
 
 namespace Observation.App.ViewModels;
 
@@ -31,6 +34,9 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly PcSpecs _pcSpecs;
     private readonly IUwpPackageScanner _uwpScanner;
     private readonly IWingetInstaller _wingetInstaller;
+    private readonly IReadOnlyList<ScriptDefinition> _scripts;
+    private readonly PowerShellScriptRunner _scriptRunner;
+    private readonly IProblemDeviceScanner _problemDeviceScanner;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -66,7 +72,8 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
         ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs,
-        IUwpPackageScanner uwpScanner, IWingetInstaller wingetInstaller)
+        IUwpPackageScanner uwpScanner, IWingetInstaller wingetInstaller, IReadOnlyList<ScriptDefinition> scripts,
+        PowerShellScriptRunner scriptRunner, IProblemDeviceScanner problemDeviceScanner)
     {
         Localization = localization;
         _library = library;
@@ -78,6 +85,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         _pcSpecs = pcSpecs;
         _uwpScanner = uwpScanner;
         _wingetInstaller = wingetInstaller;
+        _scripts = scripts;
+        _scriptRunner = scriptRunner;
+        _problemDeviceScanner = problemDeviceScanner;
         NavItems = BuildNavItems();
         _tabFactory = CreateTab;
 
@@ -111,6 +121,9 @@ public sealed class MainWindowViewModel : ViewModelBase
         "home" => new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs),
         "debloat" => new DebloatTabViewModel(Localization, _library.GroupsForTab(tabId), _uwpScanner),
         "apps" => new AppsTabViewModel(Localization, _library.GroupsForTab(tabId), _wingetInstaller),
+        "scripts" => new ScriptsTabViewModel(Localization, _scripts, _scriptRunner),
+        "clean" => new CleanTabViewModel(Localization, _library.GroupsForTab(tabId), _scripts, _scriptRunner),
+        "diag" => new DiagTabViewModel(Localization, _library.GroupsForTab(tabId), _problemDeviceScanner),
         _ => new TweakListTabViewModel(_library.GroupsForTab(tabId))
     };
 }

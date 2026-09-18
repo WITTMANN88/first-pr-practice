@@ -9,10 +9,13 @@ using Observation.Core.Conflicts;
 using Observation.Core.Engine;
 using Observation.Core.Handlers;
 using Observation.Core.Journal;
+using Observation.Core.Scripts;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 using Observation.Handlers.Apps;
 using Observation.Handlers.Debloat;
+using Observation.Handlers.Diag;
+using Observation.Handlers.Scripts;
 using Xunit;
 
 namespace Observation.App.Tests;
@@ -52,7 +55,8 @@ public class MainWindowViewModelTests : IDisposable
         var pcSpecs = new PcSpecs("неизвестно", "неизвестно", "неизвестно", "неизвестно", "неизвестно");
 
         return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs,
-            new NoopUwpPackageScanner(), new NoopWingetInstaller());
+            new NoopUwpPackageScanner(), new NoopWingetInstaller(), Array.Empty<ScriptDefinition>(), new PowerShellScriptRunner(),
+            new NoopProblemDeviceScanner());
     }
 
     [Fact]
@@ -91,7 +95,7 @@ public class MainWindowViewModelTests : IDisposable
     {
         var vm = CreateViewModel(new LocalizationService());
 
-        vm.SelectedNav = vm.NavItems.Single(n => n.Id == "diag");
+        vm.SelectedNav = vm.NavItems.Single(n => n.Id == "net");
 
         var tab = Assert.IsType<TweakListTabViewModel>(vm.CurrentTab);
         Assert.True(tab.IsEmpty);
@@ -189,5 +193,11 @@ public class MainWindowViewModelTests : IDisposable
             Task.FromResult(new CommandResult(0, "", ""));
 
         public Task<bool> IsInstalledAsync(string packageId, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    }
+
+    private sealed class NoopProblemDeviceScanner : IProblemDeviceScanner
+    {
+        public Task<IReadOnlyList<ProblemDeviceInfo>> ScanAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<ProblemDeviceInfo>>(Array.Empty<ProblemDeviceInfo>());
     }
 }

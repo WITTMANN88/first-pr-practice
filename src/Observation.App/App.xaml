@@ -85,6 +85,15 @@
             <DataTemplate DataType="{x:Type vm:AppsTabViewModel}">
                 <views:AppsView/>
             </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ScriptsTabViewModel}">
+                <views:ScriptsView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:CleanTabViewModel}">
+                <views:CleanView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DiagTabViewModel}">
+                <views:DiagView/>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

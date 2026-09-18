@@ -11,16 +11,20 @@ using Observation.Core.Engine;
 using Observation.Core.Handlers;
 using Observation.Core.Journal;
 using Observation.Core.Presets;
+using Observation.Core.Scripts;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 using Observation.Handlers;
 using Observation.Handlers.Apps;
 using Observation.Handlers.Browsers;
+using Observation.Handlers.Clean;
 using Observation.Handlers.Debloat;
+using Observation.Handlers.Diag;
 using Observation.Handlers.Discord;
 using Observation.Handlers.OneDrive;
 using Observation.Handlers.Perf;
 using Observation.Handlers.Privacy;
+using Observation.Handlers.Scripts;
 using Observation.Handlers.Security;
 using Observation.Handlers.Updates;
 
@@ -83,8 +87,11 @@ public partial class App : Application
         var pcSpecs = pcSpecsProvider.GetCurrent();
         var uwpScanner = new PowerShellUwpPackageScanner(commandRunner);
         var wingetInstaller = new WingetInstaller(commandRunner);
+        var scripts = LoadScripts();
+        var scriptRunner = new PowerShellScriptRunner();
+        var problemDeviceScanner = new PowerShellProblemDeviceScanner(commandRunner);
         var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext,
-            journal, pcSpecs, uwpScanner, wingetInstaller);
+            journal, pcSpecs, uwpScanner, wingetInstaller, scripts, scriptRunner, problemDeviceScanner);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
@@ -140,7 +147,9 @@ public partial class App : Application
                        "Disable-WindowsOptionalFeature -Online -FeatureName DirectPlay -NoRestart -ErrorAction Stop | Out-Null",
             verifyScript: "(Get-WindowsOptionalFeature -Online -FeatureName WindowsMediaPlayer).State -eq 'Enabled'"),
         ["CapabilityOpenSshServer"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Server~~~~0.0.1.0"),
-        ["CapabilityOpenSshClient"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Client~~~~0.0.1.0")
+        ["CapabilityOpenSshClient"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Client~~~~0.0.1.0"),
+        ["ReservedStorageToggle"] = ReservedStorageHandler.Create(commandRunner),
+        ["LegacyBootMenu"] = LegacyBootMenuHandler.Create(commandRunner)
     };
 
     /// <summary>
@@ -194,6 +203,20 @@ public partial class App : Application
         {
             // Честный пустой список пресетов вместо падения на старте.
             return Array.Empty<PresetDefinition>();
+        }
+    }
+
+    private static IReadOnlyList<ScriptDefinition> LoadScripts()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "TweakData", "scripts.sample.json");
+        try
+        {
+            return File.Exists(path) ? ScriptRegistryLoader.LoadFromFile(path) : Array.Empty<ScriptDefinition>();
+        }
+        catch (Exception)
+        {
+            // Честный пустой список скриптов вместо падения на старте.
+            return Array.Empty<ScriptDefinition>();
         }
     }
 }
