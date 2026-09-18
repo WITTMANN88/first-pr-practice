@@ -10,9 +10,15 @@
     <!--
         Безрамочное окно с ресайзом через WindowChrome (см. «Хранение данных, окно,
         локализация» в плане). Каркас: титлбар/сайдбар/контент, реальные шрифты макета
-        (Cinzel/IBM Plex) и анимированный тумблер — декоративные SVG (зерно, фоновая
-        иллюстрация, угловые глифы) сознательно не перенесены, это чистая декорация без
-        функции и следующий, отдельный проход, если вообще понадобится.
+        (Cinzel/IBM Plex) и анимированный тумблер. Декоративный слой (фоновая иллюстрация +
+        затемняющий скрим + угловые глифы-щупальца, см. «Дизайн-система» в плане) — ниже,
+        под титлбаром/сайдбаром/контентом, чей уже непрозрачный фон (Color.SurfaceSolid на
+        карточках/сайдбаре) сам решает, где иллюстрация просвечивает, а где нет — без
+        дополнительной работы над самими вкладками. Сознательно не перенесено: процедурное
+        зерно-текстура (у WPF нет родного blend-mode "overlay" без своего шейдера — непропорционально
+        сложно ради эффекта, почти незаметного даже в самом макете при 50% opacity) и настоящий
+        acrylic-блюр сайдбара сквозь фон (WPF не даёт blur-behind "из коробки"; сайдбар остаётся
+        непрозрачным, как уже было — это отдельный, гораздо более дорогой проход, если вообще понадобится).
     -->
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0"/>
@@ -86,6 +92,50 @@
             <RowDefinition Height="38"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
+        <!-- фон: иллюстрация пользователя + тёмный скрим (та же формула, что в CSS макета:
+             linear-gradient сверху вниз + radial-gradient виньетка по центру) -->
+        <Image Grid.RowSpan="2" Source="Assets/Background.jpg" Stretch="UniformToFill" IsHitTestVisible="False"/>
+        <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#B7070405" Offset="0"/>
+                    <GradientStop Color="#E0070405" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <RadialGradientBrush GradientOrigin="0.5,0.42" Center="0.5,0.42" RadiusX="0.55" RadiusY="0.55">
+                    <GradientStop Color="#26070405" Offset="0"/>
+                    <GradientStop Color="#8C070405" Offset="0.7"/>
+                    <GradientStop Color="#8C070405" Offset="1"/>
+                </RadialGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- угловые глифы-щупальца — тот же путь Path, что и .corner-glyph в Observation Interface -->
+        <Grid Grid.RowSpan="2" Width="110" Height="110" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Opacity="0.4" IsHitTestVisible="False">
+            <Canvas>
+                <Path Data="M6,6 C40,2 52,26 28,44 C8,58 32,70 52,58 C74,44 66,18 96,12"
+                      Stroke="{StaticResource Color.AccentStrong}" StrokeThickness="2.5"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Ellipse Canvas.Left="93" Canvas.Top="9" Width="6" Height="6" Fill="{StaticResource Color.AccentStrong}"/>
+            </Canvas>
+        </Grid>
+        <Grid Grid.RowSpan="2" Width="110" Height="110" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Opacity="0.4" IsHitTestVisible="False" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+                <RotateTransform Angle="180"/>
+            </Grid.RenderTransform>
+            <Canvas>
+                <Path Data="M6,6 C40,2 52,26 28,44 C8,58 32,70 52,58 C74,44 66,18 96,12"
+                      Stroke="{StaticResource Color.AccentStrong}" StrokeThickness="2.5"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Ellipse Canvas.Left="93" Canvas.Top="9" Width="6" Height="6" Fill="{StaticResource Color.AccentStrong}"/>
+            </Canvas>
+        </Grid>
 
         <!-- titlebar -->
         <Border Grid.Row="0" MouseDown="TitleBar_MouseDown" Background="Transparent"

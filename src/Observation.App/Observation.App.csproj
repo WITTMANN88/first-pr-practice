@@ -90,6 +90,10 @@
     <Resource Include="Fonts\*.ttf" />
     <Resource Include="Assets\AppIcon.png" />
     <Resource Include="Assets\AppIcon.ico" />
+    <!-- Фоновая иллюстрация окна (щупальца/руны/пентаграммы) — тот же исходник пользователя,
+         что и icon.png/AppIcon, из макета Observation Interface. См. «Знак программы» и
+         «Дизайн-система» в плане. -->
+    <Resource Include="Assets\Background.jpg" />
   </ItemGroup>
 
 </Project>

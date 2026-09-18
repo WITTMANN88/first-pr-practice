@@ -9,8 +9,15 @@
         название (Cinzel), версия-чип, тэглайн, лицензия, заметка про будущие ссылки
         (сознательно без URL сейчас — см. «Ключевые компоненты» в плане). Модальное окно,
         не оверлей внутри MainWindow — проще и не мешает WindowChrome главного окна.
+        Тот же фоновый декоративный слой, что в MainWindow (иллюстрация + скрим), см. её комментарий.
     -->
-    <Border BorderBrush="{StaticResource Color.Accent}" BorderThickness="1" CornerRadius="10" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Grid>
+        <!-- Иллюстрация просвечивает только в отступе вокруг карточки (Margin ниже) — сама
+             карточка остаётся непрозрачной (Color.SurfaceSolid), чтобы не терять читаемость текста. -->
+        <Image Source="Assets/Background.jpg" Stretch="UniformToFill" IsHitTestVisible="False"/>
+        <Rectangle Fill="#CC070405" IsHitTestVisible="False"/>
+        <Border Margin="12" Background="{StaticResource Color.SurfaceSolid}"
+                BorderBrush="{StaticResource Color.Accent}" BorderThickness="1" CornerRadius="10" MouseLeftButtonDown="Window_MouseLeftButtonDown">
         <StackPanel Margin="28,32,28,24" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Image Source="Assets/AppIcon.png" Width="80" Height="80" Margin="0,0,0,14"/>
 
@@ -42,5 +49,6 @@
                     Click="CloseButton_Click"
                     Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutClose}"/>
         </StackPanel>
-    </Border>
+        </Border>
+    </Grid>
 </Window>
