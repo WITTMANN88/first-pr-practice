@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Observation.Core.SystemAccess;
 
 namespace Observation.Handlers.Diag;
@@ -63,7 +64,19 @@ public sealed class PowerShellGpuDriverInfoProvider : IGpuDriverInfoProvider
         return drivers;
     }
 
-    /// <summary>WMI/CIM-даты приходят как "20230815000000.000000-000" — вытаскиваем только yyyy-MM-dd, без зависимости от System.Management.</summary>
-    private static string FormatCimDate(string raw) =>
-        raw.Length >= 8 ? $"{raw[..4]}-{raw[4..6]}-{raw[6..8]}" : raw;
+    private static readonly Regex JsonDateRegex = new(@"^/Date\((-?\d+)\)/$", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Get-CimInstance превращает CIM_DATETIME в System.DateTime, поэтому ConvertTo-Json отдаёт его
+    /// в формате "/Date(unixMs)/" (не сырую CIM-строку "20230815000000.000000-000", несмотря на то,
+    /// что PowerShell мог бы отдать и её) — отсюда явный разбор обоих форматов.
+    /// </summary>
+    private static string FormatCimDate(string raw)
+    {
+        var jsonDateMatch = JsonDateRegex.Match(raw);
+        if (jsonDateMatch.Success && long.TryParse(jsonDateMatch.Groups[1].Value, out var unixMs))
+            return DateTimeOffset.FromUnixTimeMilliseconds(unixMs).UtcDateTime.ToString("yyyy-MM-dd");
+
+        return raw.Length >= 8 ? $"{raw[..4]}-{raw[4..6]}-{raw[6..8]}" : raw;
+    }
 }
