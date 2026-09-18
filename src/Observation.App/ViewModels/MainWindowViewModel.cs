@@ -5,6 +5,8 @@ using Observation.Core.Conflicts;
 using Observation.Core.Engine;
 using Observation.Core.Journal;
 using Observation.Core.SystemAccess;
+using Observation.Handlers.Apps;
+using Observation.Handlers.Debloat;
 
 namespace Observation.App.ViewModels;
 
@@ -27,6 +29,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly SystemContext _systemContext;
     private readonly IJournalStore _journal;
     private readonly PcSpecs _pcSpecs;
+    private readonly IUwpPackageScanner _uwpScanner;
+    private readonly IWingetInstaller _wingetInstaller;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -61,7 +65,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     public RelayCommand SetLanguageCommand { get; }
 
     public MainWindowViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
-        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs)
+        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs,
+        IUwpPackageScanner uwpScanner, IWingetInstaller wingetInstaller)
     {
         Localization = localization;
         _library = library;
@@ -71,6 +76,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         _systemContext = systemContext;
         _journal = journal;
         _pcSpecs = pcSpecs;
+        _uwpScanner = uwpScanner;
+        _wingetInstaller = wingetInstaller;
         NavItems = BuildNavItems();
         _tabFactory = CreateTab;
 
@@ -99,8 +106,11 @@ public sealed class MainWindowViewModel : ViewModelBase
         new NavItem { Id = "diag", LocalizationKey = "NavDiag" }
     };
 
-    private object CreateTab(string tabId) =>
-        tabId == "home"
-            ? new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs)
-            : new TweakListTabViewModel(_library.GroupsForTab(tabId));
+    private object CreateTab(string tabId) => tabId switch
+    {
+        "home" => new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs),
+        "debloat" => new DebloatTabViewModel(Localization, _library.GroupsForTab(tabId), _uwpScanner),
+        "apps" => new AppsTabViewModel(Localization, _library.GroupsForTab(tabId), _wingetInstaller),
+        _ => new TweakListTabViewModel(_library.GroupsForTab(tabId))
+    };
 }

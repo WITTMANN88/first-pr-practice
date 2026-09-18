@@ -728,5 +728,141 @@
     },
     "verify": { "type": "registry-read", "matchesApply": true },
     "revert": { "type": "restore-previous" }
+  },
+  {
+    "id": "apps.feature.netfx3",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": ".NET Framework 3.5", "en": ".NET Framework 3.5" },
+    "description": {
+      "ru": "Включает .NET Framework 3.5 (нужен части старых игр и программ).",
+      "en": "Enables .NET Framework 3.5 (needed by some older games and programs)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "FeatureNetFx3" },
+    "verify": { "type": "handler", "handlerId": "FeatureNetFx3" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.feature.hyperv",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "Hyper-V", "en": "Hyper-V" },
+    "description": {
+      "ru": "Включает встроенную виртуализацию Windows. Только редакции Pro/Enterprise/Education — на Home недоступно. Требует перезагрузку.",
+      "en": "Enables Windows' built-in virtualization. Pro/Enterprise/Education only — unavailable on Home. Requires a restart."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "editions": ["Professional", "Enterprise", "Education"] },
+    "apply": { "type": "handler", "handlerId": "FeatureHyperV" },
+    "verify": { "type": "handler", "handlerId": "FeatureHyperV" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.feature.wsl",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "Windows Subsystem for Linux", "en": "Windows Subsystem for Linux" },
+    "description": {
+      "ru": "Включает подсистему Windows для Linux. Требует перезагрузку; установка конкретного дистрибутива — отдельно, через wsl --install или Microsoft Store.",
+      "en": "Enables the Windows Subsystem for Linux. Requires a restart; installing an actual distro is separate (wsl --install or Microsoft Store)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "FeatureWsl" },
+    "verify": { "type": "handler", "handlerId": "FeatureWsl" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.feature.nfsclient",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "Клиент NFS", "en": "NFS Client" },
+    "description": {
+      "ru": "Включает клиент Services for NFS — подключение сетевых папок по протоколу NFS (например, с Linux/NAS).",
+      "en": "Enables the Services for NFS client — mounting NFS network shares (e.g. from Linux/NAS)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "FeatureNfsClient" },
+    "verify": { "type": "handler", "handlerId": "FeatureNfsClient" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.feature.sandbox",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "Windows Sandbox", "en": "Windows Sandbox" },
+    "description": {
+      "ru": "Включает изолированную одноразовую песочницу Windows для безопасного запуска непроверенных программ. Только Pro/Enterprise/Education. Требует перезагрузку.",
+      "en": "Enables Windows' isolated, disposable sandbox for safely running untrusted programs. Pro/Enterprise/Education only. Requires a restart."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": { "editions": ["Professional", "Enterprise", "Education"] },
+    "apply": { "type": "handler", "handlerId": "FeatureSandbox" },
+    "verify": { "type": "handler", "handlerId": "FeatureSandbox" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.feature.legacymedia",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "Старые медиа (Windows Media Player, DirectPlay)", "en": "Legacy media (Windows Media Player, DirectPlay)" },
+    "description": {
+      "ru": "Включает Windows Media Player и DirectPlay — нужны части старых игр и медиафайлов.",
+      "en": "Enables Windows Media Player and DirectPlay — needed by some older games and media files."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "FeatureLegacyMedia" },
+    "verify": { "type": "handler", "handlerId": "FeatureLegacyMedia" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.capability.opensshserver",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "OpenSSH Server", "en": "OpenSSH Server" },
+    "description": {
+      "ru": "Включает встроенный сервер OpenSSH (для входа на этот ПК по SSH). Отдельно от служб — саму службу sshd нужно запустить/включить автозапуск через вкладку «Автозагрузка».",
+      "en": "Enables the built-in OpenSSH server (for SSH access into this PC). Separate from services — the sshd service itself still needs to be started/enabled via the Startup tab."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "CapabilityOpenSshServer" },
+    "verify": { "type": "handler", "handlerId": "CapabilityOpenSshServer" },
+    "revert": { "type": "best-effort" }
+  },
+  {
+    "id": "apps.capability.opensshclient",
+    "tab": "apps",
+    "group": { "ru": "Компоненты Windows", "en": "Windows components" },
+    "name": { "ru": "OpenSSH Client", "en": "OpenSSH Client" },
+    "description": {
+      "ru": "Включает встроенный клиент OpenSSH (команда ssh из командной строки).",
+      "en": "Enables the built-in OpenSSH client (the ssh command from the command line)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": { "type": "always" },
+    "apply": { "type": "handler", "handlerId": "CapabilityOpenSshClient" },
+    "verify": { "type": "handler", "handlerId": "CapabilityOpenSshClient" },
+    "revert": { "type": "best-effort" }
   }
 ]

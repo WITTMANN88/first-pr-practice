@@ -14,6 +14,7 @@
             <conv:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
             <conv:SeverityToBrushConverter x:Key="SeverityToBrush"/>
             <conv:BoolToStatusBrushConverter x:Key="BoolToStatusBrush"/>
+            <conv:InverseBooleanConverter x:Key="InverseBool"/>
 
             <!--
                 Localization/LocalizedText/LocalizedTextMulti регистрируются в App.xaml.cs
@@ -77,6 +78,12 @@
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:TweakListTabViewModel}">
                 <views:TweakListView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:DebloatTabViewModel}">
+                <views:DebloatView/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:AppsTabViewModel}">
+                <views:AppsView/>
             </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>

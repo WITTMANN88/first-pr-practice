@@ -11,6 +11,8 @@ using Observation.Core.Handlers;
 using Observation.Core.Journal;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
+using Observation.Handlers.Apps;
+using Observation.Handlers.Debloat;
 using Xunit;
 
 namespace Observation.App.Tests;
@@ -49,7 +51,8 @@ public class MainWindowViewModelTests : IDisposable
         var systemContext = new SystemContext(0, "Core", "1.0", null);
         var pcSpecs = new PcSpecs("неизвестно", "неизвестно", "неизвестно", "неизвестно", "неизвестно");
 
-        return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs);
+        return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs,
+            new NoopUwpPackageScanner(), new NoopWingetInstaller());
     }
 
     [Fact]
@@ -167,5 +170,24 @@ public class MainWindowViewModelTests : IDisposable
         public void DeleteValue(RegistryHive hive, string path, string valueName)
         {
         }
+    }
+
+    private sealed class NoopUwpPackageScanner : IUwpPackageScanner
+    {
+        public Task<IReadOnlyList<UwpPackageInfo>> ScanAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<UwpPackageInfo>>(Array.Empty<UwpPackageInfo>());
+
+        public Task<CommandResult> RemoveAsync(string packageFullName, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new CommandResult(0, "", ""));
+    }
+
+    private sealed class NoopWingetInstaller : IWingetInstaller
+    {
+        public Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<CommandResult> InstallAsync(string packageId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new CommandResult(0, "", ""));
+
+        public Task<bool> IsInstalledAsync(string packageId, CancellationToken cancellationToken = default) => Task.FromResult(false);
     }
 }

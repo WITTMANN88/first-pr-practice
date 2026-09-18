@@ -13,7 +13,10 @@ using Observation.Core.Journal;
 using Observation.Core.Presets;
 using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
+using Observation.Handlers;
+using Observation.Handlers.Apps;
 using Observation.Handlers.Browsers;
+using Observation.Handlers.Debloat;
 using Observation.Handlers.Discord;
 using Observation.Handlers.OneDrive;
 using Observation.Handlers.Perf;
@@ -78,7 +81,10 @@ public partial class App : Application
         HandleCrashRecovery(journal, batchRunner, tweaks);
 
         var pcSpecs = pcSpecsProvider.GetCurrent();
-        var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext, journal, pcSpecs);
+        var uwpScanner = new PowerShellUwpPackageScanner(commandRunner);
+        var wingetInstaller = new WingetInstaller(commandRunner);
+        var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext,
+            journal, pcSpecs, uwpScanner, wingetInstaller);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
@@ -121,7 +127,20 @@ public partial class App : Application
         ["ControlledFolderAccess"] = ControlledFolderAccessHandler.Create(commandRunner),
         ["FirewallProfiles"] = FirewallProfileHandler.Create(commandRunner),
         ["DeferUpdates"] = DeferUpdatesHandler.Create(registry),
-        ["DiagTrackOff"] = DiagTrackHandler.Create(commandRunner)
+        ["DiagTrackOff"] = DiagTrackHandler.Create(commandRunner),
+        ["FeatureNetFx3"] = WindowsOptionalFeatureHandler.Create(commandRunner, "NetFx3"),
+        ["FeatureHyperV"] = WindowsOptionalFeatureHandler.Create(commandRunner, "Microsoft-Hyper-V-All"),
+        ["FeatureWsl"] = WindowsOptionalFeatureHandler.Create(commandRunner, "Microsoft-Windows-Subsystem-Linux"),
+        ["FeatureNfsClient"] = WindowsOptionalFeatureHandler.Create(commandRunner, "ServicesForNFS-ClientOnly"),
+        ["FeatureSandbox"] = WindowsOptionalFeatureHandler.Create(commandRunner, "Containers-DisposableClientVM"),
+        ["FeatureLegacyMedia"] = new PowerShellToggleHandler(commandRunner,
+            onScript: "Enable-WindowsOptionalFeature -Online -FeatureName WindowsMediaPlayer -All -NoRestart -ErrorAction Stop | Out-Null; " +
+                      "Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -NoRestart -ErrorAction Stop | Out-Null",
+            offScript: "Disable-WindowsOptionalFeature -Online -FeatureName WindowsMediaPlayer -NoRestart -ErrorAction Stop | Out-Null; " +
+                       "Disable-WindowsOptionalFeature -Online -FeatureName DirectPlay -NoRestart -ErrorAction Stop | Out-Null",
+            verifyScript: "(Get-WindowsOptionalFeature -Online -FeatureName WindowsMediaPlayer).State -eq 'Enabled'"),
+        ["CapabilityOpenSshServer"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Server~~~~0.0.1.0"),
+        ["CapabilityOpenSshClient"] = WindowsCapabilityHandler.Create(commandRunner, "OpenSSH.Client~~~~0.0.1.0")
     };
 
     /// <summary>
