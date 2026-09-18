@@ -19,23 +19,23 @@
                            Margin="0,0,0,8"
                            Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsLabel}"/>
                 <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
-                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsOs}"/>
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsOs}"/>
                     <Run Text=": "/><Run Text="{Binding PcSpecs.OsCaption, Mode=OneWay}"/>
                 </TextBlock>
                 <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
-                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsCpu}"/>
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsCpu}"/>
                     <Run Text=": "/><Run Text="{Binding PcSpecs.CpuName, Mode=OneWay}"/>
                 </TextBlock>
                 <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
-                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsGpu}"/>
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsGpu}"/>
                     <Run Text=": "/><Run Text="{Binding PcSpecs.GpuName, Mode=OneWay}"/>
                 </TextBlock>
                 <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}" Margin="0,0,0,3">
-                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsRam}"/>
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsRam}"/>
                     <Run Text=": "/><Run Text="{Binding PcSpecs.RamTotal, Mode=OneWay}"/>
                 </TextBlock>
                 <TextBlock FontSize="12" Foreground="{StaticResource Color.Text}">
-                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsDisk}"/>
+                    <Run FontWeight="Bold" Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsDisk}"/>
                     <Run Text=": "/><Run Text="{Binding PcSpecs.DiskInfo, Mode=OneWay}"/>
                 </TextBlock>
             </StackPanel>
