@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace Observation.Handlers.Scripts;
@@ -12,6 +13,8 @@ namespace Observation.Handlers.Scripts;
 /// </summary>
 public sealed class PowerShellScriptRunner
 {
+    static PowerShellScriptRunner() => Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
     /// <summary>Встроенные скрипты — инлайн-текст команды через powershell.exe -Command.</summary>
     public Task<int> RunAsync(string scriptText, Action<string> onOutputLine, CancellationToken cancellationToken = default)
     {
@@ -37,36 +40,77 @@ public sealed class PowerShellScriptRunner
     /// как есть (powershell.exe -File для .ps1, чтобы $PSScriptRoot и относительные пути внутри
     /// скрипта работали правильно; cmd.exe /c для .bat/.cmd), а не инлайнится как текст.
     /// </summary>
-    public Task<int> RunFileAsync(string filePath, Action<string> onOutputLine, CancellationToken cancellationToken = default)
+    public async Task<int> RunFileAsync(string filePath, Action<string> onOutputLine, CancellationToken cancellationToken = default)
     {
         var isBatch = filePath.EndsWith(".bat", StringComparison.OrdinalIgnoreCase)
             || filePath.EndsWith(".cmd", StringComparison.OrdinalIgnoreCase);
 
-        ProcessStartInfo startInfo;
         if (isBatch)
         {
             // chcp 65001 — тот же приём, что [Console]::OutputEncoding у PowerShell-ветки:
             // синхронизирует кодировку вывода cmd.exe с UTF8, которым мы декодируем ниже.
-            startInfo = new ProcessStartInfo("cmd.exe") { UseShellExecute = false, CreateNoWindow = true };
-            startInfo.ArgumentList.Add("/c");
-            startInfo.ArgumentList.Add($"chcp 65001>nul && \"{filePath}\"");
+            var batchStartInfo = new ProcessStartInfo("cmd.exe") { UseShellExecute = false, CreateNoWindow = true };
+            batchStartInfo.ArgumentList.Add("/c");
+            batchStartInfo.ArgumentList.Add($"chcp 65001>nul && \"{filePath}\"");
+            return await RunProcessAsync(batchStartInfo, onOutputLine, cancellationToken).ConfigureAwait(false);
         }
-        else
+
+        // Найдено вживую на реальной машине: [Console]::OutputEncoding у RunAsync/чуть выше
+        // чинит только вывод скрипта, не его исходный код — Windows PowerShell 5.1 читает .ps1
+        // без UTF-8 BOM активной ANSI-кодовой страницей (напр. 1251), что портит кириллицу прямо
+        // в строковых литералах скрипта до какого-либо вывода. Пересохраняем без BOM-файл во
+        // временную копию с явным UTF-8 BOM (сначала пробуем понять исходный текст как валидный
+        // UTF-8 без BOM, иначе — как ANSI активной кодовой страницы) — и запускаем уже её.
+        var runPath = EnsureUtf8Bom(filePath, out var tempCopy);
+        try
         {
-            startInfo = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+            var startInfo = new ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
             startInfo.ArgumentList.Add("-NoProfile");
             startInfo.ArgumentList.Add("-NonInteractive");
             startInfo.ArgumentList.Add("-ExecutionPolicy");
             startInfo.ArgumentList.Add("Bypass");
             startInfo.ArgumentList.Add("-Command");
-            // -File здесь не подходит: у него нет способа выполнить "[Console]::OutputEncoding = UTF8"
-            // перед запуском скрипта (та же кракозябра-проблема, что и в RunAsync выше). Вызов через
-            // "& 'path'" в -Command сохраняет $PSScriptRoot внутри скрипта таким же, как и -File.
+            // Вызов через "& 'path'" в -Command сохраняет $PSScriptRoot внутри скрипта таким же,
+            // как и -File — но, в отличие от -File, позволяет предварительно выставить
+            // [Console]::OutputEncoding (та же кракозябра-проблема с выводом, что и в RunAsync).
             startInfo.ArgumentList.Add(
-                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '" + filePath.Replace("'", "''") + "'");
+                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '" + runPath.Replace("'", "''") + "'");
+
+            return await RunProcessAsync(startInfo, onOutputLine, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (tempCopy)
+                File.Delete(runPath);
+        }
+    }
+
+    private static string EnsureUtf8Bom(string filePath, out bool isTempCopy)
+    {
+        var bytes = File.ReadAllBytes(filePath);
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+        {
+            isTempCopy = false;
+            return filePath;
         }
 
-        return RunProcessAsync(startInfo, onOutputLine, cancellationToken);
+        string text;
+        try
+        {
+            // Валидный UTF-8 без BOM — маловероятно получить случайно из ANSI-текста с кириллицей,
+            // так что строгая проверка (throwOnInvalidBytes) — надёжный способ отличить его от ANSI.
+            text = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true).GetString(bytes);
+        }
+        catch (DecoderFallbackException)
+        {
+            var ansiCodePage = CultureInfo.CurrentCulture.TextInfo.ANSICodePage;
+            text = Encoding.GetEncoding(ansiCodePage).GetString(bytes);
+        }
+
+        var tempPath = Path.Combine(Path.GetTempPath(), $"observation_script_{Guid.NewGuid():N}.ps1");
+        File.WriteAllText(tempPath, text, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        isTempCopy = true;
+        return tempPath;
     }
 
     private static async Task<int> RunProcessAsync(ProcessStartInfo startInfo, Action<string> onOutputLine, CancellationToken cancellationToken)

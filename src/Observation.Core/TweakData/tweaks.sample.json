@@ -905,8 +905,8 @@
     "group": { "ru": "Проводник", "en": "Explorer" },
     "name": { "ru": "Классическое контекстное меню", "en": "Classic context menu" },
     "description": {
-      "ru": "Возвращает полное контекстное меню Windows 10 вместо укороченного меню Windows 11 (reg add на пустое значение у специального CLSID). Explorer перезапускается автоматически сразу после переключения — рабочий стол и панель задач на секунду мигнут, это ожидаемо.",
-      "en": "Restores the full Windows 10 right-click menu instead of the shortened Windows 11 one (reg add on a special CLSID's default value). Explorer restarts automatically right after toggling — the desktop and taskbar will flicker for a second, that's expected."
+      "ru": "Возвращает полное контекстное меню Windows 10 вместо укороченного меню Windows 11 (reg add на пустое значение у специального CLSID). Explorer перезапускается автоматически сразу после переключения — рабочий стол и панель задач на секунду мигнут, это ожидаемо. Включение видно сразу; при выключении Windows какое-то время (проверено вживую — до минуты и дольше) продолжает показывать классическое меню даже после перезапуска Explorer — сама Windows кэширует это решение до полного выхода из системы или перезагрузки, это не сбой Observation.",
+      "en": "Restores the full Windows 10 right-click menu instead of the shortened Windows 11 one (reg add on a special CLSID's default value). Explorer restarts automatically right after toggling — the desktop and taskbar will flicker for a second, that's expected. Turning it on takes effect immediately; turning it off can leave the classic menu showing for a while (confirmed live — a minute or more) even after Explorer restarts — Windows itself caches this decision until a full sign-out or reboot, this isn't an Observation bug."
     },
     "severity": "safe",
     "controlType": "toggle",
