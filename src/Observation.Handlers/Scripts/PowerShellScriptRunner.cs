@@ -58,8 +58,12 @@ public sealed class PowerShellScriptRunner
             startInfo.ArgumentList.Add("-NonInteractive");
             startInfo.ArgumentList.Add("-ExecutionPolicy");
             startInfo.ArgumentList.Add("Bypass");
-            startInfo.ArgumentList.Add("-File");
-            startInfo.ArgumentList.Add(filePath);
+            startInfo.ArgumentList.Add("-Command");
+            // -File здесь не подходит: у него нет способа выполнить "[Console]::OutputEncoding = UTF8"
+            // перед запуском скрипта (та же кракозябра-проблема, что и в RunAsync выше). Вызов через
+            // "& 'path'" в -Command сохраняет $PSScriptRoot внутри скрипта таким же, как и -File.
+            startInfo.ArgumentList.Add(
+                "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; & '" + filePath.Replace("'", "''") + "'");
         }
 
         return RunProcessAsync(startInfo, onOutputLine, cancellationToken);
