@@ -168,15 +168,19 @@
                              ItemContainerStyle="{StaticResource NavListBoxItemStyle}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
                                     <!-- Тот же общий ромб-глиф для всех 13 вкладок, что и в Observation Interface (TABS.forEach, один SVG на все пункты). -->
-                                    <Canvas Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+                                    <Canvas Grid.Column="0" Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
                                         <Path Data="M8,2 L14,8 L8,14 L2,8 Z" StrokeThickness="1.4"
                                               Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
                                         <Ellipse Canvas.Left="6.4" Canvas.Top="6.4" Width="3.2" Height="3.2"
                                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
                                     </Canvas>
-                                    <TextBlock TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                                    <TextBlock Grid.Column="1" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Style.Triggers>
@@ -193,7 +197,7 @@
                                             </MultiBinding>
                                         </TextBlock.Text>
                                     </TextBlock>
-                                </StackPanel>
+                                </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
