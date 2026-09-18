@@ -54,7 +54,7 @@
             </ItemsControl>
 
             <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,4,0,10"
-                       Text="Установленные UWP-приложения"/>
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DebloatUwpHeader}"/>
 
             <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
@@ -70,10 +70,12 @@
                         Command="{Binding ScanCommand}">
                     <Button.Style>
                         <Style TargetType="Button">
-                            <Setter Property="Content" Value="Сканировать"/>
+                            <Setter Property="Content"
+                                    Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DebloatScanBtn}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsScanning}" Value="True">
-                                    <Setter Property="Content" Value="Сканирую…"/>
+                                    <Setter Property="Content"
+                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DebloatScanningBtn}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -104,7 +106,7 @@
                                         BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
                                         Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}" IsEnabled="{Binding IsRemoving, Converter={StaticResource InverseBool}}"
-                                        Content="Удалить"/>
+                                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DebloatRemoveBtn}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>

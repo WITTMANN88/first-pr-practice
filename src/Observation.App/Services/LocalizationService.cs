@@ -56,7 +56,19 @@ public sealed class LocalizationService : ILocalizationService
         ["SeveritySituational"] = "по ситуации",
         ["SeverityRisky"] = "риск",
         ["StateOn"] = "вкл",
-        ["StateOff"] = "выкл"
+        ["StateOff"] = "выкл",
+        ["DebloatUwpHeader"] = "Установленные UWP-приложения",
+        ["DebloatScanBtn"] = "Сканировать",
+        ["DebloatScanningBtn"] = "Сканирую…",
+        ["DebloatRemoveBtn"] = "Удалить",
+        ["AppsWingetHeader"] = "Каталог winget",
+        ["AppsWingetMissing"] = "winget не найден",
+        ["AppsInstallBtn"] = "Установить",
+        ["AppsInstallingBtn"] = "Устанавливаю…",
+        ["AppsInstalledBtn"] = "Готово",
+        ["AppsRetryBtn"] = "Повторить",
+        ["AppsRuntimeBundleBtn"] = "Установить VC++ redist + .NET Desktop Runtime",
+        ["AppsLogHeader"] = "Журнал установки"
     };
 
     private static readonly Dictionary<string, string> En = new()
@@ -103,7 +115,19 @@ public sealed class LocalizationService : ILocalizationService
         ["SeveritySituational"] = "situational",
         ["SeverityRisky"] = "risky",
         ["StateOn"] = "on",
-        ["StateOff"] = "off"
+        ["StateOff"] = "off",
+        ["DebloatUwpHeader"] = "Installed UWP apps",
+        ["DebloatScanBtn"] = "Scan",
+        ["DebloatScanningBtn"] = "Scanning…",
+        ["DebloatRemoveBtn"] = "Remove",
+        ["AppsWingetHeader"] = "winget catalog",
+        ["AppsWingetMissing"] = "winget not found",
+        ["AppsInstallBtn"] = "Install",
+        ["AppsInstallingBtn"] = "Installing…",
+        ["AppsInstalledBtn"] = "Done",
+        ["AppsRetryBtn"] = "Retry",
+        ["AppsRuntimeBundleBtn"] = "Install VC++ redist + .NET Desktop Runtime",
+        ["AppsLogHeader"] = "Install log"
     };
 
     public string this[string key] => (_currentLanguage == "en" ? En : Ru).TryGetValue(key, out var value) ? value : key;

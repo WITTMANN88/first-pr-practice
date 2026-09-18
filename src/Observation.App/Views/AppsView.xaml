@@ -54,9 +54,11 @@
             </ItemsControl>
 
             <StackPanel Orientation="Horizontal" Margin="0,4,0,10">
-                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Text="Каталог winget"/>
-                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.Danger}" Margin="8,0,0,0"
-                           Text="— winget не найден">
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsWingetHeader}"/>
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.Danger}" Margin="8,0,0,0">
+                    <Run Text="— "/>
+                    <Run Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=AppsWingetMissing}"/>
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -96,17 +98,21 @@
                                                         CommandParameter="{Binding}">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
-                                                            <Setter Property="Content" Value="Установить"/>
+                                                            <Setter Property="Content"
+                                                                    Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsInstallBtn}"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding State}" Value="Installing">
-                                                                    <Setter Property="Content" Value="Устанавливаю…"/>
+                                                                    <Setter Property="Content"
+                                                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsInstallingBtn}"/>
                                                                     <Setter Property="IsEnabled" Value="False"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding State}" Value="Installed">
-                                                                    <Setter Property="Content" Value="Готово"/>
+                                                                    <Setter Property="Content"
+                                                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsInstalledBtn}"/>
                                                                 </DataTrigger>
                                                                 <DataTrigger Binding="{Binding State}" Value="Failed">
-                                                                    <Setter Property="Content" Value="Повторить"/>
+                                                                    <Setter Property="Content"
+                                                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsRetryBtn}"/>
                                                                     <Setter Property="Foreground" Value="{StaticResource Color.Danger}"/>
                                                                 </DataTrigger>
                                                             </Style.Triggers>
@@ -126,10 +132,10 @@
             <Button HorizontalAlignment="Left" Padding="14,7" Cursor="Hand" BorderThickness="1" Margin="0,4,0,14"
                     BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
                     Command="{Binding InstallRuntimeBundleCommand}"
-                    Content="Установить VC++ redist + .NET Desktop Runtime"/>
+                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsRuntimeBundleBtn}"/>
 
             <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,8"
-                       Text="Журнал установки"/>
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppsLogHeader}"/>
             <ItemsControl ItemsSource="{Binding Log}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
