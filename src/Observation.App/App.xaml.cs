@@ -27,6 +27,14 @@ public partial class App : Application
 {
     // Именованный Mutex единственного экземпляра — см. «Хранение данных, окно, локализация» в плане.
     private Mutex? _singleInstanceMutex;
+    private TrayIconService? _trayIcon;
+
+    /// <summary>
+    /// true только когда выход инициирован явно (пункт «Выход» в трее) — иначе закрытие
+    /// главного окна (крестик) сворачивает в трей, не завершает процесс (см. «Архитектура
+    /// интерфейса» в плане). Устанавливается TrayIconService перед Shutdown().
+    /// </summary>
+    public static bool IsExiting { get; set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -74,11 +82,25 @@ public partial class App : Application
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
+        window.Closing += MainWindow_Closing;
         window.Show();
+
+        _trayIcon = new TrayIconService(window, localization);
+    }
+
+    /// <summary>Крестик сворачивает в трей вместо завершения процесса — единственный явный выход отсюда — пункт «Выход» в трее (TrayIconService.ExitApplication).</summary>
+    private static void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        if (IsExiting)
+            return;
+
+        e.Cancel = true;
+        ((Window)sender!).Hide();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _trayIcon?.Dispose();
         _singleInstanceMutex?.ReleaseMutex();
         base.OnExit(e);
     }

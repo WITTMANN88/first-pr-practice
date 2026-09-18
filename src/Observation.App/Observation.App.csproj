@@ -4,12 +4,15 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Только ради System.Windows.Forms.NotifyIcon (трей) — см. «Хранение данных, окно, локализация» в плане, готовый компонент, не своя реализация. -->
+    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Observation.App</RootNamespace>
     <AssemblyName>Observation</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <!-- ApplicationIcon появится, когда исходник знака будет упакован в .ico (см. «Знак программы» в плане) -->
+    <!-- Знак программы (голова Ктулху с щупальцами) — тот же исходник, что в сайдбаре/About/трее, см. «Знак программы» в плане. -->
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
 
     <!--
       Позволяет собирать (не запускать) WPF-проект вне Windows — проверено вживую:
@@ -36,6 +39,18 @@
     -->
   </PropertyGroup>
 
+  <!--
+    UseWindowsForms=true (только ради NotifyIcon) добавляет глобальный using на
+    System.Windows.Forms рядом с WPF-шными System.Windows/System.Windows.Controls —
+    Application/UserControl/MessageBox и т.п. становятся неоднозначными сразу везде.
+    Убираем именно этот глобальный using; TrayIconService.cs подключает
+    System.Windows.Forms явно у себя, локально, где он и нужен.
+  -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
     <ProjectReference Include="..\Observation.Handlers\Observation.Handlers.csproj" />
@@ -59,6 +74,8 @@
   -->
   <ItemGroup>
     <Resource Include="Fonts\*.ttf" />
+    <Resource Include="Assets\AppIcon.png" />
+    <Resource Include="Assets\AppIcon.ico" />
   </ItemGroup>
 
 </Project>

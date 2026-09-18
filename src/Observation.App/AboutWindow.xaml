@@ -1,0 +1,46 @@
+<Window x:Class="Observation.App.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About" Icon="Assets/AppIcon.ico" Height="360" Width="360" WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{StaticResource Color.Bg}" FontFamily="{StaticResource Font.Body}">
+    <!--
+        Экран «О программе» — из макета (Observation Interface, .about-card): знак крупно,
+        название (Cinzel), версия-чип, тэглайн, лицензия, заметка про будущие ссылки
+        (сознательно без URL сейчас — см. «Ключевые компоненты» в плане). Модальное окно,
+        не оверлей внутри MainWindow — проще и не мешает WindowChrome главного окна.
+    -->
+    <Border BorderBrush="{StaticResource Color.Accent}" BorderThickness="1" CornerRadius="10" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        <StackPanel Margin="28,32,28,24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Image Source="Assets/AppIcon.png" Width="80" Height="80" Margin="0,0,0,14"/>
+
+            <TextBlock Text="OBSERVATION" HorizontalAlignment="Center" FontFamily="{StaticResource Font.Display}"
+                       FontSize="21" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,0,0,8"/>
+
+            <Border HorizontalAlignment="Center" BorderBrush="{StaticResource Color.BorderStrong}" BorderThickness="1"
+                    CornerRadius="100" Padding="10,3" Margin="0,0,0,14">
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10.5" Foreground="{StaticResource Color.TextMuted}"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutVersion}"/>
+            </Border>
+
+            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="280"
+                       FontSize="12.5" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,10"
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutTag}"/>
+
+            <TextBlock HorizontalAlignment="Center" FontFamily="{StaticResource Font.Mono}" FontSize="10.5"
+                       Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,14"
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutLicense}"/>
+
+            <Border BorderBrush="{StaticResource Color.Border}" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,10,0,18">
+                <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="280"
+                           FontSize="10.5" FontStyle="Italic" Foreground="{StaticResource Color.TextMuted}" Opacity="0.75"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutFuture}"/>
+            </Border>
+
+            <Button Padding="18,7" Cursor="Hand" BorderThickness="1" HorizontalAlignment="Center"
+                    BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                    Click="CloseButton_Click"
+                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AboutClose}"/>
+        </StackPanel>
+    </Border>
+</Window>

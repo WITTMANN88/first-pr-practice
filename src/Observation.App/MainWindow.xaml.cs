@@ -33,6 +33,9 @@ public partial class MainWindow : Window
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
+    private void Brand_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        new AboutWindow { Owner = this }.ShowDialog();
+
     private void ToggleMaximizeRestore() =>
         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 }

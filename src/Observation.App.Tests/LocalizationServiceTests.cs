@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 using Observation.App.Services;
 using Xunit;
 
@@ -6,6 +7,27 @@ namespace Observation.App.Tests;
 
 public class LocalizationServiceTests
 {
+    /// <summary>
+    /// Регрессия: HomeActiveTweaksLabel/HomeVerifyBtn/HomeRevertBtn были добавлены в Ru,
+    /// но забыты в En — индексатор на En просто возвращал сырой ключ вместо перевода
+    /// без единой ошибки компиляции/теста, пока это не поймали на реальной машине. Сверяем
+    /// оба словаря через рефлексию, раз они private static — иначе тест не увидел бы новое расхождение.
+    /// </summary>
+    [Fact]
+    public void RuAndEn_HaveIdenticalKeySets()
+    {
+        var ru = (Dictionary<string, string>)typeof(LocalizationService)
+            .GetField("Ru", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+        var en = (Dictionary<string, string>)typeof(LocalizationService)
+            .GetField("En", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+
+        var missingFromEn = ru.Keys.Except(en.Keys).ToList();
+        var missingFromRu = en.Keys.Except(ru.Keys).ToList();
+
+        Assert.True(missingFromEn.Count == 0, $"Ключи есть в Ru, но нет в En: {string.Join(", ", missingFromEn)}");
+        Assert.True(missingFromRu.Count == 0, $"Ключи есть в En, но нет в Ru: {string.Join(", ", missingFromRu)}");
+    }
+
     [Fact]
     public void Indexer_DefaultsToRussian()
     {
