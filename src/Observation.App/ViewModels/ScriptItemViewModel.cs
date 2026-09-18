@@ -64,7 +64,13 @@ public sealed class ScriptItemViewModel : ViewModelBase
 
         try
         {
-            var exitCode = await _runner.RunAsync(Definition.ScriptText, line => Log.Add(line));
+            // PowerShellScriptRunner's OutputDataReceived/ErrorDataReceived fire on a
+            // ThreadPool thread — Log is a UI-bound ObservableCollection, so writes must be
+            // marshaled back to the Dispatcher or WPF throws NotSupportedException and crashes
+            // the process (confirmed on a real machine: the throw happens synchronously inside
+            // the event handler, not inside the awaited Task, so it bypasses the catch below).
+            var exitCode = await _runner.RunAsync(Definition.ScriptText,
+                line => Application.Current.Dispatcher.Invoke(() => Log.Add(line)));
             Log.Add(exitCode == 0 ? "— завершено успешно —" : $"— завершено с кодом {exitCode} —");
         }
         catch (Exception ex)
