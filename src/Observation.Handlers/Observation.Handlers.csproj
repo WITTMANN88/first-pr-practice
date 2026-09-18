@@ -7,6 +7,11 @@
     <RootNamespace>Observation.Handlers</RootNamespace>
   </PropertyGroup>
 
+  <!-- Портативная публикация Observation.App бандлит и эту сборку — символы зашиваем внутрь, не отдельным .pdb рядом с exe (см. Observation.App.csproj). -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
   <!--
     Процедурные обработчики твиков, которые не описываются одним реестровым
     значением: удаление OneDrive, деблоат Brave/Edge (несколько политик под

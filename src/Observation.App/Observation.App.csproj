@@ -40,6 +40,17 @@
   </PropertyGroup>
 
   <!--
+    Портативная публикация реально проверена на машине: рядом с exe оказались три .pdb
+    (Observation/.Core/.Handlers) — лишние файлы для того, кто просто копирует папку
+    целиком, а не только exe. Embedded, не none — символы остаются доступны для отладки
+    будущих крашей (их уже дважды ловили только на реальном запуске), просто зашиты в
+    сам exe/dll, а не лежат отдельными файлами.
+  -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!--
     UseWindowsForms=true (только ради NotifyIcon) добавляет глобальный using на
     System.Windows.Forms рядом с WPF-шными System.Windows/System.Windows.Controls —
     Application/UserControl/MessageBox и т.п. становятся неоднозначными сразу везде.

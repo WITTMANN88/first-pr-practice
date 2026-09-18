@@ -7,6 +7,11 @@
     <RootNamespace>Observation.Core</RootNamespace>
   </PropertyGroup>
 
+  <!-- Портативная публикация Observation.App бандлит и эту сборку — символы зашиваем внутрь, не отдельным .pdb рядом с exe (см. Observation.App.csproj). -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
   <!--
     Движок: модель твика, загрузка JSON-реестра твиков, apply/verify/revert (TweakEngine),
     накопительный пакет (BatchRunner), журнал (JsonLinesJournalStore), обнаружение
