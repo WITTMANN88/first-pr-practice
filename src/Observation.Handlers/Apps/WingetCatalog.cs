@@ -15,6 +15,7 @@ public static class WingetCatalog
         new WingetCatalogEntry("Multimedia", "VLC media player", "VideoLAN.VLC"),
         new WingetCatalogEntry("Utilities", "7-Zip", "7zip.7zip"),
         new WingetCatalogEntry("Communication", "Discord", "Discord.Discord"),
+        new WingetCatalogEntry("Utilities", "Logitech G HUB", "Logitech.GHUB"),
         // Полноценная стилизация панели задач (акрил/скругление/позиционирование иконок/per-monitor,
         // см. «Вкладка 7 — Кастомизация интерфейса» в плане) требует DWM-хуков уровня StartAllBack —
         // план сам предлагал не переизобретать это, а предложить готовый сторонний инструмент через

@@ -19,9 +19,13 @@ public sealed class RestorePointService
 
     public async Task<RestorePointResult> TryCreateAsync(string description, CancellationToken cancellationToken = default)
     {
+        // Экранируем встроенные кавычки бэктиком — сейчас description всегда захардкожен
+        // вызывающей стороной, но это дешёвая защита от поломки/инъекции в PowerShell-команду,
+        // если строка когда-нибудь станет пользовательской.
+        var escapedDescription = description.Replace("\"", "`\"");
         var script =
             "Enable-ComputerRestore -Drive \"$env:SystemDrive\\\" -ErrorAction SilentlyContinue; " +
-            $"Checkpoint-Computer -Description \"{description}\" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop";
+            $"Checkpoint-Computer -Description \"{escapedDescription}\" -RestorePointType MODIFY_SETTINGS -ErrorAction Stop";
 
         var result = await _runner.RunAsync(
             "powershell.exe",
