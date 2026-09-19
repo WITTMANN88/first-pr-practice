@@ -69,7 +69,7 @@
                         BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
                         Command="{Binding ScanCommand}">
                     <Button.Style>
-                        <Style TargetType="Button">
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                             <Setter Property="Content"
                                     Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DebloatScanBtn}"/>
                             <Style.Triggers>

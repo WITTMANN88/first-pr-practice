@@ -77,11 +77,36 @@
             </Setter>
         </Style>
 
+        <!-- Ширина сайдбара анимируется (222мс), а не прыгает мгновенно — тот же интервал,
+             что transition:width .22s у .sidebar в макете. Width — обычное double-свойство
+             самого Border, не общий Freezable-ресурс, поэтому анимировать его через DataTrigger
+             безопасно (в отличие от общих кистей/трансформов из StaticResource). -->
         <Style x:Key="SidebarStyle" TargetType="Border">
             <Setter Property="Width" Value="220"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
-                    <Setter Property="Width" Value="64"/>
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Width" To="64" Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Width" To="220" Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -156,13 +181,19 @@
                                Foreground="{StaticResource Color.TextMuted}" FontWeight="SemiBold" FontSize="11"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,10,0"
-                            shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <RadioButton Content="RU" GroupName="Lang" IsChecked="True" Margin="0,0,4,0"
-                                 Command="{Binding SetLanguageCommand}" CommandParameter="ru"/>
-                    <RadioButton Content="EN" GroupName="Lang"
-                                 Command="{Binding SetLanguageCommand}" CommandParameter="en"/>
-                </StackPanel>
+                <!-- Пилюля-переключатель языка (.langswitch в макете) — см. LangToggleButtonStyle в App.xaml. -->
+                <Border Grid.Column="2" Margin="0,0,10,0" CornerRadius="100" Padding="2"
+                        Background="#0AFFFFFF" BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="RU" GroupName="Lang" IsChecked="True"
+                                     Style="{StaticResource LangToggleButtonStyle}"
+                                     Command="{Binding SetLanguageCommand}" CommandParameter="ru"/>
+                        <RadioButton Content="EN" GroupName="Lang"
+                                     Style="{StaticResource LangToggleButtonStyle}"
+                                     Command="{Binding SetLanguageCommand}" CommandParameter="en"/>
+                    </StackPanel>
+                </Border>
 
                 <Button Grid.Column="3" Content="&#x2013;" Style="{StaticResource WinBtnStyle}"
                         Click="MinimizeButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>

@@ -39,7 +39,7 @@
                                 BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
                                 Command="{Binding RunCommand}">
                             <Button.Style>
-                                <Style TargetType="Button">
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Setter Property="Content"
                                             Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunBtn}"/>
                                     <Style.Triggers>
@@ -57,7 +57,7 @@
                                 Command="{Binding RemoveCommand}"
                                 Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRemoveBtn}">
                             <Button.Style>
-                                <Style TargetType="Button">
+                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsRemovable}" Value="True">

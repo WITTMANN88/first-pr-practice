@@ -106,6 +106,77 @@
                 </Setter>
             </Style>
 
+            <!--
+                Кнопка по умолчанию для всех обычных Button без явного Style (ghost-кнопки
+                со сплошной прозрачной заливкой — «Сканировать», «Выполнить», карточки твиков
+                и т.п. по всему приложению). Без этого стиля они рендерились через системный
+                ControlTemplate классической темы: сама заливка не показывалась (Background
+                игнорируется, тот же корень, что и у бага невидимой кнопки «Применить» —
+                см. PrimaryButtonStyle выше), но наведение мышью всё равно рисовало системный
+                серо-голубой хайлайт вместо акцентного — визуально не соответствовало макету.
+                Локальные Background/BorderBrush/Foreground на каждой конкретной кнопке (обычно
+                Transparent/Color.Border/Color.Text) по-прежнему применяются через TemplateBinding —
+                этот стиль только даёт правильный шаблон и акцентное наведение, не меняет цвета.
+            -->
+            <Style TargetType="Button">
+                <Setter Property="Padding" Value="10,6"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bg" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="7">
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource Color.AccentSoft}"/>
+                                    <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--
+                Переключатель языка в титлбаре (RU/EN) — раньше был голыми системными
+                RadioButton (кружки), сильно отличался от пилюли-переключателя в макете
+                (.langswitch). Теперь свой ControlTemplate: выбранный язык — акцентная
+                заливка и белый текст, невыбранный — приглушённый текст, светлеет при наведении.
+            -->
+            <Style x:Key="LangToggleButtonStyle" TargetType="RadioButton">
+                <Setter Property="Padding" Value="9,3"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FontFamily" Value="{StaticResource Font.Mono}"/>
+                <Setter Property="FontSize" Value="9.5"/>
+                <Setter Property="Foreground" Value="{StaticResource Color.TextMuted}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Border x:Name="Bg" Background="Transparent" CornerRadius="100">
+                                <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource Color.Text}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource Color.Accent}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Генератор вкладок из ViewModels/MainWindowViewModel.CreateTab — WPF сам выбирает
                  шаблон по типу CurrentTab через ContentControl в MainWindow.xaml. -->
             <DataTemplate DataType="{x:Type vm:HomeTabViewModel}">
