@@ -107,7 +107,7 @@
                                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13.5"
                                                    Foreground="{StaticResource Color.Text}" Margin="0,0,0,6"/>
                                         <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Color.TextMuted}"
-                                                   TextWrapping="Wrap" Margin="0,0,0,12" Height="60"/>
+                                                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Margin="0,0,0,12" Height="60"/>
                                         <Button HorizontalAlignment="Left" Padding="12,6" Cursor="Hand" BorderThickness="1"
                                                 BorderBrush="{StaticResource Color.BorderStrong}" Background="Transparent" Foreground="{StaticResource Color.Text}"
                                                 Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
