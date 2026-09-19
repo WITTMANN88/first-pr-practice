@@ -34,34 +34,31 @@
                                     <DataTemplate>
                                         <Border Background="{StaticResource Color.SurfaceSolid}"
                                                 BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
-                                                CornerRadius="8" Padding="14,12" Margin="0,0,0,8">
+                                                CornerRadius="8" Margin="0,0,0,8" ClipToBounds="True">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Width="3" HorizontalAlignment="Left"
+                                                           Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                <Grid Margin="17,12,14,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
-                                                    <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
-                                                               FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                                </StackPanel>
-
-                                                <Border Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
-                                                        BorderThickness="1" CornerRadius="100" Padding="8,3"
-                                                        Background="{Binding Definition.Severity, Converter={StaticResource SeverityToSoftBrush}}"
-                                                        BorderBrush="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Ellipse Width="6" Height="6" Margin="0,0,5,0" VerticalAlignment="Center"
-                                                                 Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
-                                                        <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
-                                                                   Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
+                                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
+                                                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                                     </StackPanel>
-                                                </Border>
 
-                                                <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
-                                                              Style="{StaticResource SwitchToggleStyle}"/>
+                                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                               FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                               Text="{Binding SeverityLabel}"
+                                                               Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+
+                                                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
+                                                                  Style="{StaticResource SwitchToggleStyle}"/>
+                                                </Grid>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

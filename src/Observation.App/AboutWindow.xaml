@@ -15,7 +15,7 @@
         <!-- Иллюстрация просвечивает только в отступе вокруг карточки (Margin ниже) — сама
              карточка остаётся непрозрачной (Color.SurfaceSolid), чтобы не терять читаемость текста. -->
         <Image Source="Assets/Background.jpg" Stretch="UniformToFill" IsHitTestVisible="False"/>
-        <Rectangle Fill="#CC070405" IsHitTestVisible="False"/>
+        <Rectangle Fill="#CC020102" IsHitTestVisible="False"/>
         <Border Margin="12" Background="{StaticResource Color.SurfaceSolid}"
                 BorderBrush="{StaticResource Color.Accent}" BorderThickness="1" CornerRadius="10" MouseLeftButtonDown="Window_MouseLeftButtonDown">
         <StackPanel Margin="28,32,28,24" HorizontalAlignment="Center" VerticalAlignment="Center">

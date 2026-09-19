@@ -124,17 +124,17 @@
         <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
             <Rectangle.Fill>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#B7070405" Offset="0"/>
-                    <GradientStop Color="#E0070405" Offset="1"/>
+                    <GradientStop Color="#B7020102" Offset="0"/>
+                    <GradientStop Color="#E0020102" Offset="1"/>
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
         <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
             <Rectangle.Fill>
                 <RadialGradientBrush GradientOrigin="0.5,0.42" Center="0.5,0.42" RadiusX="0.55" RadiusY="0.55">
-                    <GradientStop Color="#26070405" Offset="0"/>
-                    <GradientStop Color="#8C070405" Offset="0.7"/>
-                    <GradientStop Color="#8C070405" Offset="1"/>
+                    <GradientStop Color="#26020102" Offset="0"/>
+                    <GradientStop Color="#8C020102" Offset="0.7"/>
+                    <GradientStop Color="#8C020102" Offset="1"/>
                 </RadialGradientBrush>
             </Rectangle.Fill>
         </Rectangle>

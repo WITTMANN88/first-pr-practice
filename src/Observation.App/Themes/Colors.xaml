@@ -2,33 +2,28 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-        Палитра — портирована из опубликованного макета (ui-preview.html, :root .frame),
-        без изменений значений. Ключи названы как CSS-переменные оригинала, чтобы обе
-        стороны легко сверялись. Пиксель-точная стилизация (шрифты Cinzel/IBM Plex,
-        анимации, декоративные SVG) — отдельный проход позже, не в этом шаге.
+        Палитра — изначально портирована 1:1 из опубликованного макета (ui-preview.html,
+        :root .frame). По запросу пользователя ("сделаем более тёмным и глубоким") —
+        углублённый вариант B из витрины вариантов (see плейн-артефакт "Бейджи и тени"):
+        фон/поверхности заметно темнее, акцент — темнее и насыщеннее (AccentStrong
+        оставлен прежним — именно на контрасте с потемневшим Accent даёт нужный "поп").
+        Ok/Warn/Danger — независимые семантические цвета, глубину бренда не наследуют.
     -->
 
-    <SolidColorBrush x:Key="Color.Bg" Color="#FF070405"/>
-    <SolidColorBrush x:Key="Color.Surface" Color="#D2120A0C"/>
-    <SolidColorBrush x:Key="Color.SurfaceSolid" Color="#FF140C0E"/>
-    <SolidColorBrush x:Key="Color.Surface2" Color="#FF1B1013"/>
+    <SolidColorBrush x:Key="Color.Bg" Color="#FF020102"/>
+    <SolidColorBrush x:Key="Color.Surface" Color="#D2080303"/>
+    <SolidColorBrush x:Key="Color.SurfaceSolid" Color="#FF0A0505"/>
+    <SolidColorBrush x:Key="Color.Surface2" Color="#FF0F0809"/>
     <SolidColorBrush x:Key="Color.Border" Color="#0FFFFFFF"/>
-    <SolidColorBrush x:Key="Color.BorderStrong" Color="#FF2E1A1E"/>
+    <SolidColorBrush x:Key="Color.BorderStrong" Color="#FF1F1114"/>
     <SolidColorBrush x:Key="Color.Text" Color="#FFF4E9EA"/>
-    <SolidColorBrush x:Key="Color.TextMuted" Color="#FFA68D92"/>
-    <SolidColorBrush x:Key="Color.Accent" Color="#FFA82A40"/>
+    <SolidColorBrush x:Key="Color.TextMuted" Color="#FF876C70"/>
+    <SolidColorBrush x:Key="Color.Accent" Color="#FF8F1F34"/>
     <SolidColorBrush x:Key="Color.AccentStrong" Color="#FFC73F56"/>
-    <SolidColorBrush x:Key="Color.AccentPress" Color="#FF7C1F2E"/>
-    <SolidColorBrush x:Key="Color.AccentSoft" Color="#29A82A40"/>
+    <SolidColorBrush x:Key="Color.AccentPress" Color="#FF671625"/>
+    <SolidColorBrush x:Key="Color.AccentSoft" Color="#298F1F34"/>
     <SolidColorBrush x:Key="Color.Ok" Color="#FF5FBF85"/>
     <SolidColorBrush x:Key="Color.Warn" Color="#FFE0A94A"/>
     <SolidColorBrush x:Key="Color.Danger" Color="#FFE2572C"/>
-
-    <!-- Смягчённые (16% альфа, как Color.AccentSoft) варианты для заливки чипов важности —
-         не из макета напрямую (там чип — просто обводка), добавлены по итогам аудита дизайна:
-         плоская обводка без заливки читалась плоско/невзрачно на реальном экране. -->
-    <SolidColorBrush x:Key="Color.OkSoft" Color="#295FBF85"/>
-    <SolidColorBrush x:Key="Color.WarnSoft" Color="#29E0A94A"/>
-    <SolidColorBrush x:Key="Color.DangerSoft" Color="#29E2572C"/>
 
 </ResourceDictionary>

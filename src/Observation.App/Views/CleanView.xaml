@@ -33,34 +33,31 @@
                                     <DataTemplate>
                                         <Border Background="{StaticResource Color.SurfaceSolid}"
                                                 BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
-                                                CornerRadius="8" Padding="14,12" Margin="0,0,0,8">
+                                                CornerRadius="8" Margin="0,0,0,8" ClipToBounds="True">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Width="3" HorizontalAlignment="Left"
+                                                           Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                <Grid Margin="17,12,14,12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
-                                                    <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
-                                                               FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                                </StackPanel>
-
-                                                <Border Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
-                                                        BorderThickness="1" CornerRadius="100" Padding="8,3"
-                                                        Background="{Binding Definition.Severity, Converter={StaticResource SeverityToSoftBrush}}"
-                                                        BorderBrush="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Ellipse Width="6" Height="6" Margin="0,0,5,0" VerticalAlignment="Center"
-                                                                 Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
-                                                        <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
-                                                                   Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
+                                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
+                                                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                                     </StackPanel>
-                                                </Border>
 
-                                                <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
-                                                              Style="{StaticResource SwitchToggleStyle}"/>
+                                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                               FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                               Text="{Binding SeverityLabel}"
+                                                               Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+
+                                                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
+                                                                  Style="{StaticResource SwitchToggleStyle}"/>
+                                                </Grid>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -79,60 +76,57 @@
                     <DataTemplate>
                         <Border Background="{StaticResource Color.SurfaceSolid}"
                                 BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
-                                CornerRadius="8" Padding="14,12" Margin="0,0,0,10">
-                            <StackPanel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                                CornerRadius="8" Margin="0,0,0,10" ClipToBounds="True">
+                            <Grid>
+                                <Rectangle Width="3" HorizontalAlignment="Left"
+                                           Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                <StackPanel Margin="17,12,14,12">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
-                                        <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
-                                                   FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                    </StackPanel>
-
-                                    <Border Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
-                                            BorderThickness="1" CornerRadius="100" Padding="8,3"
-                                            Background="{Binding Definition.Severity, Converter={StaticResource SeverityToSoftBrush}}"
-                                            BorderBrush="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}">
-                                        <StackPanel Orientation="Horizontal">
-                                            <Ellipse Width="6" Height="6" Margin="0,0,5,0" VerticalAlignment="Center"
-                                                     Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
-                                            <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
-                                                       Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
+                                            <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
+                                                       FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                         </StackPanel>
-                                    </Border>
 
-                                    <Button Grid.Column="2" Padding="14,7" Cursor="Hand" BorderThickness="1" VerticalAlignment="Center"
-                                            BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                                            Command="{Binding RunCommand}">
-                                        <Button.Style>
-                                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                                <Setter Property="Content"
-                                                        Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunBtn}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsRunning}" Value="True">
-                                                        <Setter Property="Content"
-                                                                Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunningBtn}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                    </Button>
-                                </Grid>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
+                                                   FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                   Text="{Binding SeverityLabel}"
+                                                   Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
 
-                                <ItemsControl ItemsSource="{Binding Log}" Margin="0,10,0,0">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding}" FontFamily="{StaticResource Font.Mono}" FontSize="10.5"
-                                                       Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" Margin="0,0,0,2"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                        <Button Grid.Column="2" Padding="14,7" Cursor="Hand" BorderThickness="1" VerticalAlignment="Center"
+                                                BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                                                Command="{Binding RunCommand}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Setter Property="Content"
+                                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunBtn}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                            <Setter Property="Content"
+                                                                    Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunningBtn}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+
+                                    <ItemsControl ItemsSource="{Binding Log}" Margin="0,10,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" FontFamily="{StaticResource Font.Mono}" FontSize="10.5"
+                                                           Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

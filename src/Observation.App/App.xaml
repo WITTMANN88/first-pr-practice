@@ -13,7 +13,6 @@
 
             <conv:NullOrEmptyToVisibilityConverter x:Key="NullOrEmptyToVisibility"/>
             <conv:SeverityToBrushConverter x:Key="SeverityToBrush"/>
-            <conv:SeverityToSoftBrushConverter x:Key="SeverityToSoftBrush"/>
             <conv:BoolToStatusBrushConverter x:Key="BoolToStatusBrush"/>
             <conv:InverseBooleanConverter x:Key="InverseBool"/>
 
