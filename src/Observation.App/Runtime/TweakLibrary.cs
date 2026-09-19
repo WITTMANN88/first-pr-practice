@@ -32,7 +32,7 @@ public sealed class TweakLibrary
     public event EventHandler? PendingChanged;
 
     public TweakLibrary(ILocalizationService localization, IReadOnlyList<TweakDefinition> allTweaks, IJournalStore journal,
-        IReadOnlyList<PresetDefinition>? presets = null)
+        SystemContext systemContext, IReadOnlyList<PresetDefinition>? presets = null)
     {
         _localization = localization;
         _journal = journal;
@@ -42,7 +42,7 @@ public sealed class TweakLibrary
         var items = new Dictionary<string, TweakItemViewModel>();
         foreach (var tweak in allTweaks)
         {
-            var item = new TweakItemViewModel(tweak, localization);
+            var item = new TweakItemViewModel(tweak, localization, systemContext);
             item.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(TweakItemViewModel.IsOn))

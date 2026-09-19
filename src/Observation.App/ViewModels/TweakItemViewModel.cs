@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Observation.App.Services;
+using Observation.Core.SystemAccess;
 using Observation.Core.Tweaks;
 
 namespace Observation.App.ViewModels;
@@ -30,6 +31,15 @@ public sealed class TweakItemViewModel : ViewModelBase
 
     public string InfoText => Definition.Info?.Get(_localization.CurrentLanguage) ?? string.Empty;
 
+    /// <summary>
+    /// Из макета: строка твика, несовместимого с этой машиной (сборка Windows/редакция/CPU —
+    /// см. ApplicabilityRule), должна быть заранее серой с пояснением "почему", а не просто
+    /// молча падать при "Применить". Оценивается один раз при создании — SystemContext не
+    /// меняется за время жизни процесса.
+    /// </summary>
+    public bool IsApplicableHere { get; }
+    public string? ApplicabilityReason { get; }
+
     private bool _isOn;
     public bool IsOn
     {
@@ -56,11 +66,15 @@ public sealed class TweakItemViewModel : ViewModelBase
     /// <summary>Применение не удалось — тумблер в интерфейсе возвращается к фактическому состоянию.</summary>
     public void RevertToBaseline() => IsOn = BaselineOn;
 
-    public TweakItemViewModel(TweakDefinition definition, ILocalizationService localization)
+    public TweakItemViewModel(TweakDefinition definition, ILocalizationService localization, SystemContext systemContext)
     {
         Definition = definition;
         _localization = localization;
         _localization.PropertyChanged += OnLocalizationChanged;
+
+        var applicability = definition.Applicability.Evaluate(systemContext);
+        IsApplicableHere = applicability.IsApplicable;
+        ApplicabilityReason = applicability.Reason;
     }
 
     private void OnLocalizationChanged(object? sender, PropertyChangedEventArgs e)

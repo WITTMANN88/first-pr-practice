@@ -80,7 +80,7 @@ public partial class App : Application
 
         var tweaks = LoadTweakRegistry();
         var presets = LoadPresets();
-        var library = new TweakLibrary(localization, tweaks, journal, presets);
+        var library = new TweakLibrary(localization, tweaks, journal, systemContext, presets);
         var pcSpecsProvider = new PcSpecsProvider();
 
         // Блокирующий вызов на старте: набор твиков пока небольшой (JSON-реестр), полноценный

@@ -49,9 +49,9 @@ public class MainWindowViewModelTests : IDisposable
     {
         var journal = new JsonLinesJournalStore(_dataFolder);
         var engine = new TweakEngine(new NoopRegistryAccessor(), new Dictionary<string, ITweakHandler>());
-        var library = new TweakLibrary(localization, tweaks ?? SampleTweaks(), journal);
-        var batchRunner = new BatchRunner(engine, journal);
         var systemContext = new SystemContext(0, "Core", "1.0", null);
+        var library = new TweakLibrary(localization, tweaks ?? SampleTweaks(), journal, systemContext);
+        var batchRunner = new BatchRunner(engine, journal);
         var pcSpecs = new PcSpecs("неизвестно", "неизвестно", "неизвестно", "неизвестно", "неизвестно");
 
         return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs,
