@@ -26,6 +26,8 @@ public sealed class HomeTabViewModel : ViewModelBase
     private readonly ConflictDetector _conflictDetector;
     private readonly SystemContext _systemContext;
     private readonly IJournalStore _journal;
+    private readonly RestorePointService _restorePointService;
+    private readonly AntivirusBannerState _antivirusBanner;
 
     public IReadOnlyList<TweakItemViewModel> PendingChanges => _library.PendingChanges;
     public int PendingCount => PendingChanges.Count;
@@ -64,13 +66,26 @@ public sealed class HomeTabViewModel : ViewModelBase
         private set => SetField(ref _resultHasFailures, value);
     }
 
+    private bool _createRestorePointBeforeApply = true;
+    public bool CreateRestorePointBeforeApply
+    {
+        get => _createRestorePointBeforeApply;
+        set => SetField(ref _createRestorePointBeforeApply, value);
+    }
+
+    /// <summary>Мех. надёжности №5 из плана — баннер, если проба записи в реестр/папку данных при старте провалилась.</summary>
+    public bool ShowAntivirusBanner => _antivirusBanner.ShouldShow;
+
     public RelayCommand ApplyCommand { get; }
     public RelayCommand VerifyCommand { get; }
     public RelayCommand RevertCommand { get; }
     public RelayCommand ApplyPresetCommand { get; }
+    public RelayCommand DismissAntivirusBannerCommand { get; }
+    public RelayCommand OpenDefenderExclusionsCommand { get; }
 
     public HomeTabViewModel(ILocalizationService localization, TweakLibrary library, TweakEngine engine, BatchRunner batchRunner,
-        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs)
+        ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs,
+        RestorePointService restorePointService, AntivirusBannerState antivirusBanner)
     {
         Localization = localization;
         _library = library;
@@ -80,12 +95,20 @@ public sealed class HomeTabViewModel : ViewModelBase
         _systemContext = systemContext;
         _journal = journal;
         PcSpecs = pcSpecs;
+        _restorePointService = restorePointService;
+        _antivirusBanner = antivirusBanner;
         Presets = library.Presets.Select(p => new PresetViewModel(p, localization)).ToList();
 
         ApplyCommand = new RelayCommand(async () => await ApplyAsync(), () => !IsApplying && PendingCount > 0);
         VerifyCommand = new RelayCommand(async () => await VerifyAsync(), () => !IsApplying);
         RevertCommand = new RelayCommand(async id => await RevertAsync((string)id!), _ => !IsApplying);
         ApplyPresetCommand = new RelayCommand(id => _library.ApplyPreset((string)id!));
+        DismissAntivirusBannerCommand = new RelayCommand(() =>
+        {
+            _antivirusBanner.Dismissed = true;
+            OnPropertyChanged(nameof(ShowAntivirusBanner));
+        });
+        OpenDefenderExclusionsCommand = new RelayCommand(() => ShellLauncher.Launch("ms-settings:windowsdefender"));
         _library.PendingChanged += OnPendingChanged;
     }
 
@@ -113,12 +136,20 @@ public sealed class HomeTabViewModel : ViewModelBase
 
         await RunExclusiveAsync(async () =>
         {
+            string? restoreMessage = null;
+            if (CreateRestorePointBeforeApply)
+            {
+                var restoreResult = await _restorePointService.TryCreateAsync("Observation — перед применением твиков");
+                restoreMessage = restoreResult.Message;
+            }
+
             var result = await _library.ApplyPendingAsync(_batchRunner, _systemContext);
             var failed = result.Outcomes.Count(o => !o.Success);
             ResultHasFailures = failed > 0;
-            ResultMessage = failed == 0
+            var applyMessage = failed == 0
                 ? $"Применено успешно: {result.Outcomes.Count}"
                 : $"Применено: {result.Outcomes.Count - failed} из {result.Outcomes.Count}, ошибок: {failed}";
+            ResultMessage = restoreMessage is null ? applyMessage : $"{restoreMessage}\n{applyMessage}";
         });
 
         OnPendingChanged(this, EventArgs.Empty);

@@ -36,6 +36,40 @@
 
         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="0,0,0,4">
+                <!-- Мех. надёжности №5 из плана: баннер, если проба записи в реестр/папку данных при старте (AntivirusSelfCheck) провалилась. -->
+                <Border Margin="0,0,0,14" Padding="14,12" CornerRadius="10"
+                        Background="#1AE0A94A" BorderBrush="#59E0A94A" BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowAntivirusBanner}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock FontWeight="SemiBold" Foreground="{StaticResource Color.Warn}" Margin="0,0,0,4"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerTitle}"/>
+                            <TextBlock Foreground="{StaticResource Color.Text}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerDesc}"/>
+                            <Button HorizontalAlignment="Left" Padding="12,6" Cursor="Hand" BorderThickness="1"
+                                    BorderBrush="{StaticResource Color.Warn}" Background="Transparent" Foreground="{StaticResource Color.Warn}"
+                                    Command="{Binding OpenDefenderExclusionsCommand}"
+                                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerBtn}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Top" Padding="6" Cursor="Hand" BorderThickness="0"
+                                Background="Transparent" Foreground="{StaticResource Color.TextMuted}" Content="&#x2715;"
+                                Command="{Binding DismissAntivirusBannerCommand}"/>
+                    </Grid>
+                </Border>
+
                 <TextBlock FontFamily="{StaticResource Font.Display}" FontSize="21" FontWeight="SemiBold"
                            Foreground="{StaticResource Color.Text}" Margin="0,0,0,4"
                            Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeTitle}"/>
@@ -225,16 +259,16 @@
         </ScrollViewer>
 
         <!--
-            Закреплённая панель применения внизу — как .applybar в макете. Без тумблера «точка
-            восстановления перед применением»: этой функции пока нет в движке (BatchRunner не
-            создаёт restore point) — показывать переключатель без реального эффекта было бы
-            нечестно, честнее не показывать его вообще, чем притвориться.
+            Закреплённая панель применения внизу — как .applybar в макете, включая тумблер
+            «точка восстановления перед применением» (.rp) — теперь реально создаёт точку через
+            RestorePointService.TryCreateAsync (Checkpoint-Computer), включён по умолчанию.
         -->
         <Border Grid.Row="1" Background="{StaticResource Color.SurfaceSolid}"
                 BorderBrush="{StaticResource Color.Border}" BorderThickness="0,1,0,0" Padding="0,14,0,4" Margin="0,10,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -259,7 +293,13 @@
                     </TextBlock>
                 </StackPanel>
 
-                <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding ApplyCommand}">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <ToggleButton IsChecked="{Binding CreateRestorePointBeforeApply}" Style="{StaticResource SwitchToggleStyle}" Margin="0,0,8,0"/>
+                    <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="11.5" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="150"
+                               Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeRestorePointLabel}"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding ApplyCommand}">
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
                             <Setter Property="Content"

@@ -39,6 +39,8 @@ public sealed class MainWindowViewModel : ViewModelBase
     private readonly IProblemDeviceScanner _problemDeviceScanner;
     private readonly IDpcActivitySampler _dpcSampler;
     private readonly IGpuDriverInfoProvider _gpuDriverProvider;
+    private readonly RestorePointService _restorePointService;
+    private readonly AntivirusBannerState _antivirusBanner;
     private readonly Func<string, object> _tabFactory;
 
     private NavItem _selectedNav;
@@ -76,7 +78,7 @@ public sealed class MainWindowViewModel : ViewModelBase
         ConflictDetector conflictDetector, SystemContext systemContext, IJournalStore journal, PcSpecs pcSpecs,
         IUwpPackageScanner uwpScanner, IWingetInstaller wingetInstaller, IReadOnlyList<ScriptDefinition> scripts,
         PowerShellScriptRunner scriptRunner, IProblemDeviceScanner problemDeviceScanner, IDpcActivitySampler dpcSampler,
-        IGpuDriverInfoProvider gpuDriverProvider)
+        IGpuDriverInfoProvider gpuDriverProvider, RestorePointService restorePointService, AntivirusBannerState antivirusBanner)
     {
         Localization = localization;
         _library = library;
@@ -93,6 +95,8 @@ public sealed class MainWindowViewModel : ViewModelBase
         _problemDeviceScanner = problemDeviceScanner;
         _dpcSampler = dpcSampler;
         _gpuDriverProvider = gpuDriverProvider;
+        _restorePointService = restorePointService;
+        _antivirusBanner = antivirusBanner;
         NavItems = BuildNavItems();
         _tabFactory = CreateTab;
 
@@ -123,7 +127,8 @@ public sealed class MainWindowViewModel : ViewModelBase
 
     private object CreateTab(string tabId) => tabId switch
     {
-        "home" => new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs),
+        "home" => new HomeTabViewModel(Localization, _library, _engine, _batchRunner, _conflictDetector, _systemContext, _journal, _pcSpecs,
+            _restorePointService, _antivirusBanner),
         "debloat" => new DebloatTabViewModel(Localization, _library.GroupsForTab(tabId), _uwpScanner),
         "apps" => new AppsTabViewModel(Localization, _library.GroupsForTab(tabId), _wingetInstaller),
         "scripts" => new ScriptsTabViewModel(Localization, _scripts, _scriptRunner),

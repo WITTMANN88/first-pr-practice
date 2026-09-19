@@ -71,6 +71,12 @@ public partial class App : Application
         var journal = new JsonLinesJournalStore(dataFolder);
         var batchRunner = new BatchRunner(engine, journal);
         var conflictDetector = new ConflictDetector();
+        var restorePointService = new RestorePointService(commandRunner);
+
+        // Механизм надёжности №5 из плана: проба записи в реестр/папку данных при старте.
+        // Раньше AntivirusSelfCheck существовал в Observation.Core, но нигде не вызывался —
+        // мёртвый код, найдено при инвентаризации честных пробелов.
+        var antivirusBanner = new AntivirusBannerState(AntivirusSelfCheck.Run(registry, dataFolder));
 
         var tweaks = LoadTweakRegistry();
         var presets = LoadPresets();
@@ -94,7 +100,8 @@ public partial class App : Application
         var dpcSampler = new PowerShellDpcActivitySampler(commandRunner);
         var gpuDriverProvider = new PowerShellGpuDriverInfoProvider(commandRunner);
         var mainViewModel = new MainWindowViewModel(localization, library, engine, batchRunner, conflictDetector, systemContext,
-            journal, pcSpecs, uwpScanner, wingetInstaller, scripts, scriptRunner, problemDeviceScanner, dpcSampler, gpuDriverProvider);
+            journal, pcSpecs, uwpScanner, wingetInstaller, scripts, scriptRunner, problemDeviceScanner, dpcSampler, gpuDriverProvider,
+            restorePointService, antivirusBanner);
 
         var window = new MainWindow { DataContext = mainViewModel };
         MainWindow = window;
