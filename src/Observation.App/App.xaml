@@ -141,17 +141,42 @@
                 <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="Background" Value="{StaticResource Color.Accent}"/>
-                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
                 <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border x:Name="Bg" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                                <Grid>
+                                    <!-- Плавный переход на наведении вместо мгновенной смены цвета: анимировать напрямую
+                                         замороженный общий StaticResource-брэш нельзя (см. SwitchToggleStyle выше) —
+                                         вместо этого сверху лежит отдельный слой, у которого анимируется Opacity, а не цвет. -->
+                                    <Border x:Name="HoverOverlay" Background="{StaticResource Color.AccentStrong}" CornerRadius="8" Opacity="0"/>
+                                    <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource Color.AccentStrong}"/>
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Color.AccentStrong}"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Opacity" Value="0.4"/>
@@ -177,19 +202,42 @@
             <Style TargetType="Button">
                 <Setter Property="Padding" Value="10,6"/>
                 <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="Bg" Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="7">
-                                <ContentPresenter Margin="{TemplateBinding Padding}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Grid>
+                                    <!-- Тот же приём, что в PrimaryButtonStyle: плавно анимируется Opacity отдельного
+                                         слоя-подсветки, а не цвет общего замороженного брэша. -->
+                                    <Border x:Name="HoverOverlay" Background="{StaticResource Color.AccentSoft}" CornerRadius="7" Opacity="0"/>
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Bg" Property="Background" Value="{StaticResource Color.AccentSoft}"/>
                                     <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="HoverOverlay" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                    <Setter TargetName="Bg" Property="BorderThickness" Value="1"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
                                     <Setter Property="Opacity" Value="0.45"/>
@@ -226,6 +274,48 @@
                                 <Trigger Property="IsChecked" Value="True">
                                     <Setter TargetName="Bg" Property="Background" Value="{StaticResource Color.Accent}"/>
                                     <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--
+                Чекбокс по умолчанию (сейчас единственный в приложении — «понимаю риски» в
+                ApplySummaryWindow) — без своего шаблона рисуется системным белым квадратом
+                классической темы, тот же класс несоответствия тёмной теме, что был у Button/
+                RadioButton выше. Квадрат 16×16 со скруглением, акцентная заливка + галочка
+                при отметке, акцентная рамка при наведении/фокусе клавиатурой.
+            -->
+            <Style TargetType="CheckBox">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <StackPanel Orientation="Horizontal">
+                                <Border x:Name="Box" Width="16" Height="16" CornerRadius="4" BorderThickness="1"
+                                        BorderBrush="{StaticResource Color.BorderStrong}" Background="Transparent" VerticalAlignment="Top">
+                                    <Path x:Name="Check" Margin="2" Data="M1,5.5 L4.5,9 L11,1.5" Stroke="White" StrokeThickness="2"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed"/>
+                                </Border>
+                                <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Box" Property="Background" Value="{StaticResource Color.Accent}"/>
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                    <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
