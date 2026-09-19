@@ -71,6 +71,41 @@
                 </Setter>
             </Style>
 
+            <!--
+                Кнопка основного действия (сейчас — «Применить» на «Главной») — обязательно со
+                своим ControlTemplate: у стандартного шаблона Button на классической теме WPF
+                Background не красит заливку лицевой стороны кнопки (только рамку/оверлеи
+                hover/pressed), поэтому обычная кнопка с Background=Color.Accent без Template
+                визуально выглядит пустым белым прямоугольником с невидимым текстом — именно
+                так и было найдено вживую на реальной машине (см. историю коммитов).
+            -->
+            <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+                <Setter Property="Padding" Value="16,8"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background" Value="{StaticResource Color.Accent}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource Color.AccentStrong}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.4"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Генератор вкладок из ViewModels/MainWindowViewModel.CreateTab — WPF сам выбирает
                  шаблон по типу CurrentTab через ContentControl в MainWindow.xaml. -->
             <DataTemplate DataType="{x:Type vm:HomeTabViewModel}">
