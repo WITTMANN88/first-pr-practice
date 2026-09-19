@@ -13,13 +13,26 @@ public sealed class ProcessCommandRunner : ICommandRunner
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true,
-            // Без явной кодировки .NET декодирует редиректнутый вывод ANSI-кодовой страницей
-            // хоста, а winget сам пишет в редиректнутый stdout/stderr в UTF-8 — несовпадение даёт
-            // «кракозябры» на кириллице (найдено вживую: сообщение об ошибке winget install).
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8
+            CreateNoWindow = true
         };
+
+        // winget сам пишет в редиректнутый stdout/stderr в UTF-8, а без явной кодировки .NET
+        // декодирует его ANSI-кодовой страницей хоста — несовпадение даёт «кракозябры» на
+        // кириллице (найдено вживую: сообщение об ошибке winget install). Это НЕ применимо ко
+        // всем остальным вызовам через этот же RunAsync (почти все — powershell.exe): без своего
+        // "[Console]::OutputEncoding = UTF8" внутри самого скрипта (как делает отдельный
+        // PowerShellScriptRunner для вкладки «Скрипты») Windows PowerShell 5.1 пишет
+        // редиректнутый вывод/ошибки ANSI-кодовой страницей хоста, а не UTF-8 — форсировать
+        // здесь UTF-8 сломало бы уже корректно работающие кириллические сообщения об ошибках
+        // PowerShell-обработчиков (UAC/CFA/firewall/UWP-скан и т.д.), поэтому кодировка задаётся
+        // только для winget, по имени исполняемого файла.
+        if (fileName.Equals("winget", StringComparison.OrdinalIgnoreCase) ||
+            fileName.Equals("winget.exe", StringComparison.OrdinalIgnoreCase))
+        {
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
+            startInfo.StandardErrorEncoding = Encoding.UTF8;
+        }
+
         foreach (var arg in arguments)
             startInfo.ArgumentList.Add(arg);
 
