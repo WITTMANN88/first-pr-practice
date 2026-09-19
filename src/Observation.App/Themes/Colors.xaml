@@ -24,4 +24,11 @@
     <SolidColorBrush x:Key="Color.Warn" Color="#FFE0A94A"/>
     <SolidColorBrush x:Key="Color.Danger" Color="#FFE2572C"/>
 
+    <!-- Смягчённые (16% альфа, как Color.AccentSoft) варианты для заливки чипов важности —
+         не из макета напрямую (там чип — просто обводка), добавлены по итогам аудита дизайна:
+         плоская обводка без заливки читалась плоско/невзрачно на реальном экране. -->
+    <SolidColorBrush x:Key="Color.OkSoft" Color="#295FBF85"/>
+    <SolidColorBrush x:Key="Color.WarnSoft" Color="#29E0A94A"/>
+    <SolidColorBrush x:Key="Color.DangerSoft" Color="#29E2572C"/>
+
 </ResourceDictionary>

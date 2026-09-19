@@ -64,10 +64,15 @@
                                                 </StackPanel>
 
                                                 <Border Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
-                                                        BorderThickness="1" CornerRadius="100" Padding="8,2"
+                                                        BorderThickness="1" CornerRadius="100" Padding="8,3"
+                                                        Background="{Binding Definition.Severity, Converter={StaticResource SeverityToSoftBrush}}"
                                                         BorderBrush="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}">
-                                                    <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
-                                                               Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse Width="6" Height="6" Margin="0,0,5,0" VerticalAlignment="Center"
+                                                                 Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                        <TextBlock Text="{Binding SeverityLabel}" FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                                   Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                                                    </StackPanel>
                                                 </Border>
 
                                                 <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
