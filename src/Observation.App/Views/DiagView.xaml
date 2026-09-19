@@ -62,7 +62,7 @@
                                                           Visibility="{Binding InfoText, Converter={StaticResource NullOrEmptyToVisibility}}">
                                                         <ToggleButton x:Name="InfoToggle" Style="{StaticResource InfoToggleButtonStyle}"/>
                                                         <Popup IsOpen="{Binding IsChecked, ElementName=InfoToggle, Mode=TwoWay}" StaysOpen="False"
-                                                               Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                                                               Placement="Left" HorizontalOffset="-6" AllowsTransparency="True" PopupAnimation="Fade">
                                                             <Border Style="{StaticResource InfoPopupBorderStyle}">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=InfoWhatTitle}"
