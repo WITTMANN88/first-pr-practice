@@ -9,6 +9,19 @@
         «исправить» — см. DiagTabViewModel/PowerShellProblemDeviceScanner) и быстрые
         ссылки на системные GUI-инструменты снизу.
     -->
+    <UserControl.Resources>
+        <!-- Карточка быстрой ссылки (иконка + подпись) — как .linkbtn в макете, вместо
+             прежних кнопок с одним текстом (честно отмеченный пробел в прошлом проходе). -->
+        <Style x:Key="QuickLinkButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="110"/>
+            <Setter Property="Padding" Value="10,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Color.Border}"/>
+            <Setter Property="Background" Value="{StaticResource Color.SurfaceSolid}"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+    </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel>
             <ItemsControl ItemsSource="{Binding Groups}">
@@ -171,26 +184,70 @@
                        Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagQuickLinksHeader}"/>
 
             <WrapPanel>
-                <Button Margin="0,0,8,8" Padding="14,7" Cursor="Hand" BorderThickness="1"
-                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                        Command="{Binding OpenDeviceManagerCommand}"
-                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagDeviceManagerBtn}"/>
-                <Button Margin="0,0,8,8" Padding="14,7" Cursor="Hand" BorderThickness="1"
-                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                        Command="{Binding OpenSystemRestoreCommand}"
-                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagSystemRestoreBtn}"/>
-                <Button Margin="0,0,8,8" Padding="14,7" Cursor="Hand" BorderThickness="1"
-                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                        Command="{Binding OpenControlPanelCommand}"
-                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagControlPanelBtn}"/>
-                <Button Margin="0,0,8,8" Padding="14,7" Cursor="Hand" BorderThickness="1"
-                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                        Command="{Binding OpenSystemPropertiesCommand}"
-                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagSystemPropertiesBtn}"/>
-                <Button Margin="0,0,8,8" Padding="14,7" Cursor="Hand" BorderThickness="1"
-                        BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
-                        Command="{Binding OpenProgramsFeaturesCommand}"
-                        Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagProgramsFeaturesBtn}"/>
+                <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenDeviceManagerCommand}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <Rectangle Canvas.Left="1" Canvas.Top="2" Width="18" Height="14" RadiusX="2" RadiusY="2"
+                                       Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Line X1="7" Y1="19.5" X2="15" Y2="19.5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                            <Line X1="11" Y1="16" X2="11" Y2="19.5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                        </Canvas>
+                        <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                   Foreground="{StaticResource Color.Text}"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagDeviceManagerBtn}"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenSystemRestoreCommand}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <Path Data="M10,2 A8,8 0 1 0 18,10" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="none"/>
+                            <Path Data="M10,2 L10,7 L14,7" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="none" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                        </Canvas>
+                        <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                   Foreground="{StaticResource Color.Text}"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagSystemRestoreBtn}"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenControlPanelCommand}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <Ellipse Canvas.Left="7.5" Canvas.Top="7.5" Width="5" Height="5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Path Data="M16,10 A6,6 0 0 0 15.75,8.3 L17.1,7.2 15.75,4.9 14.1,5.5 A6,6 0 0 0 12.6,4.6 L12.2,2.8 h-2.4 l-.4,1.8 A6,6 0 0 0 7.9,5.5 L6.25,4.9 4.9,7.2 6.25,8.3 A6,6 0 0 0 6.25,11.7 L4.9,12.8 6.25,15.1 7.9,14.5 A6,6 0 0 0 9.4,15.4 L9.8,17.2 h2.4 l.4,-1.8 A6,6 0 0 0 14.1,14.5 l1.65,.6 1.35,-2.3 -1.35,-1.1 A6,6 0 0 0 16,10 Z"
+                                  Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.2" Fill="none" StrokeLineJoin="Round"/>
+                        </Canvas>
+                        <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                   Foreground="{StaticResource Color.Text}"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagControlPanelBtn}"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenSystemPropertiesCommand}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <Rectangle Canvas.Left="2" Canvas.Top="3" Width="16" Height="11" RadiusX="1.5" RadiusY="1.5"
+                                       Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Line X1="7" Y1="17.5" X2="13" Y2="17.5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" StrokeStartLineCap="Round"/>
+                            <Line X1="10" Y1="14" X2="10" Y2="17.5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Line X1="6" Y1="8" X2="14" Y2="8" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.2"/>
+                        </Canvas>
+                        <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                   Foreground="{StaticResource Color.Text}"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagSystemPropertiesBtn}"/>
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenProgramsFeaturesCommand}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <Rectangle Canvas.Left="2.5" Canvas.Top="4" Width="15" Height="13" RadiusX="1.2" RadiusY="1.2"
+                                       Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Line X1="2.5" Y1="8" X2="17.5" Y2="8" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
+                            <Line X1="6.5" Y1="4" X2="6.5" Y2="2.3" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" StrokeStartLineCap="Round"/>
+                            <Line X1="13.5" Y1="4" X2="13.5" Y2="2.3" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" StrokeStartLineCap="Round"/>
+                        </Canvas>
+                        <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
+                                   Foreground="{StaticResource Color.Text}"
+                                   Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=DiagProgramsFeaturesBtn}"/>
+                    </StackPanel>
+                </Button>
             </WrapPanel>
         </StackPanel>
     </ScrollViewer>
