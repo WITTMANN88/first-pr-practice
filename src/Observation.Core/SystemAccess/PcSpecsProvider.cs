@@ -15,7 +15,7 @@ public sealed class PcSpecsProvider
         CpuName: QuerySingle("SELECT Name FROM Win32_Processor", "Name") ?? "неизвестно",
         GpuName: QuerySingle("SELECT Name FROM Win32_VideoController", "Name") ?? "неизвестно",
         RamTotal: FormatRamTotal(),
-        DiskInfo: FormatSystemDisk());
+        DiskInfo: FormatDiskInfo());
 
     private static string? QuerySingle(string query, string property)
     {
@@ -50,17 +50,39 @@ public sealed class PcSpecsProvider
         }
     }
 
-    private static string FormatSystemDisk()
+    /// <summary>
+    /// Раньше показывал только раздел C: — терял и общий физический объём накопителя(ей), и
+    /// остальные разделы (D:, E: и т.д.). Теперь: Win32_DiskDrive.Size — суммарная физическая
+    /// ёмкость всех физических накопителей (не логических разделов — это разные числа, если
+    /// есть неразмеченное место/скрытые служебные разделы); Win32_LogicalDisk WHERE DriveType=3
+    /// (только локальные несъёмные разделы, не CD-ROM/сетевые/съёмные диски) — перечисление всех
+    /// логических разделов с их занятостью, не только системного.
+    /// </summary>
+    private static string FormatDiskInfo()
     {
+        long totalPhysicalBytes = 0;
         try
         {
-            using var searcher = new ManagementObjectSearcher(
-                "SELECT Size, FreeSpace FROM Win32_LogicalDisk WHERE DeviceID='C:'");
-            foreach (ManagementBaseObject item in searcher.Get())
+            using var driveSearcher = new ManagementObjectSearcher("SELECT Size FROM Win32_DiskDrive");
+            foreach (ManagementBaseObject drive in driveSearcher.Get())
+                totalPhysicalBytes += Convert.ToInt64(drive["Size"]);
+        }
+        catch (Exception)
+        {
+            // Общий физический объём останется неизвестным — разбивка по разделам ниже всё равно покажется.
+        }
+
+        var partitions = new List<string>();
+        try
+        {
+            using var logicalSearcher = new ManagementObjectSearcher(
+                "SELECT DeviceID, Size, FreeSpace FROM Win32_LogicalDisk WHERE DriveType=3");
+            foreach (ManagementBaseObject disk in logicalSearcher.Get())
             {
-                var size = Convert.ToInt64(item["Size"]);
-                var free = Convert.ToInt64(item["FreeSpace"]);
-                return $"{free / (1024.0 * 1024 * 1024):0.#} ГБ свободно из {size / (1024.0 * 1024 * 1024):0.#} ГБ (C:)";
+                var deviceId = disk["DeviceID"] as string ?? "?:";
+                var size = Convert.ToInt64(disk["Size"]);
+                var free = Convert.ToInt64(disk["FreeSpace"]);
+                partitions.Add($"{deviceId} {FormatBytes(free)} своб. из {FormatBytes(size)}");
             }
         }
         catch (Exception)
@@ -68,6 +90,16 @@ public sealed class PcSpecsProvider
             // см. QuerySingle
         }
 
-        return "неизвестно";
+        if (partitions.Count == 0)
+            return "неизвестно";
+
+        var header = totalPhysicalBytes > 0 ? $"{FormatBytes(totalPhysicalBytes)} физически" : "объём накопителя неизвестен";
+        return header + "\n" + string.Join("\n", partitions.OrderBy(p => p, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        var gb = bytes / (1024.0 * 1024 * 1024);
+        return gb >= 1000 ? $"{gb / 1024.0:0.##} ТБ" : $"{gb:0.#} ГБ";
     }
 }
