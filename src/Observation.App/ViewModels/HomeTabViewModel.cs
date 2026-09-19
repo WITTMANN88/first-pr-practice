@@ -1,6 +1,7 @@
 using System.Windows;
 using Observation.App.Runtime;
 using Observation.App.Services;
+using Observation.App.Views;
 using Observation.Core.Batch;
 using Observation.Core.Conflicts;
 using Observation.Core.Engine;
@@ -123,16 +124,12 @@ public sealed class HomeTabViewModel : ViewModelBase
     {
         var pendingIds = PendingChanges.Select(i => i.Definition.Id).ToList();
         var conflicts = _conflictDetector.Scan(pendingIds);
-        if (conflicts.Count > 0)
-        {
-            var text = string.Join("\n", conflicts.Select(c => $"• {c.MessageRu}"));
-            var proceed = MessageBox.Show(
-                $"Обнаружены конфликты в выбранных твиках:\n\n{text}\n\nПродолжить применение?",
-                "Конфликт твиков", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        var conflictMessages = conflicts.Select(c => c.MessageRu).ToList();
 
-            if (proceed != MessageBoxResult.Yes)
-                return;
-        }
+        var summaryViewModel = new ApplySummaryViewModel(Localization, PendingChanges, conflictMessages);
+        var summaryWindow = new ApplySummaryWindow(summaryViewModel) { Owner = Application.Current.MainWindow };
+        if (summaryWindow.ShowDialog() != true)
+            return;
 
         await RunExclusiveAsync(async () =>
         {
