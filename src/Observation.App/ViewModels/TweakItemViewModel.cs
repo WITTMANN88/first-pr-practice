@@ -28,6 +28,8 @@ public sealed class TweakItemViewModel : ViewModelBase
 
     public string IsOnLabel => _localization[IsOn ? "StateOn" : "StateOff"];
 
+    public string InfoText => Definition.Info?.Get(_localization.CurrentLanguage) ?? string.Empty;
+
     private bool _isOn;
     public bool IsOn
     {
@@ -69,6 +71,7 @@ public sealed class TweakItemViewModel : ViewModelBase
             OnPropertyChanged(nameof(Description));
             OnPropertyChanged(nameof(SeverityLabel));
             OnPropertyChanged(nameof(IsOnLabel));
+            OnPropertyChanged(nameof(InfoText));
         }
     }
 }

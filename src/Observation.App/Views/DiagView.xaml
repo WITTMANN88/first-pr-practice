@@ -44,6 +44,7 @@
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                         <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
                                                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
@@ -57,7 +58,24 @@
                                                                Text="{Binding SeverityLabel}"
                                                                Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
 
-                                                    <ToggleButton Grid.Column="2" IsChecked="{Binding IsOn}"
+                                                    <Grid Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center"
+                                                          Visibility="{Binding InfoText, Converter={StaticResource NullOrEmptyToVisibility}}">
+                                                        <ToggleButton x:Name="InfoToggle" Style="{StaticResource InfoToggleButtonStyle}"/>
+                                                        <Popup IsOpen="{Binding IsChecked, ElementName=InfoToggle, Mode=TwoWay}" StaysOpen="False"
+                                                               Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                                                            <Border Style="{StaticResource InfoPopupBorderStyle}">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=InfoWhatTitle}"
+                                                                               FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                                                               Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding InfoText}" Foreground="{StaticResource Color.Text}"
+                                                                               FontSize="11.5" TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </Popup>
+                                                    </Grid>
+
+                                                    <ToggleButton Grid.Column="3" IsChecked="{Binding IsOn}"
                                                                   Style="{StaticResource SwitchToggleStyle}"/>
                                                 </Grid>
                                             </Grid>

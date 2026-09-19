@@ -15,4 +15,5 @@ public sealed class TweakDefinition
     public required ApplySpec Apply { get; init; }
     public required VerifySpec Verify { get; init; }
     public required RevertSpec Revert { get; init; }
+    public LocalizedText? Info { get; init; }
 }

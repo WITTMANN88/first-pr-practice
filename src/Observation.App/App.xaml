@@ -72,6 +72,62 @@
             </Style>
 
             <!--
+                Кнопка «?» с попапом-подсказкой у твика (ToggleButton, не Button) — открытие/
+                закрытие через саму привязку IsChecked, никакого code-behind. Popup рядом
+                биндится Mode=TwoWay к тому же IsChecked: StaysOpen="False" сам сбрасывает
+                Popup.IsOpen при клике снаружи, и это должно долетать обратно до кнопки.
+            -->
+            <Style x:Key="InfoToggleButtonStyle" TargetType="ToggleButton">
+                <Setter Property="Width" Value="18"/>
+                <Setter Property="Height" Value="18"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="FontFamily" Value="{StaticResource Font.Mono}"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="Foreground" Value="{StaticResource Color.TextMuted}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ToggleButton">
+                            <Border x:Name="Circle" CornerRadius="9" BorderThickness="1"
+                                    BorderBrush="{StaticResource Color.BorderStrong}" Background="Transparent">
+                                <TextBlock Text="?" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}"
+                                           FontSize="{TemplateBinding FontSize}"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Circle" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Color.Text}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Circle" Property="Background" Value="{StaticResource Color.AccentSoft}"/>
+                                    <Setter TargetName="Circle" Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                    <Setter Property="Foreground" Value="{StaticResource Color.Text}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--
+                Всплывающая карточка подсказки — общий вид для всех вкладок с твиками
+                (TweakListView/DebloatView/CleanView/DiagView/AppsView).
+            -->
+            <Style x:Key="InfoPopupBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource Color.SurfaceSolid}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource Color.BorderStrong}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="12,10"/>
+                <Setter Property="MaxWidth" Value="280"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.4" Color="Black"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--
                 Кнопка основного действия (сейчас — «Применить» на «Главной») — обязательно со
                 своим ControlTemplate: у стандартного шаблона Button на классической теме WPF
                 Background не красит заливку лицевой стороны кнопки (только рамку/оверлеи
