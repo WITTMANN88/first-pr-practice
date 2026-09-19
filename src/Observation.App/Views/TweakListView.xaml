@@ -1,20 +1,6 @@
 <UserControl x:Class="Observation.App.Views.TweakListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Лёгкое появление вкладки при переключении (fade+slide, 220мс) — см. .panelIn в макете. -->
-    <UserControl.RenderTransform>
-        <TranslateTransform Y="6"/>
-    </UserControl.RenderTransform>
-    <UserControl.Triggers>
-        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-            <BeginStoryboard>
-                <Storyboard>
-                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.22"/>
-                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="6" To="0" Duration="0:0:0.22"/>
-                </Storyboard>
-            </BeginStoryboard>
-        </EventTrigger>
-    </UserControl.Triggers>
     <!--
         Генератор списка твиков: группы из TweakDefinition.Group, строки из
         TweakDefinition внутри группы — общий шаблон для всех вкладок с твиками.
@@ -22,7 +8,7 @@
         цветная пилюля по важности); фоновая иллюстрация/зерно/декоративные SVG
         из ui-preview.html сюда сознательно не перенесены — не несут функции.
     -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel>
             <TextBlock Margin="0,0,0,10" Foreground="{StaticResource Color.TextMuted}"
                        Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=TweakListEmpty}">
