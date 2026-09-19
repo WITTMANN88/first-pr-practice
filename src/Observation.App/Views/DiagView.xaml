@@ -200,8 +200,8 @@
                 <Button Style="{StaticResource QuickLinkButtonStyle}" Command="{Binding OpenSystemRestoreCommand}">
                     <StackPanel HorizontalAlignment="Center">
                         <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
-                            <Path Data="M10,2 A8,8 0 1 0 18,10" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="none"/>
-                            <Path Data="M10,2 L10,7 L14,7" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="none" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                            <Path Data="M10,2 A8,8 0 1 0 18,10" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="Transparent"/>
+                            <Path Data="M10,2 L10,7 L14,7" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
                         </Canvas>
                         <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
                                    Foreground="{StaticResource Color.Text}"
@@ -213,7 +213,7 @@
                         <Canvas Width="20" Height="20" HorizontalAlignment="Center" Margin="0,0,0,6">
                             <Ellipse Canvas.Left="7.5" Canvas.Top="7.5" Width="5" Height="5" Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.4"/>
                             <Path Data="M16,10 A6,6 0 0 0 15.75,8.3 L17.1,7.2 15.75,4.9 14.1,5.5 A6,6 0 0 0 12.6,4.6 L12.2,2.8 h-2.4 l-.4,1.8 A6,6 0 0 0 7.9,5.5 L6.25,4.9 4.9,7.2 6.25,8.3 A6,6 0 0 0 6.25,11.7 L4.9,12.8 6.25,15.1 7.9,14.5 A6,6 0 0 0 9.4,15.4 L9.8,17.2 h2.4 l.4,-1.8 A6,6 0 0 0 14.1,14.5 l1.65,.6 1.35,-2.3 -1.35,-1.1 A6,6 0 0 0 16,10 Z"
-                                  Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.2" Fill="none" StrokeLineJoin="Round"/>
+                                  Stroke="{StaticResource Color.TextMuted}" StrokeThickness="1.2" Fill="Transparent" StrokeLineJoin="Round"/>
                         </Canvas>
                         <TextBlock HorizontalAlignment="Center" FontSize="11" TextWrapping="Wrap" TextAlignment="Center"
                                    Foreground="{StaticResource Color.Text}"

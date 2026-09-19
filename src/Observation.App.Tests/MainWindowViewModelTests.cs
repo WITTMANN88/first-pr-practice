@@ -56,7 +56,8 @@ public class MainWindowViewModelTests : IDisposable
 
         return new MainWindowViewModel(localization, library, engine, batchRunner, new ConflictDetector(), systemContext, journal, pcSpecs,
             new NoopUwpPackageScanner(), new NoopWingetInstaller(), Array.Empty<ScriptDefinition>(), new PowerShellScriptRunner(),
-            new NoopProblemDeviceScanner(), new NoopDpcActivitySampler(), new NoopGpuDriverInfoProvider());
+            new NoopProblemDeviceScanner(), new NoopDpcActivitySampler(), new NoopGpuDriverInfoProvider(),
+            new RestorePointService(new NoopCommandRunner()), new AntivirusBannerState(new SelfCheckResult(false, false)));
     }
 
     [Fact]
@@ -215,5 +216,11 @@ public class MainWindowViewModelTests : IDisposable
     {
         public Task<IReadOnlyList<GpuDriverInfo>> GetAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<GpuDriverInfo>>(Array.Empty<GpuDriverInfo>());
+    }
+
+    private sealed class NoopCommandRunner : ICommandRunner
+    {
+        public Task<CommandResult> RunAsync(string fileName, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new CommandResult(0, "", ""));
     }
 }
