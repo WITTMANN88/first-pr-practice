@@ -1,0 +1,42 @@
+[
+  {
+    "id": "minimal",
+    "name": { "ru": "Минимальный", "en": "Minimal" },
+    "description": {
+      "ru": "Телеметрия и журнал действий — откл. Из полного описания пресета в плане пока реализовано только это; точка восстановления и очистка temp туда не входят — это отдельные, ещё не подключённые к пресетам функции.",
+      "en": "Telemetry and activity history — off. Only this part of the preset's full plan description is implemented so far; the restore point and temp cleanup aren't wired into presets yet."
+    },
+    "tweakIds": [ "privacy.diagtrack", "privacy.activityhistory" ]
+  },
+  {
+    "id": "standard",
+    "name": { "ru": "Стандартный", "en": "Standard" },
+    "description": {
+      "ru": "Минимальный + рекламный ID, геолокация — откл.; обновления отложены. Классическое контекстное меню и деблоат UWP из плана сюда пока не входят — этих твиков ещё нет в реестре.",
+      "en": "Minimal + advertising ID, geolocation — off; updates deferred. The classic context menu and UWP debloat from the plan aren't included yet — those tweaks don't exist in the registry yet."
+    },
+    "tweakIds": [ "privacy.diagtrack", "privacy.activityhistory", "privacy.advertising", "privacy.geolocation", "updates.defer" ]
+  },
+  {
+    "id": "maximum",
+    "name": { "ru": "Максимальный", "en": "Maximum" },
+    "description": {
+      "ru": "Стандартный + все текущие твики уровня «по ситуации» из всех вкладок. Ни одного риск-твика — они только вручную.",
+      "en": "Standard + every current \"situational\" tweak across all tabs. No risk tweaks — those are manual only."
+    },
+    "tweakIds": [
+      "privacy.diagtrack", "privacy.activityhistory", "privacy.advertising", "privacy.geolocation", "updates.defer",
+      "perf.hags", "privacy.camera", "privacy.microphone", "security.cfa", "security.firewall",
+      "ui.lockscreen", "net.ipv4priority", "autostart.utc", "autostart.spooler"
+    ]
+  },
+  {
+    "id": "gaming",
+    "name": { "ru": "Игровой", "en": "Gaming" },
+    "description": {
+      "ru": "Game Mode, Xbox Game Bar/Game DVR — откл., приоритет IPv4, твики Discord/Chrome/Edge. Ultimate Performance, откл. ускорения мыши/энергосбережения USB и адаптера из плана сюда пока не входят — этих твиков ещё нет в реестре.",
+      "en": "Game Mode, Xbox Game Bar/Game DVR — off, IPv4 priority, Discord/Chrome/Edge tweaks. Ultimate Performance and disabling mouse acceleration/USB/adapter power saving from the plan aren't included yet — those tweaks don't exist in the registry yet."
+    },
+    "tweakIds": [ "perf.gamemode", "perf.xboxdvr", "apps.discord.hwaccel", "perf.browserperf", "net.ipv4priority" ]
+  }
+]

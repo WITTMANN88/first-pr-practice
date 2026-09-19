@@ -1,0 +1,102 @@
+<UserControl x:Class="Observation.App.Views.ScriptsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        «Скрипты» — разовые действия с подтверждением, не тумблеры (см. план, «Вкладка 9 —
+        Скрипты»: «здесь не тумблеры с накопительным применением»). Встроенная библиотека
+        (Scripts) сверху, пользовательские .ps1/.bat/.cmd, добавленные через диалог
+        (CustomScripts, см. ScriptsTabViewModel.AddCustomScriptCommand) — снизу, с кнопкой
+        «Удалить» (только у них, IsRemovable) — не сохраняются между запусками, сознательно.
+    -->
+    <UserControl.Resources>
+        <DataTemplate x:Key="ScriptItemTemplate">
+            <Border Background="{StaticResource Color.SurfaceSolid}"
+                    BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
+                    CornerRadius="8" Margin="0,0,0,10" ClipToBounds="True">
+                <Grid>
+                    <Rectangle Width="3" HorizontalAlignment="Left"
+                               Fill="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+                    <StackPanel Margin="17,12,14,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="{Binding Name}" Foreground="{StaticResource Color.Text}" FontSize="13"/>
+                                <TextBlock Text="{Binding Description}" Foreground="{StaticResource Color.TextMuted}"
+                                           FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0"
+                                       FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                       Text="{Binding SeverityLabel}"
+                                       Foreground="{Binding Definition.Severity, Converter={StaticResource SeverityToBrush}}"/>
+
+                            <Button Grid.Column="2" Padding="14,7" Cursor="Hand" BorderThickness="1" VerticalAlignment="Center"
+                                    BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                                    Command="{Binding RunCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Setter Property="Content"
+                                                Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunBtn}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Content"
+                                                        Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRunningBtn}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button Grid.Column="3" Padding="14,7" Cursor="Hand" BorderThickness="1" VerticalAlignment="Center" Margin="8,0,0,0"
+                                    BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Danger}"
+                                    Command="{Binding RemoveCommand}"
+                                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptRemoveBtn}">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRemovable}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding Log}" Margin="0,10,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontFamily="{StaticResource Font.Mono}" FontSize="10.5"
+                                               Foreground="{StaticResource Color.TextMuted}" TextWrapping="Wrap" Margin="0,0,0,2"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel>
+            <ItemsControl ItemsSource="{Binding Scripts}" ItemTemplate="{StaticResource ScriptItemTemplate}"/>
+
+            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="8,10,0,10"
+                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptsCustomHeader}"/>
+
+            <ItemsControl ItemsSource="{Binding CustomScripts}" ItemTemplate="{StaticResource ScriptItemTemplate}"/>
+
+            <Button HorizontalAlignment="Left" Padding="14,7" Cursor="Hand" BorderThickness="1" Margin="0,0,0,10"
+                    BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                    Command="{Binding AddCustomScriptCommand}"
+                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=ScriptsAddCustomBtn}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

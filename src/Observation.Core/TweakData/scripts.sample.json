@@ -1,0 +1,145 @@
+[
+  {
+    "id": "scripts.networkreset",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Сброс сети", "en": "Reset network" },
+    "description": {
+      "ru": "netsh winsock reset + netsh int ip reset. Требуется перезагрузка, чтобы изменения вступили в силу.",
+      "en": "netsh winsock reset + netsh int ip reset. Requires a restart to take effect."
+    },
+    "severity": "safe",
+    "requiresReboot": true,
+    "scriptText": "netsh winsock reset; netsh int ip reset"
+  },
+  {
+    "id": "scripts.windowsupdatereset",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Сброс Windows Update", "en": "Reset Windows Update" },
+    "description": {
+      "ru": "Останавливает wuauserv/cryptSvc/bits/msiserver, переименовывает SoftwareDistribution и catroot2 в *.bak, запускает службы снова. Если .bak уже существует с прошлого раза, эта попытка переименования будет пропущена без ошибки — старые .bak-папки безопасно удалить вручную.",
+      "en": "Stops wuauserv/cryptSvc/bits/msiserver, renames SoftwareDistribution and catroot2 to *.bak, restarts the services. If a .bak already exists from a previous run, that rename step is silently skipped — old .bak folders can be safely deleted by hand."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "Stop-Service wuauserv,cryptSvc,bits,msiserver -Force -ErrorAction SilentlyContinue; Rename-Item \"$env:windir\\SoftwareDistribution\" \"SoftwareDistribution.bak\" -ErrorAction SilentlyContinue; Rename-Item \"$env:windir\\System32\\catroot2\" \"catroot2.bak\" -ErrorAction SilentlyContinue; Start-Service wuauserv,cryptSvc,bits,msiserver -ErrorAction SilentlyContinue; Write-Output 'Готово'"
+  },
+  {
+    "id": "scripts.reinstallwinget",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Переустановить WinGet", "en": "Reinstall WinGet" },
+    "description": {
+      "ru": "Add-AppxPackage -RegisterByFamilyName — перерегистрирует уже установленный пакет WinGet заново, без скачивания из интернета.",
+      "en": "Add-AppxPackage -RegisterByFamilyName — re-registers the already-installed WinGet package, no internet download."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+  },
+  {
+    "id": "scripts.sfcdism",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Скан SFC/DISM", "en": "SFC/DISM scan" },
+    "description": {
+      "ru": "sfc /scannow, затем DISM /Online /Cleanup-Image /RestoreHealth — проверка и восстановление системных файлов. Может занять продолжительное время.",
+      "en": "sfc /scannow, then DISM /Online /Cleanup-Image /RestoreHealth — checks and repairs system files. Can take a while."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "sfc /scannow; DISM /Online /Cleanup-Image /RestoreHealth"
+  },
+  {
+    "id": "scripts.exportstartupdrivers",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Экспорт автозагрузки и драйверов", "en": "Export startup items and drivers" },
+    "description": {
+      "ru": "Сохраняет список программ в автозагрузке и установленных драйверов в CSV-файлы на Рабочий стол.",
+      "en": "Saves the list of startup programs and installed drivers to CSV files on the Desktop."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "$path = \"$env:USERPROFILE\\Desktop\\Observation_Export_$(Get-Date -Format yyyyMMdd_HHmmss)\"; New-Item -ItemType Directory -Path $path -Force | Out-Null; Get-CimInstance Win32_StartupCommand | Select-Object Name,Command,Location,User | Export-Csv \"$path\\startup.csv\" -NoTypeInformation; Get-CimInstance Win32_PnPSignedDriver | Select-Object DeviceName,DriverVersion,Manufacturer | Export-Csv \"$path\\drivers.csv\" -NoTypeInformation; Write-Output \"Экспортировано в $path\""
+  },
+  {
+    "id": "scripts.registrybackuptask",
+    "tab": "scripts",
+    "group": { "ru": "Встроенная библиотека", "en": "Built-in library" },
+    "name": { "ru": "Настроить ежедневный автобэкап реестра", "en": "Set up daily registry auto-backup" },
+    "description": {
+      "ru": "Создаёт задачу в планировщике Windows: каждый день в 03:00 экспортирует HKLM в Документы\\Observation_RegistryBackup\\HKLM.reg (перезаписывая — хранится только последняя копия, не история версий). Задача остаётся в планировщике даже после закрытия Observation — удалить её можно вручную через Планировщик заданий.",
+      "en": "Creates a Windows Task Scheduler task: every day at 03:00 it exports HKLM to Documents\\Observation_RegistryBackup\\HKLM.reg (overwriting — only the latest copy is kept, not a version history). The task stays in Task Scheduler even after Observation is closed — remove it manually via Task Scheduler if needed."
+    },
+    "severity": "situational",
+    "requiresReboot": false,
+    "scriptText": "$backupDir = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Observation_RegistryBackup'; New-Item -ItemType Directory -Path $backupDir -Force -ErrorAction SilentlyContinue | Out-Null; schtasks /create /tn \"ObservationRegistryBackup\" /tr \"reg export HKLM $backupDir\\HKLM.reg /y\" /sc daily /st 03:00 /f"
+  },
+  {
+    "id": "clean.temp",
+    "tab": "clean",
+    "group": { "ru": "Разовые действия", "en": "One-off actions" },
+    "name": { "ru": "Очистить временные файлы", "en": "Clear temp files" },
+    "description": {
+      "ru": "Удаляет содержимое %TEMP% и C:\\Windows\\Temp. Файлы, занятые другими процессами, пропускаются без остановки скрипта (ErrorAction SilentlyContinue) — это не полная гарантия освобождения места, часть файлов может остаться.",
+      "en": "Deletes the contents of %TEMP% and C:\\Windows\\Temp. Files locked by other processes are skipped without stopping the script (ErrorAction SilentlyContinue) — this is not a full guarantee of freed space, some files may remain."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "Remove-Item \"$env:TEMP\\*\" -Recurse -Force -ErrorAction SilentlyContinue; Remove-Item \"$env:windir\\Temp\\*\" -Recurse -Force -ErrorAction SilentlyContinue; Write-Output 'Готово'"
+  },
+  {
+    "id": "clean.wucache",
+    "tab": "clean",
+    "group": { "ru": "Разовые действия", "en": "One-off actions" },
+    "name": { "ru": "Очистить кэш Windows Update", "en": "Clear Windows Update cache" },
+    "description": {
+      "ru": "Останавливает wuauserv/bits, удаляет содержимое C:\\Windows\\SoftwareDistribution\\Download, запускает службы снова. Кэш будет заново скачан при следующей проверке обновлений.",
+      "en": "Stops wuauserv/bits, deletes the contents of C:\\Windows\\SoftwareDistribution\\Download, restarts the services. The cache is re-downloaded on the next update check."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "Stop-Service wuauserv,bits -Force -ErrorAction SilentlyContinue; Remove-Item \"$env:windir\\SoftwareDistribution\\Download\\*\" -Recurse -Force -ErrorAction SilentlyContinue; Start-Service wuauserv,bits -ErrorAction SilentlyContinue; Write-Output 'Готово'"
+  },
+  {
+    "id": "clean.chromecache",
+    "tab": "clean",
+    "group": { "ru": "Разовые действия", "en": "One-off actions" },
+    "name": { "ru": "Очистить кэш Chrome", "en": "Clear Chrome cache" },
+    "description": {
+      "ru": "Удаляет папку кэша профиля Chrome по умолчанию (%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Cache). Не трогает историю, пароли и закладки. Закройте Chrome перед запуском — иначе часть файлов будет пропущена как занятая.",
+      "en": "Deletes the default Chrome profile's cache folder (%LOCALAPPDATA%\\Google\\Chrome\\User Data\\Default\\Cache). Does not touch history, passwords, or bookmarks. Close Chrome before running — otherwise some files will be skipped as in use."
+    },
+    "severity": "safe",
+    "requiresReboot": false,
+    "scriptText": "Remove-Item \"$env:LOCALAPPDATA\\Google\\Chrome\\User Data\\Default\\Cache\\*\" -Recurse -Force -ErrorAction SilentlyContinue; Write-Output 'Готово'"
+  },
+  {
+    "id": "scripts.ddusafemodeenter",
+    "tab": "scripts",
+    "group": { "ru": "Переустановка GPU-драйвера (DDU)", "en": "GPU driver reinstall (DDU)" },
+    "name": { "ru": "Шаг 1: войти в безопасный режим", "en": "Step 1: enter Safe Mode" },
+    "description": {
+      "ru": "Часть мастера чистой переустановки видеодрайвера из плана: bcdedit /set {current} safeboot minimal, затем требуется перезагрузка (ПЕРЕЗАГРУЗИТЕ ПК ВРУЧНУЮ ПОСЛЕ ЗАПУСКА). После входа в безопасный режим скачайте и запустите DDU (Display Driver Uninstaller, https://www.wagnardsoft.com) вручную — сама Observation его не скачивает и не запускает. Когда закончите — выполните «Шаг 2» ниже и снова перезагрузитесь.",
+      "en": "Part of the plan's clean GPU-driver-reinstall wizard: bcdedit /set {current} safeboot minimal, then a restart is required (RESTART YOUR PC MANUALLY AFTER RUNNING THIS). Once in Safe Mode, download and run DDU (Display Driver Uninstaller, https://www.wagnardsoft.com) yourself — Observation does not download or launch it. When done, run \"Step 2\" below and restart again."
+    },
+    "severity": "risky",
+    "requiresReboot": true,
+    "scriptText": "bcdedit /set {current} safeboot minimal; Write-Output 'Безопасный режим включён — перезагрузите ПК вручную'"
+  },
+  {
+    "id": "scripts.ddusafemodeexit",
+    "tab": "scripts",
+    "group": { "ru": "Переустановка GPU-драйвера (DDU)", "en": "GPU driver reinstall (DDU)" },
+    "name": { "ru": "Шаг 2: выйти из безопасного режима", "en": "Step 2: exit Safe Mode" },
+    "description": {
+      "ru": "Убирает флаг безопасного режима (bcdedit /deletevalue {current} safeboot) после того, как DDU отработал. Требуется ещё одна перезагрузка вручную, чтобы вернуться в обычный режим. Если ПК случайно застрял в безопасном режиме без возможности запустить Observation — та же команда выполняется вручную из среды восстановления Windows.",
+      "en": "Removes the Safe Mode flag (bcdedit /deletevalue {current} safeboot) after DDU has finished. One more manual restart is needed to return to normal mode. If the PC ever gets stuck in Safe Mode without being able to run Observation, the same command can be run by hand from the Windows Recovery Environment."
+    },
+    "severity": "risky",
+    "requiresReboot": true,
+    "scriptText": "bcdedit /deletevalue {current} safeboot; Write-Output 'Безопасный режим выключен — перезагрузите ПК вручную'"
+  }
+]

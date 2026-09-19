@@ -1,0 +1,1807 @@
+[
+  {
+    "id": "perf.gamemode",
+    "tab": "perf",
+    "group": {
+      "ru": "Питание и режимы",
+      "en": "Power & modes"
+    },
+    "name": {
+      "ru": "Режим игры (Game Mode)",
+      "en": "Game Mode"
+    },
+    "description": {
+      "ru": "Приоритизирует ресурсы CPU/GPU для игры в полноэкранном режиме.",
+      "en": "Prioritizes CPU/GPU resources for a fullscreen game."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "GameModeToggle"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "GameModeToggle"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Даёт активной игре приоритет при распределении ресурсов CPU и GPU планировщиком Windows и слегка снижает фоновую активность во время игровой сессии. Работает только пока запущена полноэкранная игра, откатывается мгновенно вместе с выходом из неё.",
+      "en": "Gives the active game priority when Windows' scheduler allocates CPU and GPU resources, and slightly reduces background activity during the session. Only applies while a fullscreen game is running and reverts instantly when it closes."
+    }
+  },
+  {
+    "id": "perf.hags",
+    "tab": "perf",
+    "group": {
+      "ru": "GPU и экран",
+      "en": "GPU & display"
+    },
+    "name": {
+      "ru": "Аппаратное планирование GPU (HAGS)",
+      "en": "Hardware-accelerated GPU Scheduling (HAGS)"
+    },
+    "description": {
+      "ru": "Передаёт часть планирования очереди GPU видеокарте напрямую. Эффект зависит от драйвера и игры — где-то плюс к FPS/задержке, где-то нет разницы.",
+      "en": "Hands part of GPU queue scheduling directly to the video card. Effect depends on driver and game — helps FPS/latency in some, no difference in others."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "minBuild": 18362
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
+      "value": "HwSchMode",
+      "valueType": "DWord",
+      "onData": 2,
+      "offData": 1
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Передаёт часть планирования очереди рендера выделенному процессору на видеокарте вместо системного потока (HwSchMode=2 в реестре). Требует перезапуска, эффект по FPS почти нулевой — реальный выигрыш обычно в задержке ввода, и то не на всех связках драйвер+игра.",
+      "en": "Hands part of the render-queue scheduling to a dedicated processor on the GPU instead of a system thread (HwSchMode=2 in the registry). Needs a restart; the FPS effect is close to zero — the real win, when there is one, is usually input latency, and only on some driver+game combinations."
+    }
+  },
+  {
+    "id": "perf.xboxdvr",
+    "tab": "perf",
+    "group": {
+      "ru": "Xbox и фон",
+      "en": "Xbox & background"
+    },
+    "name": {
+      "ru": "Xbox Game Bar и Game DVR",
+      "en": "Xbox Game Bar & Game DVR"
+    },
+    "description": {
+      "ru": "Отключает фоновую запись игрового процесса (Game DVR) и связанные оверлеи Game Bar.",
+      "en": "Disables background gameplay recording (Game DVR) and the related Game Bar overlays."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "XboxGameBarOff"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "XboxGameBarOff"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает фоновую запись игровых клипов (Game DVR) и оверлей Game Bar — освобождает CPU/GPU и убирает связанную с оверлеем задержку. Автоматически пропускается на двухчиплетных AMD X3D-процессорах, где чипсетный драйвер полагается на Game Bar для переключения между чиплетами.",
+      "en": "Disables background game-clip recording (Game DVR) and the Game Bar overlay — frees up CPU/GPU and removes the overlay's associated latency. Automatically skipped on dual-CCD AMD X3D CPUs, where the chipset driver relies on Game Bar for CCD switching."
+    }
+  },
+  {
+    "id": "apps.discord.hwaccel",
+    "tab": "perf",
+    "group": {
+      "ru": "Приложения",
+      "en": "Applications"
+    },
+    "name": {
+      "ru": "Discord: аппаратное ускорение",
+      "en": "Discord: hardware acceleration"
+    },
+    "description": {
+      "ru": "Подтверждено экспериментально (diff-тест): ключ enableHardwareAcceleration в %AppData%\\discord\\settings.json. Discord должен быть полностью закрыт (через трей) на момент записи.",
+      "en": "Confirmed experimentally (diff test): enableHardwareAcceleration key in %AppData%\\discord\\settings.json. Discord must be fully closed (via tray) while writing."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "SetDiscordHardwareAcceleration"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "SetDiscordHardwareAcceleration"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Переключает ключ enableHardwareAcceleration в %AppData%\\discord\\settings.json — то же самое, что переключатель в Discord: Настройки → Расширенные. Discord должен быть полностью закрыт через трей на момент применения, иначе изменение не сохранится.",
+      "en": "Toggles the enableHardwareAcceleration key in %AppData%\\discord\\settings.json — the same setting as Discord's own Settings → Advanced toggle. Discord must be fully closed via the tray when this applies, or the change won't stick."
+    }
+  },
+  {
+    "id": "perf.browserperf",
+    "tab": "perf",
+    "group": {
+      "ru": "Приложения",
+      "en": "Applications"
+    },
+    "name": {
+      "ru": "Chrome/Edge: ускорение и фоновые службы",
+      "en": "Chrome/Edge: acceleration & background services"
+    },
+    "description": {
+      "ru": "Отключает аппаратное ускорение и работу браузера в фоне после закрытия окна — для Chrome и Edge через групповые политики. Применится при следующем запуске браузера.",
+      "en": "Disables hardware acceleration and running in the background after closing the window — for Chrome and Edge via group policy. Takes effect on the browser's next launch."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "BrowserPerformance"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "BrowserPerformance"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает аппаратное ускорение и фоновую работу браузера после закрытия окна через групповые политики (HardwareAccelerationModeEnabled, BackgroundModeEnabled). Действует даже при запущенном браузере, но применяется только при следующем его старте.",
+      "en": "Turns off hardware acceleration and running in the background after the window closes, via group policy (HardwareAccelerationModeEnabled, BackgroundModeEnabled). Works even while the browser is running, but only takes effect on its next launch."
+    }
+  },
+  {
+    "id": "privacy.advertising",
+    "tab": "privacy",
+    "group": {
+      "ru": "Телеметрия и данные",
+      "en": "Telemetry & data"
+    },
+    "name": {
+      "ru": "Отключить рекламный ID",
+      "en": "Turn off advertising ID"
+    },
+    "description": {
+      "ru": "Запрещает приложениям использовать рекламный идентификатор Windows для персонализации рекламы.",
+      "en": "Prevents apps from using the Windows advertising identifier for ad personalization."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo",
+      "value": "Enabled",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Обнуляет уникальный рекламный идентификатор пользователя (HKCU...AdvertisingInfo) — приложения больше не смогут связывать вашу активность между собой через него. Не влияет на телеметрию саму по себе, только на персонализацию рекламы в приложениях.",
+      "en": "Resets the user's unique advertising identifier (HKCU...AdvertisingInfo) — apps can no longer correlate your activity across each other through it. Doesn't affect telemetry itself, only ad personalization inside apps."
+    }
+  },
+  {
+    "id": "privacy.diagtrack",
+    "tab": "privacy",
+    "group": {
+      "ru": "Телеметрия и данные",
+      "en": "Telemetry & data"
+    },
+    "name": {
+      "ru": "Отключить телеметрию (DiagTrack)",
+      "en": "Disable telemetry (DiagTrack)"
+    },
+    "description": {
+      "ru": "Останавливает и отключает службу диагностических данных DiagTrack и минимизирует уровень телеметрии через политику AllowTelemetry. На изданиях, отличных от Enterprise/Education, минимальный уровень телеметрии, который реально принимает Windows, может быть выше нуля.",
+      "en": "Stops and disables the DiagTrack diagnostics service and sets telemetry to the minimum via the AllowTelemetry policy. On editions other than Enterprise/Education, the minimum level Windows actually accepts may be above zero."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "DiagTrackOff"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "DiagTrackOff"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Останавливает и переводит в отключённый режим запуска службу DiagTrack — основной сборщик диагностических данных Windows. Отдельный твик от рекламного ID: это два разных механизма, которые в первой версии плана были ошибочно объединены.",
+      "en": "Stops the DiagTrack service and sets it to disabled startup — the main collector behind Windows diagnostic data. A separate mechanism from the advertising ID toggle; the two were mistakenly merged into one tweak in an earlier draft of the plan."
+    }
+  },
+  {
+    "id": "privacy.activityhistory",
+    "tab": "privacy",
+    "group": {
+      "ru": "Телеметрия и данные",
+      "en": "Telemetry & data"
+    },
+    "name": {
+      "ru": "Журнал действий (Activity History)",
+      "en": "Activity History"
+    },
+    "description": {
+      "ru": "Отключает сбор, публикацию и выгрузку журнала действий пользователя в Microsoft.",
+      "en": "Disables collecting, publishing, and uploading the user's activity history to Microsoft."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "ActivityHistoryOff"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "ActivityHistoryOff"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает публикацию и синхронизацию истории активности (Timeline) между устройствами — Windows перестаёт собирать и выгружать её (EnableActivityFeed/PublishUserActivities/UploadUserActivities).",
+      "en": "Disables publishing and cross-device syncing of activity history (Timeline) — Windows stops collecting and uploading it (EnableActivityFeed/PublishUserActivities/UploadUserActivities)."
+    }
+  },
+  {
+    "id": "privacy.websearch",
+    "tab": "privacy",
+    "group": {
+      "ru": "Поиск и ИИ-функции",
+      "en": "Search & AI features"
+    },
+    "name": {
+      "ru": "Веб-результаты в поиске Windows",
+      "en": "Web results in Windows Search"
+    },
+    "description": {
+      "ru": "Убирает результаты Bing и подсказки из поиска Windows — только локальный поиск по файлам и приложениям. Одна из настроек, которую чаще всего откатывают обновления Windows.",
+      "en": "Removes Bing results and suggestions from Windows Search — local file/app search only. One of the settings most often reset by Windows updates."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "WebSearchOff"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "WebSearchOff"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает веб-результаты и предложения Bing во встроенном поиске Windows (BingSearchEnabled, CortanaConsent) — поиск начинает искать только по локальным файлам и приложениям. Один из самых частых кандидатов на «слетание» после крупных обновлений — это специально предусмотрено кнопкой «Проверить состояние» на Главной.",
+      "en": "Turns off Bing web results and suggestions in Windows' built-in search (BingSearchEnabled, CortanaConsent) — search then only covers local files and apps. One of the settings most likely to get reset by a Windows Update — that's exactly what the Home tab's \"Check status\" button is for."
+    }
+  },
+  {
+    "id": "privacy.copilot",
+    "tab": "privacy",
+    "group": {
+      "ru": "Поиск и ИИ-функции",
+      "en": "Search & AI features"
+    },
+    "name": {
+      "ru": "Windows Copilot",
+      "en": "Windows Copilot"
+    },
+    "description": {
+      "ru": "Отключает Windows Copilot. Значение продублировано в HKCU и HKLM для надёжности на разных сборках Windows.",
+      "en": "Disables Windows Copilot. The value is duplicated in HKCU and HKLM for reliability across Windows builds."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "WindowsCopilotOff"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "WindowsCopilotOff"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает Copilot через политику (TurnOffWindowsCopilot) и снимает предустановленный пакет, если он есть на этой сборке Windows.",
+      "en": "Disables Copilot via policy (TurnOffWindowsCopilot) and removes the preinstalled package if this Windows build has one."
+    }
+  },
+  {
+    "id": "privacy.geolocation",
+    "tab": "privacy",
+    "group": {
+      "ru": "Локация и категории",
+      "en": "Location & categories"
+    },
+    "name": {
+      "ru": "Отслеживание геолокации",
+      "en": "Location tracking"
+    },
+    "description": {
+      "ru": "Полностью запрещает системе и приложениям определять местоположение устройства.",
+      "en": "Fully blocks the system and apps from determining the device's location."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\LocationAndSensors",
+      "value": "DisableLocation",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Полностью отключает службу геолокации на уровне системы (DisableLocation) — ни Windows, ни приложения не смогут запросить местоположение, независимо от их собственных настроек.",
+      "en": "Disables the location service system-wide (DisableLocation) — neither Windows nor apps can request your location afterwards, regardless of their own settings."
+    }
+  },
+  {
+    "id": "privacy.camera",
+    "tab": "privacy",
+    "group": {
+      "ru": "Локация и категории",
+      "en": "Location & categories"
+    },
+    "name": {
+      "ru": "Доступ приложений к камере",
+      "en": "App access to the camera"
+    },
+    "description": {
+      "ru": "Запрещает приложениям использовать камеру устройства (кроме случаев, где приложение всё равно попросит явное разрешение отдельно).",
+      "en": "Blocks apps from using the device camera (except where an app separately asks for explicit permission anyway)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\webcam",
+      "value": "Value",
+      "valueType": "String",
+      "onData": "Deny",
+      "offData": "Allow"
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Управляет системным разрешением на доступ к камере для всех приложений разом (ConsentStore\\webcam) — то же самое, что «Параметры → Конфиденциальность → Камера», но одним тумблером. Полный запрет может сломать приложения, которым камера реально нужна.",
+      "en": "Controls the system-wide camera access permission for all apps at once (ConsentStore\\webcam) — the same switch as Settings → Privacy → Camera, just in one toggle. A blanket deny can break apps that genuinely need the camera."
+    }
+  },
+  {
+    "id": "privacy.microphone",
+    "tab": "privacy",
+    "group": {
+      "ru": "Локация и категории",
+      "en": "Location & categories"
+    },
+    "name": {
+      "ru": "Доступ приложений к микрофону",
+      "en": "App access to the microphone"
+    },
+    "description": {
+      "ru": "Запрещает приложениям использовать микрофон устройства (кроме случаев, где приложение всё равно попросит явное разрешение отдельно).",
+      "en": "Blocks apps from using the device microphone (except where an app separately asks for explicit permission anyway)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone",
+      "value": "Value",
+      "valueType": "String",
+      "onData": "Deny",
+      "offData": "Allow"
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Тот же механизм, что и камера, но для микрофона (ConsentStore\\microphone) — отдельный ключ реестра и отдельный тумблер, потому что приложения запрашивают эти разрешения независимо друг от друга.",
+      "en": "Same mechanism as the camera toggle, but for the microphone (ConsentStore\\microphone) — a separate registry key and a separate toggle, since apps request these permissions independently of each other."
+    }
+  },
+  {
+    "id": "security.uac",
+    "tab": "security",
+    "group": {
+      "ru": "Учётные записи и вход",
+      "en": "Accounts & sign-in"
+    },
+    "name": {
+      "ru": "UAC: никогда не уведомлять",
+      "en": "UAC: never notify"
+    },
+    "description": {
+      "ru": "Отключает запрос повышения прав для администратора. Реальное снижение защиты, а не косметика — сама служба UAC остаётся включённой, обычным пользователям пароль всё ещё нужен.",
+      "en": "Disables the elevation prompt for administrators. A real reduction in protection, not cosmetic — UAC itself stays on, standard users still need a password."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "UacSliderMin"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "UacSliderMin"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Убирает всплывающий запрос UAC при элевации для администраторов (ConsentPromptBehaviorAdmin=0, PromptOnSecureDesktop=0) — сама служба UAC не отключается, и для обычных пользователей элевация по-прежнему требует пароль. Это реальное снижение защиты от вредоносного кода, повышающего права без вашего ведома, а не косметика.",
+      "en": "Removes the UAC popup for administrator elevation (ConsentPromptBehaviorAdmin=0, PromptOnSecureDesktop=0) — the UAC service itself stays on, and standard users still need a password to elevate. This is a genuine reduction in protection against malware silently elevating itself, not cosmetics."
+    }
+  },
+  {
+    "id": "security.cfa",
+    "tab": "security",
+    "group": {
+      "ru": "Windows Defender",
+      "en": "Windows Defender"
+    },
+    "name": {
+      "ru": "Controlled Folder Access",
+      "en": "Controlled Folder Access"
+    },
+    "description": {
+      "ru": "Блокирует неавторизованным программам запись в защищённые папки (Документы, Рабочий стол и т.п.) — защита от шифровальщиков. Может мешать нестандартным программам, которым нужно писать в эти папки.",
+      "en": "Blocks unauthorized apps from writing to protected folders (Documents, Desktop, etc.) — ransomware protection. Can interfere with unusual apps that need to write there."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "ControlledFolderAccess"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "ControlledFolderAccess"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает/выключает защиту папок от несанкционированного изменения файлов (частая цель шифровальщиков). При включении через Observation программа сама добавляет себя в список разрешённых приложений — иначе рискует заблокировать собственную запись в журнал при следующем запуске.",
+      "en": "Turns Controlled Folder Access on or off — protection against unauthorized file changes (a common target for ransomware). When enabled through Observation, the app adds itself to the allowed list automatically — otherwise it risks blocking its own journal writes on the next launch."
+    }
+  },
+  {
+    "id": "security.firewall",
+    "tab": "security",
+    "group": {
+      "ru": "Файрвол и удалённый доступ",
+      "en": "Firewall & remote access"
+    },
+    "name": {
+      "ru": "Брандмауэр Windows (все профили)",
+      "en": "Windows Firewall (all profiles)"
+    },
+    "description": {
+      "ru": "Включает/выключает брандмауэр Windows сразу для доменного, публичного и частного профилей сети.",
+      "en": "Turns Windows Firewall on/off for the domain, public, and private network profiles at once."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FirewallProfiles"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FirewallProfiles"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает/выключает брандмауэр Windows сразу для всех трёх сетевых профилей (Domain/Public/Private). Управление по каждому профилю отдельно потребовало бы трёх тумблеров — здесь один общий переключатель.",
+      "en": "Turns the Windows Firewall on or off for all three network profiles at once (Domain/Public/Private). Managing each profile separately would need three toggles — this is one combined switch."
+    }
+  },
+  {
+    "id": "debloat.brave",
+    "tab": "debloat",
+    "group": {
+      "ru": "Деблоат браузеров",
+      "en": "Browser debloat"
+    },
+    "name": {
+      "ru": "Brave: Rewards/Wallet/VPN",
+      "en": "Brave: Rewards/Wallet/VPN"
+    },
+    "description": {
+      "ru": "Отключает Rewards, Wallet и VPN в Brave через политики браузера, не удаляя сам браузер.",
+      "en": "Disables Rewards, Wallet, and VPN in Brave via browser policy, without removing the browser itself."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "BraveDebloat"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "BraveDebloat"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает Rewards, Wallet и встроенный VPN через политики браузера (BraveRewardsDisabled и т.п.) — не удаляет сам Brave, просто гасит фирменные надстройки поверх обычного Chromium.",
+      "en": "Disables Rewards, Wallet and the built-in VPN via browser policy (BraveRewardsDisabled etc.) — doesn't remove Brave itself, just turns off its branded add-ons on top of stock Chromium."
+    }
+  },
+  {
+    "id": "debloat.edge",
+    "tab": "debloat",
+    "group": {
+      "ru": "Деблоат браузеров",
+      "en": "Browser debloat"
+    },
+    "name": {
+      "ru": "Edge: Sidebar/Shopping/Copilot",
+      "en": "Edge: Sidebar/Shopping/Copilot"
+    },
+    "description": {
+      "ru": "Отключает боковую панель, Shopping Assistant и значок Copilot в Edge через политики, не удаляя сам браузер.",
+      "en": "Disables the sidebar, Shopping Assistant, and the Copilot icon in Edge via policy, without removing the browser itself."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "EdgeDebloat"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "EdgeDebloat"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает Sidebar, Shopping Assistant и часть телеметрии Edge через политики (HubsSidebarEnabled и т.п.) — более мягкая альтернатива полному удалению Edge, которое может сломать приложения на WebView2.",
+      "en": "Disables Edge's Sidebar, Shopping Assistant and part of its telemetry via policy (HubsSidebarEnabled etc.) — a softer alternative to fully removing Edge, which can break apps that rely on WebView2."
+    }
+  },
+  {
+    "id": "debloat.onedrive",
+    "tab": "debloat",
+    "group": {
+      "ru": "Крупные компоненты",
+      "en": "Major components"
+    },
+    "name": {
+      "ru": "Удалить OneDrive",
+      "en": "Remove OneDrive"
+    },
+    "description": {
+      "ru": "Полностью удаляет OneDrive (OneDriveSetup.exe /uninstall) и остаточные папки. Риск потери данных, если вы пользуетесь синхронизацией. Откат — только best-effort: переустановка через winget/Store, не гарантированное восстановление 1:1.",
+      "en": "Fully removes OneDrive (OneDriveSetup.exe /uninstall) and leftover folders. Risk of data loss if you use sync. Revert is best-effort only: reinstall via winget/Store, not a guaranteed 1:1 restore."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "RemoveOneDrive"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "RemoveOneDrive"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Полностью удаляет OneDrive через его собственный деинсталлятор (OneDriveSetup.exe /uninstall) и чистит остаточные папки/пункты в проводнике. Риск-твик: если вы реально используете OneDrive для синхронизации файлов, удаление не переносит их куда-либо — сначала синхронизируйте вручную.",
+      "en": "Fully removes OneDrive via its own uninstaller (OneDriveSetup.exe /uninstall) and cleans up leftover folders/Explorer entries. Marked risky: if you actually use OneDrive to sync files, removal doesn't migrate them anywhere first — sync manually before running this."
+    }
+  },
+  {
+    "id": "ui.hubmode",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "Убрать «Home» из проводника",
+      "en": "Remove \"Home\" from Explorer"
+    },
+    "description": {
+      "ru": "Убирает раздел «Home» из панели быстрого доступа проводника. Твик машинный (HKLM), а не per-user — влияет на всех пользователей ПК сразу.",
+      "en": "Removes the \"Home\" section from Explorer's quick access pane. This is a machine-wide (HKLM) tweak, not per-user — it affects all accounts on the PC at once."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+      "value": "HubMode",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Убирает вкладку «Домой» из проводника (HubMode в HKLM + удаление подраздела навигации) — твик машинный, а не для одного пользователя: повлияет на всех, кто входит на этот компьютер.",
+      "en": "Removes the \"Home\" tab from File Explorer (HubMode in HKLM plus deleting a navigation subkey) — this is a machine-wide tweak, not per-user: it affects everyone who signs into this PC."
+    }
+  },
+  {
+    "id": "ui.gallery",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "Убрать «Gallery» из проводника",
+      "en": "Remove \"Gallery\" from Explorer"
+    },
+    "description": {
+      "ru": "Убирает раздел «Gallery» из панели быстрого доступа проводника. Отдельный ключ от «Home» — не связаны.",
+      "en": "Removes the \"Gallery\" section from Explorer's quick access pane. A separate key from \"Home\" — not related."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+      "value": "ShowGallery",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Убирает вкладку «Галерея» из проводника (ShowGallery=0) — отдельный от «Домой» ключ и отдельный механизм, хоть внешне они и похожи.",
+      "en": "Removes the \"Gallery\" tab from File Explorer (ShowGallery=0) — a separate key and mechanism from \"Home\", even though the two look similar in the UI."
+    }
+  },
+  {
+    "id": "ui.verbosestatus",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "Подробные сообщения при входе",
+      "en": "Verbose status messages"
+    },
+    "description": {
+      "ru": "Показывает подробные технические сообщения о ходе загрузки и входа в систему вместо обычных.",
+      "en": "Shows detailed technical messages during boot and sign-in instead of the usual ones."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "value": "VerboseStatus",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Показывает подробные технические сообщения о ходе загрузки и входа в систему (VerboseStatus=1) вместо обычного «Выполняется вход» — полезно, чтобы понять, на каком именно шаге зависает старт системы.",
+      "en": "Shows detailed technical status messages during boot and sign-in (VerboseStatus=1) instead of a plain \"Signing in\" — useful for pinpointing exactly which step is slow when startup hangs."
+    }
+  },
+  {
+    "id": "ui.taskbarendtask",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "«Завершить задачу» в панели задач",
+      "en": "\"End Task\" in the taskbar menu"
+    },
+    "description": {
+      "ru": "Добавляет пункт «Завершить задачу» в контекстное меню значков панели задач. Доступно с Windows 11 22H2.",
+      "en": "Adds an \"End Task\" entry to the taskbar icons' right-click menu. Available since Windows 11 22H2."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "minBuild": 22621
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings",
+      "value": "TaskbarEndTask",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Добавляет пункт «Завершить задачу» в контекстное меню значка приложения на панели задач (TaskbarEndTask=1) — быстрый способ убить зависшее окно без открытия диспетчера задач. Доступно только на Windows 11 22H2 и новее.",
+      "en": "Adds an \"End task\" item to a taskbar icon's right-click menu (TaskbarEndTask=1) — a quick way to kill a frozen window without opening Task Manager. Only available on Windows 11 22H2 and later."
+    }
+  },
+  {
+    "id": "ui.transparency",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "Отключить прозрачность интерфейса",
+      "en": "Disable UI transparency"
+    },
+    "description": {
+      "ru": "Отключает прозрачность панели задач, меню Пуск и Параметров. Визуальный твик, не влияет на игровую производительность.",
+      "en": "Disables transparency in the taskbar, Start menu, and Settings. A visual tweak, no effect on gaming performance."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKCU",
+      "path": "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+      "value": "EnableTransparency",
+      "valueType": "DWord",
+      "onData": 0,
+      "offData": 1
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Отключает эффект прозрачности панели задач, меню Пуск и Параметров (EnableTransparency=0) — визуальный твик для минимализма или для видеокарт слабее среднего, где размытие фона заметно грузит GPU.",
+      "en": "Disables the transparency effect on the taskbar, Start menu and Settings (EnableTransparency=0) — a visual tweak for a minimalist look, or for weaker GPUs where the background blur has a real cost."
+    }
+  },
+  {
+    "id": "ui.lockscreen",
+    "tab": "ui",
+    "group": {
+      "ru": "Start Menu и экран входа",
+      "en": "Start Menu & sign-in screen"
+    },
+    "name": {
+      "ru": "Отключить экран блокировки",
+      "en": "Disable the lock screen"
+    },
+    "description": {
+      "ru": "Убирает экран блокировки перед экраном входа в систему.",
+      "en": "Removes the lock screen shown before the sign-in screen."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+      "value": "NoLockScreen",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Убирает промежуточный экран блокировки перед экраном входа (NoLockScreen=1) — сразу видна форма ввода пароля/PIN. Ситуативный твик: часть пользователей ставит на экран блокировки виджеты погоды/новостей, которые после этого пропадают.",
+      "en": "Skips the intermediate lock screen before the sign-in screen (NoLockScreen=1) — the password/PIN prompt shows immediately. Situational: some people keep weather/news widgets on the lock screen, which disappear once this is on."
+    }
+  },
+  {
+    "id": "net.ipv4priority",
+    "tab": "net",
+    "group": {
+      "ru": "Тонкие настройки",
+      "en": "Fine-tuning"
+    },
+    "name": {
+      "ru": "Приоритет IPv4 над IPv6",
+      "en": "Prioritize IPv4 over IPv6"
+    },
+    "description": {
+      "ru": "Заставляет Windows предпочитать IPv4 вместо IPv6 при равном выборе (KB929852). Не отключает IPv6.",
+      "en": "Makes Windows prefer IPv4 over IPv6 when both are available (KB929852). Does not disable IPv6."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "value": "DisabledComponents",
+      "valueType": "DWord",
+      "onData": 32,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Понижает приоритет IPv6, не отключая его целиком (DisabledComponents=0x20) — рекомендация самой Microsoft для случаев, когда IPv6-подключение медленнее или нестабильнее IPv4. Безопаснее полного отключения IPv6.",
+      "en": "Lowers IPv6's priority without disabling it outright (DisabledComponents=0x20) — Microsoft's own recommendation for cases where the IPv6 path is slower or less stable than IPv4. Safer than disabling IPv6 completely."
+    }
+  },
+  {
+    "id": "net.ipv6disable",
+    "tab": "net",
+    "group": {
+      "ru": "Риск",
+      "en": "Risk"
+    },
+    "name": {
+      "ru": "Полностью отключить IPv6",
+      "en": "Fully disable IPv6"
+    },
+    "description": {
+      "ru": "Полностью отключает стек IPv6 (KB929852). Может сломать современный сетевой стек и приложения, которые на него рассчитывают.",
+      "en": "Fully disables the IPv6 stack (KB929852). Can break the modern network stack and apps that rely on it."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters",
+      "value": "DisabledComponents",
+      "valueType": "DWord",
+      "onData": 255,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Жёстко отключает IPv6 целиком на всех адаптерах (DisabledComponents=0xFF) — в отличие от «приоритета IPv4», это может сломать службы и приложения, рассчитанные на наличие IPv6 (часть корпоративных VPN, некоторые игровые сервисы).",
+      "en": "Hard-disables IPv6 completely on every adapter (DisabledComponents=0xFF) — unlike \"prefer IPv4\", this can break services and apps that expect IPv6 to exist (some corporate VPNs, some game services)."
+    }
+  },
+  {
+    "id": "autostart.utc",
+    "tab": "autostart",
+    "group": {
+      "ru": "Автозагрузка и процессы",
+      "en": "Startup & processes"
+    },
+    "name": {
+      "ru": "Хранить системное время в UTC",
+      "en": "Store system clock in UTC"
+    },
+    "description": {
+      "ru": "Нужно только при дуалбуте с Linux — иначе время в самой Windows будет отображаться неверно. Значение REG_QWORD (64-битная Windows).",
+      "en": "Only needed when dual-booting with Linux — otherwise Windows itself will show the wrong time. REG_QWORD value (64-bit Windows)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",
+      "value": "RealTimeIsUniversal",
+      "valueType": "QWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Хранит аппаратные часы в UTC вместо локального времени (RealTimeIsUniversal, REG_QWORD на 64-битных системах) — убирает рассинхрон времени при dual-boot с Linux, который по умолчанию тоже ждёт UTC в BIOS-часах. Без Linux на этом ПК — просто сломает отображение времени.",
+      "en": "Stores the hardware clock in UTC instead of local time (RealTimeIsUniversal, REG_QWORD on 64-bit systems) — fixes clock drift when dual-booting with Linux, which expects UTC in the BIOS clock by default. Without Linux on this machine, it will just show the wrong time."
+    }
+  },
+  {
+    "id": "autostart.sysmain",
+    "tab": "autostart",
+    "group": {
+      "ru": "Службы",
+      "en": "Services"
+    },
+    "name": {
+      "ru": "Служба SysMain (Superfetch) — ручной режим",
+      "en": "SysMain (Superfetch) service — manual startup"
+    },
+    "description": {
+      "ru": "Переводит службу SysMain в ручной режим запуска вместо автоматического.",
+      "en": "Sets the SysMain service to manual startup instead of automatic."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\SysMain",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Переводит службу SysMain (бывший Superfetch, предзагрузка часто используемых программ в память) в ручной режим запуска — не отключает совсем, просто не стартует автоматически. На системах с HDD выключение иногда даёт ощутимо более быстрый холодный старт программ; на NVMe-дисках разница обычно не заметна.",
+      "en": "Sets the SysMain service (formerly Superfetch, preloads frequently used apps into RAM) to manual startup — not fully disabled, just no longer autostarting. On HDD-based systems this can noticeably speed up cold app launches; on NVMe drives the difference is usually not noticeable."
+    }
+  },
+  {
+    "id": "autostart.wsearch",
+    "tab": "autostart",
+    "group": {
+      "ru": "Службы",
+      "en": "Services"
+    },
+    "name": {
+      "ru": "Служба Windows Search — ручной режим",
+      "en": "Windows Search service — manual startup"
+    },
+    "description": {
+      "ru": "Переводит службу WSearch (индексация поиска) в ручной режим запуска вместо автоматического.",
+      "en": "Sets the WSearch service (search indexing) to manual startup instead of automatic."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\WSearch",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Переводит службу Windows Search в ручной режим — экономит фоновую нагрузку на индексацию файлов ценой более медленного поиска по содержимому файлов (поиск по имени файла и в меню Пуск продолжает работать).",
+      "en": "Sets the Windows Search service to manual startup — saves background CPU/disk spent on file indexing, at the cost of slower content search inside files (searching by filename and the Start menu still work)."
+    }
+  },
+  {
+    "id": "autostart.spooler",
+    "tab": "autostart",
+    "group": {
+      "ru": "Службы",
+      "en": "Services"
+    },
+    "name": {
+      "ru": "Служба печати (Print Spooler) — ручной режим",
+      "en": "Print Spooler service — manual startup"
+    },
+    "description": {
+      "ru": "Переводит службу диспетчера печати в ручной режим запуска. Не трогайте, если у вас есть принтер.",
+      "en": "Sets the Print Spooler service to manual startup. Don't touch this if you have a printer."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\Spooler",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Переводит службу печати (Print Spooler) в ручной режим — если у вас нет физического принтера, служба всё равно постоянно работает в фоне по умолчанию. Ситуативный твик: при подключении принтера службу нужно будет запустить вручную или переключить обратно.",
+      "en": "Sets the Print Spooler service to manual startup — even with no physical printer, it runs in the background by default. Situational: if you connect a printer later, you'll need to start the service manually or switch this back."
+    }
+  },
+  {
+    "id": "autostart.deliveryoptim",
+    "tab": "autostart",
+    "group": {
+      "ru": "Службы",
+      "en": "Services"
+    },
+    "name": {
+      "ru": "Служба Delivery Optimization — ручной режим",
+      "en": "Delivery Optimization service — manual startup"
+    },
+    "description": {
+      "ru": "Переводит службу DoSvc (P2P-раздача обновлений другим ПК) в ручной режим запуска.",
+      "en": "Sets the DoSvc service (P2P delivery of updates to other PCs) to manual startup."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SYSTEM\\CurrentControlSet\\Services\\DoSvc",
+      "value": "Start",
+      "valueType": "DWord",
+      "onData": 3,
+      "offData": 2
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Переводит службу Delivery Optimization (P2P-раздача обновлений Windows соседним устройствам в сети) в ручной режим — экономит фоновый сетевой трафик, но отключает и приём обновлений от соседних ПК, из-за чего сами обновления могут скачиваться чуть дольше.",
+      "en": "Sets the Delivery Optimization service (peer-to-peer sharing of Windows Updates with nearby devices) to manual — saves background network traffic, but also disables receiving updates from peers, so updates themselves may take a little longer to download."
+    }
+  },
+  {
+    "id": "updates.defer",
+    "tab": "updates",
+    "group": {
+      "ru": "Отложить, не отключать",
+      "en": "Defer, don't disable"
+    },
+    "name": {
+      "ru": "Отложить обновления функций и качества",
+      "en": "Defer feature & quality updates"
+    },
+    "description": {
+      "ru": "Откладывает обновления функций (~365 дней) и качества (~4 дня). Оба периода вместе с булевыми флагами — без них периоды игнорируются.",
+      "en": "Defers feature updates (~365 days) and quality updates (~4 days). Both periods together with their boolean flags — without them, the periods are ignored."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "DeferUpdates"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "DeferUpdates"
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Откладывает обновления функций (до 365 дней) и качества (до 30 дней) — максимумы, которые вообще принимает этот параметр Windows. Ставит сразу обе пары значений (период + флаг «отложить»), потому что один период без включённого флага Windows просто игнорирует.",
+      "en": "Defers feature updates (up to 365 days) and quality updates (up to 30 days) — the maximums this Windows setting accepts at all. Sets both the period and the \"defer\" flag together, because a period alone without the flag is simply ignored by Windows."
+    }
+  },
+  {
+    "id": "updates.excludedrivers",
+    "tab": "updates",
+    "group": {
+      "ru": "Отложить, не отключать",
+      "en": "Defer, don't disable"
+    },
+    "name": {
+      "ru": "Исключить драйверы из обновлений качества",
+      "en": "Exclude drivers from quality updates"
+    },
+    "description": {
+      "ru": "Не даёт Windows Update ставить обновления драйверов в составе обновлений качества.",
+      "en": "Stops Windows Update from installing driver updates bundled with quality updates."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "registry",
+      "hive": "HKLM",
+      "path": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+      "value": "ExcludeWUDriversInQualityUpdate",
+      "valueType": "DWord",
+      "onData": 1,
+      "offData": 0
+    },
+    "verify": {
+      "type": "registry-read",
+      "matchesApply": true
+    },
+    "revert": {
+      "type": "restore-previous"
+    },
+    "info": {
+      "ru": "Исключает драйверы из обновлений качества (ExcludeWUDriversInQualityUpdate=1) — драйверы после этого ставятся только вручную или напрямую от производителя, Windows Update больше не подсовывает их автоматически (частая причина внезапно сломавшегося GPU-драйвера после обновления).",
+      "en": "Excludes drivers from quality updates (ExcludeWUDriversInQualityUpdate=1) — drivers then only get installed manually or straight from the vendor; Windows Update stops pushing them automatically (a common cause of a GPU driver suddenly breaking after an update)."
+    }
+  },
+  {
+    "id": "apps.feature.netfx3",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": ".NET Framework 3.5",
+      "en": ".NET Framework 3.5"
+    },
+    "description": {
+      "ru": "Включает .NET Framework 3.5 (нужен части старых игр и программ).",
+      "en": "Enables .NET Framework 3.5 (needed by some older games and programs)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureNetFx3"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureNetFx3"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает .NET Framework 3.5 через Enable-WindowsOptionalFeature — нужен части старых игр и корпоративного софта, который до сих пор на него рассчитан и не запустится без него.",
+      "en": "Enables .NET Framework 3.5 via Enable-WindowsOptionalFeature — required by some older games and corporate software that still target it and won't run without it."
+    }
+  },
+  {
+    "id": "apps.feature.hyperv",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "Hyper-V",
+      "en": "Hyper-V"
+    },
+    "description": {
+      "ru": "Включает встроенную виртуализацию Windows. Только редакции Pro/Enterprise/Education — на Home недоступно. Требует перезагрузку.",
+      "en": "Enables Windows' built-in virtualization. Pro/Enterprise/Education only — unavailable on Home. Requires a restart."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "editions": [
+        "Professional",
+        "Enterprise",
+        "Education"
+      ]
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureHyperV"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureHyperV"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает встроенный гипервизор Hyper-V для виртуальных машин — доступен только на редакциях Pro/Enterprise/Education. Конфликтует с некоторыми сторонними гипервизорами (старые версии VirtualBox/VMware) — уточните совместимость перед включением.",
+      "en": "Enables the built-in Hyper-V hypervisor for virtual machines — only available on Pro/Enterprise/Education editions. Conflicts with some third-party hypervisors (older VirtualBox/VMware) — check compatibility before turning this on."
+    }
+  },
+  {
+    "id": "apps.feature.wsl",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "Windows Subsystem for Linux",
+      "en": "Windows Subsystem for Linux"
+    },
+    "description": {
+      "ru": "Включает подсистему Windows для Linux. Требует перезагрузку; установка конкретного дистрибутива — отдельно, через wsl --install или Microsoft Store.",
+      "en": "Enables the Windows Subsystem for Linux. Requires a restart; installing an actual distro is separate (wsl --install or Microsoft Store)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureWsl"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureWsl"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает подсистему Windows для Linux — запуск полноценных Linux-дистрибутивов рядом с Windows без отдельной виртуальной машины.",
+      "en": "Enables the Windows Subsystem for Linux — running full Linux distributions alongside Windows without a separate virtual machine."
+    }
+  },
+  {
+    "id": "apps.feature.nfsclient",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "Клиент NFS",
+      "en": "NFS Client"
+    },
+    "description": {
+      "ru": "Включает клиент Services for NFS — подключение сетевых папок по протоколу NFS (например, с Linux/NAS).",
+      "en": "Enables the Services for NFS client — mounting NFS network shares (e.g. from Linux/NAS)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureNfsClient"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureNfsClient"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает клиент NFS — подключение сетевых папок с Linux/Unix-серверов и NAS напрямую через проводник, без стороннего ПО.",
+      "en": "Enables the NFS client — mounting network shares from Linux/Unix servers and NAS devices straight from File Explorer, no third-party software needed."
+    }
+  },
+  {
+    "id": "apps.feature.sandbox",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "Windows Sandbox",
+      "en": "Windows Sandbox"
+    },
+    "description": {
+      "ru": "Включает изолированную одноразовую песочницу Windows для безопасного запуска непроверенных программ. Только Pro/Enterprise/Education. Требует перезагрузку.",
+      "en": "Enables Windows' isolated, disposable sandbox for safely running untrusted programs. Pro/Enterprise/Education only. Requires a restart."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "editions": [
+        "Professional",
+        "Enterprise",
+        "Education"
+      ]
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureSandbox"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureSandbox"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает Windows Sandbox — одноразовую изолированную среду Windows для проверки подозрительных файлов или установщиков без риска для основной системы. Каждый запуск стартует с чистого состояния.",
+      "en": "Enables Windows Sandbox — a disposable, isolated Windows environment for testing suspicious files or installers without risking the main system. Every launch starts from a clean slate."
+    }
+  },
+  {
+    "id": "apps.feature.legacymedia",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "Старые медиа (Windows Media Player, DirectPlay)",
+      "en": "Legacy media (Windows Media Player, DirectPlay)"
+    },
+    "description": {
+      "ru": "Включает Windows Media Player и DirectPlay — нужны части старых игр и медиафайлов.",
+      "en": "Enables Windows Media Player and DirectPlay — needed by some older games and media files."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "FeatureLegacyMedia"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "FeatureLegacyMedia"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Возвращает Windows Media Player и DirectPlay для воспроизведения старых форматов и запуска старых игр, которые их требуют — в современных сборках Windows эти компоненты не установлены по умолчанию.",
+      "en": "Restores Windows Media Player and DirectPlay for playing old media formats and running old games that require them — these components aren't installed by default on current Windows builds."
+    }
+  },
+  {
+    "id": "apps.capability.opensshserver",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "OpenSSH Server",
+      "en": "OpenSSH Server"
+    },
+    "description": {
+      "ru": "Включает встроенный сервер OpenSSH (для входа на этот ПК по SSH). Отдельно от служб — саму службу sshd нужно запустить/включить автозапуск через вкладку «Автозагрузка».",
+      "en": "Enables the built-in OpenSSH server (for SSH access into this PC). Separate from services — the sshd service itself still needs to be started/enabled via the Startup tab."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "CapabilityOpenSshServer"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "CapabilityOpenSshServer"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает встроенный сервер OpenSSH — подключение к этому компьютеру по SSH с другого устройства. После включения службу sshd обычно нужно ещё и запустить/добавить в автозагрузку отдельно в службах Windows.",
+      "en": "Enables the built-in OpenSSH server — lets you SSH into this machine from another device. After enabling, the sshd service usually still needs to be started/set to autostart separately in Windows Services."
+    }
+  },
+  {
+    "id": "apps.capability.opensshclient",
+    "tab": "apps",
+    "group": {
+      "ru": "Компоненты Windows",
+      "en": "Windows components"
+    },
+    "name": {
+      "ru": "OpenSSH Client",
+      "en": "OpenSSH Client"
+    },
+    "description": {
+      "ru": "Включает встроенный клиент OpenSSH (команда ssh из командной строки).",
+      "en": "Enables the built-in OpenSSH client (the ssh command from the command line)."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "CapabilityOpenSshClient"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "CapabilityOpenSshClient"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает встроенный клиент OpenSSH — команда ssh становится доступна прямо из командной строки/PowerShell без установки стороннего клиента вроде PuTTY.",
+      "en": "Enables the built-in OpenSSH client — the ssh command becomes available straight from Command Prompt/PowerShell, no third-party client like PuTTY needed."
+    }
+  },
+  {
+    "id": "clean.reservedstorage",
+    "tab": "clean",
+    "group": {
+      "ru": "Риск",
+      "en": "Risk"
+    },
+    "name": {
+      "ru": "Отключить Reserved Storage",
+      "en": "Disable Reserved Storage"
+    },
+    "description": {
+      "ru": "Отключает резервирование места на диске под будущие обновления Windows (DISM /Online /Set-ReservedStorageState). На дисках с малым объёмом свободного места это освобождает несколько ГБ, но может привести к сбоям будущих обновлений. Верификация через Get-WindowsReservedStorageState — этот конкретный командлет не проверен вживую в этой сессии.",
+      "en": "Disables reserving disk space for future Windows updates (DISM /Online /Set-ReservedStorageState). Frees up a few GB on low-space disks, but can cause future update failures. Verified via Get-WindowsReservedStorageState — this specific cmdlet hasn't been confirmed live in this session."
+    },
+    "severity": "risky",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "ReservedStorageToggle"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "ReservedStorageToggle"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Отключает резервирование 7–15 ГБ диска под будущие обновления и временные файлы (DISM /Set-ReservedStorageState). Риск-твик: на системах с маленьким диском освобождает заметно места, но будущие крупные обновления могут установиться менее гладко без этого запаса.",
+      "en": "Disables the 7–15 GB of disk space Windows reserves for future updates and temp files (DISM /Set-ReservedStorageState). Marked risky: frees up meaningful space on small drives, but future major updates may install less smoothly without that buffer."
+    }
+  },
+  {
+    "id": "diag.legacybootmenu",
+    "tab": "diag",
+    "group": {
+      "ru": "Загрузка",
+      "en": "Boot"
+    },
+    "name": {
+      "ru": "Классическое меню F8 при загрузке",
+      "en": "Legacy F8 boot menu"
+    },
+    "description": {
+      "ru": "Возвращает старое меню дополнительных вариантов загрузки (F8) вместо современного экрана восстановления (bcdedit /set bootmenupolicy Legacy).",
+      "en": "Restores the old Advanced Boot Options (F8) menu instead of the modern recovery screen (bcdedit /set bootmenupolicy Legacy)."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": true,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "LegacyBootMenu"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "LegacyBootMenu"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Возвращает классическое меню дополнительных вариантов загрузки по F8 (bootmenupolicy Legacy) вместо современного полноэкранного меню восстановления — быстрее открывается, но менее подробное. Требует перезагрузки, чтобы увидеть эффект.",
+      "en": "Restores the classic F8 advanced boot options menu (bootmenupolicy Legacy) instead of the modern full-screen recovery menu — opens faster but shows fewer options. Needs a restart to take effect."
+    }
+  },
+  {
+    "id": "ui.classiccontextmenu",
+    "tab": "ui",
+    "group": {
+      "ru": "Проводник",
+      "en": "Explorer"
+    },
+    "name": {
+      "ru": "Классическое контекстное меню",
+      "en": "Classic context menu"
+    },
+    "description": {
+      "ru": "Возвращает полное контекстное меню Windows 10 вместо укороченного меню Windows 11 (reg add на пустое значение у специального CLSID). Explorer перезапускается автоматически сразу после переключения — рабочий стол и панель задач на секунду мигнут, это ожидаемо. Включение видно сразу; при выключении Windows какое-то время (проверено вживую — до минуты и дольше) продолжает показывать классическое меню даже после перезапуска Explorer — сама Windows кэширует это решение до полного выхода из системы или перезагрузки, это не сбой Observation.",
+      "en": "Restores the full Windows 10 right-click menu instead of the shortened Windows 11 one (reg add on a special CLSID's default value). Explorer restarts automatically right after toggling — the desktop and taskbar will flicker for a second, that's expected. Turning it on takes effect immediately; turning it off can leave the classic menu showing for a while (confirmed live — a minute or more) even after Explorer restarts — Windows itself caches this decision until a full sign-out or reboot, this isn't an Observation bug."
+    },
+    "severity": "safe",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "ClassicContextMenu"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "ClassicContextMenu"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Возвращает полное контекстное меню Windows 10 по правому клику вместо укороченного меню Windows 11 (пустой ключ CLSID + перезапуск проводника). Выключение удаляет весь раздел реестра, но само меню может продолжать быть классическим ещё какое-то время до полного выхода из системы или перезагрузки — это поведение Windows, не сбой.",
+      "en": "Restores the full Windows 10 right-click context menu instead of Windows 11's shortened one (an empty CLSID registry key plus an Explorer restart). Turning it off deletes the whole registry subkey, but the menu itself may keep showing as classic for a while until you fully sign out or restart — that's Windows' own caching, not a bug here."
+    }
+  },
+  {
+    "id": "clean.storagesense",
+    "tab": "clean",
+    "group": {
+      "ru": "Риск",
+      "en": "Risk"
+    },
+    "name": {
+      "ru": "Storage Sense",
+      "en": "Storage Sense"
+    },
+    "description": {
+      "ru": "Включает/выключает автоматическую очистку места на диске Windows (временные файлы, корзина, папка загрузок по расписанию). Значение параметра (\"01\" под StorageSense\\Parameters\\StoragePolicy) — широко используемый в сообществе твикеров формат, но официально Microsoft его не документирует; на части сборок реальным движком очистки может быть StorageSensorV2, игнорирующий этот ключ — см. известное ограничение в плане.",
+      "en": "Turns Windows' automatic disk cleanup (temp files, Recycle Bin, scheduled Downloads folder cleanup) on/off. The parameter (\"01\" under StorageSense\\Parameters\\StoragePolicy) is a widely used community-documented value, not officially documented by Microsoft; on some builds the actual cleanup engine may be StorageSensorV2, which can ignore this key — see the known limitation noted in the plan."
+    },
+    "severity": "situational",
+    "controlType": "toggle",
+    "requiresReboot": false,
+    "applicability": {
+      "type": "always"
+    },
+    "apply": {
+      "type": "handler",
+      "handlerId": "StorageSenseToggle"
+    },
+    "verify": {
+      "type": "handler",
+      "handlerId": "StorageSenseToggle"
+    },
+    "revert": {
+      "type": "best-effort"
+    },
+    "info": {
+      "ru": "Включает встроенный механизм Windows для регулярной автоочистки временных файлов и старых файлов в корзине/загрузках (StoragePolicy=«01» — имя параметра задокументировано сообществом, не самой Microsoft). На части сборок реальную очистку выполняет StorageSensorV2 — сам параметр может не отражать это на 100%.",
+      "en": "Turns on Windows' own periodic auto-cleanup of temp files and old files in Recycle Bin/Downloads (StoragePolicy=\"01\" — this parameter name is documented by the community, not by Microsoft itself). On some builds the actual cleanup runs through StorageSensorV2 — this setting alone may not fully reflect that."
+    }
+  }
+]

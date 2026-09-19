@@ -1,0 +1,291 @@
+<Window x:Class="Observation.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Observation" Icon="Assets/AppIcon.ico"
+        Height="720" Width="1180" MinHeight="560" MinWidth="820"
+        WindowStyle="None" ResizeMode="CanResizeWithGrip"
+        Background="{StaticResource Color.Bg}" FontFamily="{StaticResource Font.Body}">
+
+    <!--
+        Безрамочное окно с ресайзом через WindowChrome (см. «Хранение данных, окно,
+        локализация» в плане). Каркас: титлбар/сайдбар/контент, реальные шрифты макета
+        (Cinzel/IBM Plex) и анимированный тумблер. Декоративный слой (фоновая иллюстрация +
+        затемняющий скрим + угловые глифы-щупальца, см. «Дизайн-система» в плане) — ниже,
+        под титлбаром/сайдбаром/контентом, чей уже непрозрачный фон (Color.SurfaceSolid на
+        карточках/сайдбаре) сам решает, где иллюстрация просвечивает, а где нет — без
+        дополнительной работы над самими вкладками. Сознательно не перенесено: процедурное
+        зерно-текстура (у WPF нет родного blend-mode "overlay" без своего шейдера — непропорционально
+        сложно ради эффекта, почти незаметного даже в самом макете при 50% opacity) и настоящий
+        acrylic-блюр сайдбара сквозь фон (WPF не даёт blur-behind "из коробки"; сайдбар остаётся
+        непрозрачным, как уже было — это отдельный, гораздо более дорогой проход, если вообще понадобится).
+    -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" GlassFrameThickness="0"/>
+    </shell:WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <Style x:Key="WinBtnStyle" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource Color.TextMuted}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource Color.Border}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NavListBoxItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource Color.TextMuted}"/>
+            <Setter Property="BorderThickness" Value="3,0,0,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter Margin="9,9,9,9"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource Color.Accent}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Color.Text}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Color.Text}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Ширина сайдбара анимируется (222мс), а не прыгает мгновенно — тот же интервал,
+             что transition:width .22s у .sidebar в макете. Width — обычное double-свойство
+             самого Border, не общий Freezable-ресурс, поэтому анимировать его через DataTrigger
+             безопасно (в отличие от общих кистей/трансформов из StaticResource). -->
+        <Style x:Key="SidebarStyle" TargetType="Border">
+            <Setter Property="Width" Value="220"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Width" To="64" Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <DoubleAnimation Storyboard.TargetProperty="Width" To="220" Duration="0:0:0.22">
+                                    <DoubleAnimation.EasingFunction>
+                                        <CubicEase EasingMode="EaseOut"/>
+                                    </DoubleAnimation.EasingFunction>
+                                </DoubleAnimation>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="38"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- фон: иллюстрация пользователя + тёмный скрим (та же формула, что в CSS макета:
+             linear-gradient сверху вниз + radial-gradient виньетка по центру) -->
+        <Image Grid.RowSpan="2" Source="Assets/Background.jpg" Stretch="UniformToFill" IsHitTestVisible="False"/>
+        <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#B7020102" Offset="0"/>
+                    <GradientStop Color="#E0020102" Offset="1"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.RowSpan="2" IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <RadialGradientBrush GradientOrigin="0.5,0.42" Center="0.5,0.42" RadiusX="0.55" RadiusY="0.55">
+                    <GradientStop Color="#26020102" Offset="0"/>
+                    <GradientStop Color="#8C020102" Offset="0.7"/>
+                    <GradientStop Color="#8C020102" Offset="1"/>
+                </RadialGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <!-- угловые глифы-щупальца — тот же путь Path, что и .corner-glyph в Observation Interface -->
+        <Grid Grid.RowSpan="2" Width="110" Height="110" HorizontalAlignment="Left" VerticalAlignment="Top"
+              Opacity="0.4" IsHitTestVisible="False">
+            <Canvas>
+                <Path Data="M6,6 C40,2 52,26 28,44 C8,58 32,70 52,58 C74,44 66,18 96,12"
+                      Stroke="{StaticResource Color.AccentStrong}" StrokeThickness="2.5"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Ellipse Canvas.Left="93" Canvas.Top="9" Width="6" Height="6" Fill="{StaticResource Color.AccentStrong}"/>
+            </Canvas>
+        </Grid>
+        <Grid Grid.RowSpan="2" Width="110" Height="110" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Opacity="0.4" IsHitTestVisible="False" RenderTransformOrigin="0.5,0.5">
+            <Grid.RenderTransform>
+                <RotateTransform Angle="180"/>
+            </Grid.RenderTransform>
+            <Canvas>
+                <Path Data="M6,6 C40,2 52,26 28,44 C8,58 32,70 52,58 C74,44 66,18 96,12"
+                      Stroke="{StaticResource Color.AccentStrong}" StrokeThickness="2.5"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Ellipse Canvas.Left="93" Canvas.Top="9" Width="6" Height="6" Fill="{StaticResource Color.AccentStrong}"/>
+            </Canvas>
+        </Grid>
+
+        <!-- titlebar -->
+        <Border Grid.Row="0" MouseDown="TitleBar_MouseDown" Background="Transparent"
+                BorderBrush="{StaticResource Color.Border}" BorderThickness="0,0,0,1">
+            <Grid Margin="14,0,10,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Image Source="Assets/AppIcon.png" Width="16" Height="16" Margin="0,0,7,0"/>
+                    <TextBlock Text="OBSERVATION" VerticalAlignment="Center"
+                               Foreground="{StaticResource Color.TextMuted}" FontWeight="SemiBold" FontSize="11"/>
+                </StackPanel>
+
+                <!-- Пилюля-переключатель языка (.langswitch в макете) — см. LangToggleButtonStyle в App.xaml. -->
+                <Border Grid.Column="2" Margin="0,0,10,0" CornerRadius="100" Padding="2"
+                        Background="#0AFFFFFF" BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton Content="RU" GroupName="Lang" IsChecked="True"
+                                     Style="{StaticResource LangToggleButtonStyle}"
+                                     Command="{Binding SetLanguageCommand}" CommandParameter="ru"/>
+                        <RadioButton Content="EN" GroupName="Lang"
+                                     Style="{StaticResource LangToggleButtonStyle}"
+                                     Command="{Binding SetLanguageCommand}" CommandParameter="en"/>
+                    </StackPanel>
+                </Border>
+
+                <Button Grid.Column="3" Content="&#x2013;" Style="{StaticResource WinBtnStyle}"
+                        Click="MinimizeButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+                <Button Grid.Column="4" Content="&#x25A2;" Style="{StaticResource WinBtnStyle}"
+                        Click="MaximizeButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+                <Button Grid.Column="5" Content="&#x2715;" Style="{StaticResource WinBtnStyle}"
+                        Click="CloseButton_Click" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+            </Grid>
+        </Border>
+
+        <!-- body -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource SidebarStyle}"
+                    Background="{StaticResource Color.SurfaceSolid}"
+                    BorderBrush="{StaticResource Color.Border}" BorderThickness="0,0,1,0">
+                <DockPanel Margin="10,14,10,14">
+
+                    <!-- Клик по знаку+названию открывает «О программе» (см. About Interface, .brand onclick=openAbout()). -->
+                    <Border DockPanel.Dock="Top" Padding="8,10,8,16" Margin="0,0,0,10" Cursor="Hand"
+                            ToolTip="About" MouseLeftButtonDown="Brand_MouseLeftButtonDown"
+                            BorderBrush="{StaticResource Color.Border}" BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="Assets/AppIcon.png" Width="24" Height="24" Margin="0,0,8,0"/>
+                            <TextBlock Foreground="{StaticResource Color.Text}" FontWeight="SemiBold" FontSize="13" VerticalAlignment="Center"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=AppTitle}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSidebarCollapsed}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Button DockPanel.Dock="Bottom" Content="&#x21C6;" HorizontalAlignment="Left"
+                            Command="{Binding ToggleSidebarCommand}"
+                            Background="Transparent" BorderBrush="{StaticResource Color.BorderStrong}" BorderThickness="1"
+                            Foreground="{StaticResource Color.TextMuted}" Padding="8" Cursor="Hand"/>
+
+                    <ListBox ItemsSource="{Binding NavItems}" SelectedItem="{Binding SelectedNav, Mode=TwoWay}"
+                             Background="Transparent" BorderThickness="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ItemContainerStyle="{StaticResource NavListBoxItemStyle}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- Тот же общий ромб-глиф для всех 13 вкладок, что и в Observation Interface (TABS.forEach, один SVG на все пункты). -->
+                                    <Canvas Grid.Column="0" Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center">
+                                        <Path Data="M8,2 L14,8 L8,14 L2,8 Z" StrokeThickness="1.4"
+                                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
+                                        <Ellipse Canvas.Left="6.4" Canvas.Top="6.4" Width="3.2" Height="3.2"
+                                                 Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
+                                    </Canvas>
+                                    <TextBlock Grid.Column="1" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsSidebarCollapsed, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource LocalizedTextMulti}">
+                                                <Binding Path="LocalizationKey"/>
+                                                <Binding Source="{StaticResource Localization}" Path="CurrentLanguage"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <ContentControl Grid.Column="1" Content="{Binding CurrentTab}" Margin="26,22,26,22"/>
+        </Grid>
+    </Grid>
+</Window>

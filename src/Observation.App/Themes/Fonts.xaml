@@ -1,0 +1,14 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Встроенные шрифты макета (см. Fonts/*.ttf, лицензия SIL OFL рядом) — WPF не
+        подтягивает веб-шрифты по ссылке, как браузер, поэтому файлы реально лежат в
+        сборке. "./Fonts/#Имя" — стандартный синтаксис ссылки на встроенный шрифт по
+        имени семейства (из внутренней таблицы имён файла, не по имени файла).
+    -->
+    <FontFamily x:Key="Font.Display">./Fonts/#Cinzel</FontFamily>
+    <FontFamily x:Key="Font.Body">./Fonts/#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="Font.Mono">./Fonts/#IBM Plex Mono</FontFamily>
+
+</ResourceDictionary>

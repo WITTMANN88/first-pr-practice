@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.Core</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Портативная публикация Observation.App бандлит и эту сборку — символы зашиваем внутрь, не отдельным .pdb рядом с exe (см. Observation.App.csproj). -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!--
+    Движок: модель твика, загрузка JSON-реестра твиков, apply/verify/revert (TweakEngine),
+    накопительный пакет (BatchRunner), журнал (JsonLinesJournalStore), обнаружение
+    конфликтов пар твиков, определение версии/редакции Windows и модели CPU
+    — см. «Архитектура кода» и «Дополнительные механизмы надёжности» в плане.
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="8.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TweakData\tweaks.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TweakData\presets.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TweakData\scripts.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

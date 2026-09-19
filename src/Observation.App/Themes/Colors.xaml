@@ -1,0 +1,29 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Палитра — изначально портирована 1:1 из опубликованного макета (ui-preview.html,
+        :root .frame). По запросу пользователя ("сделаем более тёмным и глубоким") —
+        углублённый вариант B из витрины вариантов (see плейн-артефакт "Бейджи и тени"):
+        фон/поверхности заметно темнее, акцент — темнее и насыщеннее (AccentStrong
+        оставлен прежним — именно на контрасте с потемневшим Accent даёт нужный "поп").
+        Ok/Warn/Danger — независимые семантические цвета, глубину бренда не наследуют.
+    -->
+
+    <SolidColorBrush x:Key="Color.Bg" Color="#FF020102"/>
+    <SolidColorBrush x:Key="Color.Surface" Color="#D2080303"/>
+    <SolidColorBrush x:Key="Color.SurfaceSolid" Color="#FF0A0505"/>
+    <SolidColorBrush x:Key="Color.Surface2" Color="#FF0F0809"/>
+    <SolidColorBrush x:Key="Color.Border" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Color.BorderStrong" Color="#FF1F1114"/>
+    <SolidColorBrush x:Key="Color.Text" Color="#FFF4E9EA"/>
+    <SolidColorBrush x:Key="Color.TextMuted" Color="#FF876C70"/>
+    <SolidColorBrush x:Key="Color.Accent" Color="#FF8F1F34"/>
+    <SolidColorBrush x:Key="Color.AccentStrong" Color="#FFC73F56"/>
+    <SolidColorBrush x:Key="Color.AccentPress" Color="#FF671625"/>
+    <SolidColorBrush x:Key="Color.AccentSoft" Color="#298F1F34"/>
+    <SolidColorBrush x:Key="Color.Ok" Color="#FF5FBF85"/>
+    <SolidColorBrush x:Key="Color.Warn" Color="#FFE0A94A"/>
+    <SolidColorBrush x:Key="Color.Danger" Color="#FFE2572C"/>
+
+</ResourceDictionary>

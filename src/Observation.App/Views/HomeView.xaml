@@ -1,0 +1,319 @@
+<UserControl x:Class="Observation.App.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Реальная очередь применения (TweakLibrary.PendingChanges по всем вкладкам) и кнопка
+        «Применить» через BatchRunner, плюс карточка характеристик ПК (только чтение),
+        пресеты (только выставляют тумблеры) и панель последних записей журнала.
+        Стилизация приведена в соответствие с макетом Observation Interface (стат-плитки,
+        карточки пресетов, закреплённая внизу панель применения) — найдено вживую, что
+        предыдущая версия визуально сильно расходилась с макетом.
+    -->
+    <UserControl.Resources>
+        <Style x:Key="StatTileStyle" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#FF0A0505" Offset="0"/>
+                        <GradientStop Color="#FF0F0809" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush" Value="{StaticResource Color.Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="MinWidth" Value="132"/>
+            <Setter Property="Margin" Value="0,0,10,10"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="0,0,0,4">
+                <!-- Мех. надёжности №5 из плана: баннер, если проба записи в реестр/папку данных при старте (AntivirusSelfCheck) провалилась. -->
+                <Border Margin="0,0,0,14" Padding="14,12" CornerRadius="10"
+                        Background="#1AE0A94A" BorderBrush="#59E0A94A" BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ShowAntivirusBanner}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock FontWeight="SemiBold" Foreground="{StaticResource Color.Warn}" Margin="0,0,0,4"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerTitle}"/>
+                            <TextBlock Foreground="{StaticResource Color.Text}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerDesc}"/>
+                            <Button HorizontalAlignment="Left" Padding="12,6" Cursor="Hand" BorderThickness="1"
+                                    BorderBrush="{StaticResource Color.Warn}" Background="Transparent" Foreground="{StaticResource Color.Warn}"
+                                    Command="{Binding OpenDefenderExclusionsCommand}"
+                                    Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeAvBannerBtn}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" VerticalAlignment="Top" Padding="6" Cursor="Hand" BorderThickness="0"
+                                Background="Transparent" Foreground="{StaticResource Color.TextMuted}" Content="&#x2715;"
+                                Command="{Binding DismissAntivirusBannerCommand}"/>
+                    </Grid>
+                </Border>
+
+                <TextBlock FontFamily="{StaticResource Font.Display}" FontSize="21" FontWeight="SemiBold"
+                           Foreground="{StaticResource Color.Text}" Margin="0,0,0,4"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeTitle}"/>
+                <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="12.5" TextWrapping="Wrap" Margin="0,0,0,18"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSub}"/>
+
+                <!-- Характеристики ПК — только чтение (Get-CimInstance Win32_OperatingSystem/Win32_Processor/... из плана), стат-плитками как в макете. -->
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsLabel}"/>
+                <WrapPanel Margin="0,0,0,10">
+                    <Border Style="{StaticResource StatTileStyle}">
+                        <StackPanel>
+                            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10" Foreground="{StaticResource Color.TextMuted}"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsOs}"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="{Binding PcSpecs.OsCaption, Mode=OneWay}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource StatTileStyle}">
+                        <StackPanel>
+                            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10" Foreground="{StaticResource Color.TextMuted}"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsCpu}"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="{Binding PcSpecs.CpuName, Mode=OneWay}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource StatTileStyle}">
+                        <StackPanel>
+                            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10" Foreground="{StaticResource Color.TextMuted}"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsGpu}"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="{Binding PcSpecs.GpuName, Mode=OneWay}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource StatTileStyle}">
+                        <StackPanel>
+                            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10" Foreground="{StaticResource Color.TextMuted}"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsRam}"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="{Binding PcSpecs.RamTotal, Mode=OneWay}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource StatTileStyle}">
+                        <StackPanel>
+                            <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="10" Foreground="{StaticResource Color.TextMuted}"
+                                       Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSpecsDisk}"/>
+                            <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Color.Text}" Margin="0,4,0,0" TextWrapping="Wrap"
+                                       Text="{Binding PcSpecs.DiskInfo, Mode=OneWay}"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <!-- Пресеты — только выставляют тумблеры по вкладкам, не применяют (см. план), карточками как в макете. -->
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,8,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePresetsLabel}"/>
+                <ItemsControl ItemsSource="{Binding Presets}" Margin="0,0,0,18">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="230" Background="{StaticResource Color.SurfaceSolid}" BorderBrush="{StaticResource Color.Border}"
+                                    BorderThickness="1" CornerRadius="8" Margin="0,0,10,10" ClipToBounds="True">
+                                <StackPanel>
+                                    <Border Height="3" Background="{StaticResource Color.Accent}"/>
+                                    <StackPanel Margin="14,12,14,14">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13.5"
+                                                   Foreground="{StaticResource Color.Text}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource Color.TextMuted}"
+                                                   TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Margin="0,0,0,12" Height="60"/>
+                                        <Button HorizontalAlignment="Left" Padding="12,6" Cursor="Hand" BorderThickness="1"
+                                                BorderBrush="{StaticResource Color.BorderStrong}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                                                Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding Id}"
+                                                Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeSelectPresetBtn}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Список изменений в очереди — сама очередь и кнопка «Применить» теперь в закреплённой панели снизу. -->
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,0,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomePendingListLabel}"/>
+                <ItemsControl ItemsSource="{Binding PendingChanges}" Margin="0,0,0,18">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="11" Margin="0,0,0,3">
+                                <Run Text="{Binding Name, Mode=OneWay}"/>
+                                <Run Text=" → "/>
+                                <Run Text="{Binding IsOnLabel, Mode=OneWay}"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!--
+                    Активные твики из журнала — «Проверить состояние» (мех. надёжности №1) и точечный
+                    откат конкретного твика к состоянию "до" применения (через журнал, не к offData —
+                    см. HomeTabViewModel.RevertTweakAsync).
+                -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Foreground="{StaticResource Color.TextMuted}" VerticalAlignment="Center"
+                               Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeActiveTweaksLabel}"/>
+
+                    <Button Grid.Column="1" Padding="12,6" Cursor="Hand" BorderThickness="1"
+                            BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                            Command="{Binding VerifyCommand}"
+                            Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeVerifyBtn}"/>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding ActiveTweaks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{StaticResource Color.SurfaceSolid}"
+                                    BorderBrush="{StaticResource Color.Border}" BorderThickness="1"
+                                    CornerRadius="8" Padding="14,10" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding Name, Mode=OneWay}" Foreground="{StaticResource Color.Text}"
+                                               FontSize="13" VerticalAlignment="Center"/>
+
+                                    <Button Grid.Column="1" Padding="10,5" Cursor="Hand" BorderThickness="1"
+                                            BorderBrush="{StaticResource Color.Border}" Background="Transparent" Foreground="{StaticResource Color.Text}"
+                                            Command="{Binding DataContext.RevertCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding Definition.Id}"
+                                            Content="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeRevertBtn}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Панель журнала — последние записи из journal.jsonl, история отдельно от «активных твиков». -->
+                <TextBlock FontFamily="{StaticResource Font.Mono}" FontSize="11" Foreground="{StaticResource Color.TextMuted}" Margin="0,18,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeJournalLabel}"/>
+
+                <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="12" Margin="0,0,0,8"
+                           Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeJournalEmpty}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RecentJournalEntries.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <ItemsControl ItemsSource="{Binding RecentJournalEntries}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0" FontFamily="{StaticResource Font.Mono}" FontSize="10"
+                                           Foreground="{StaticResource Color.TextMuted}" Margin="0,0,10,0" VerticalAlignment="Top"
+                                           Text="{Binding Timestamp, StringFormat='{}{0:g}'}"/>
+
+                                <TextBlock Grid.Column="1" FontSize="12">
+                                    <Run Text="{Binding TweakName, Mode=OneWay}" Foreground="{StaticResource Color.Text}"/>
+                                    <Run Text=" — "/>
+                                    <Run Text="{Binding Message, Mode=OneWay}" Foreground="{Binding Success, Converter={StaticResource BoolToStatusBrush}}"/>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--
+            Закреплённая панель применения внизу — как .applybar в макете, включая тумблер
+            «точка восстановления перед применением» (.rp) — теперь реально создаёт точку через
+            RestorePointService.TryCreateAsync (Checkpoint-Computer), включён по умолчанию.
+        -->
+        <Border Grid.Row="1" Background="{StaticResource Color.SurfaceSolid}"
+                BorderBrush="{StaticResource Color.Border}" BorderThickness="0,1,0,0" Padding="0,14,0,4" Margin="0,10,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <TextBlock>
+                        <Run Foreground="{StaticResource Color.TextMuted}"
+                             Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Mode=OneWay, Converter={StaticResource LocalizedText}, ConverterParameter=HomePendingLabel}"/>
+                        <Run Foreground="{StaticResource Color.Text}" FontWeight="Bold" Text="{Binding PendingCount, Mode=OneWay}"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding ResultMessage}" Margin="0,4,0,0" TextWrapping="Wrap"
+                               Visibility="{Binding ResultMessage, Converter={StaticResource NullOrEmptyToVisibility}}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{StaticResource Color.Ok}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ResultHasFailures}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource Color.Danger}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <ToggleButton IsChecked="{Binding CreateRestorePointBeforeApply}" Style="{StaticResource SwitchToggleStyle}" Margin="0,0,8,0"/>
+                    <TextBlock Foreground="{StaticResource Color.TextMuted}" FontSize="11.5" VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="150"
+                               Text="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeRestorePointLabel}"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding ApplyCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                            <Setter Property="Content"
+                                    Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeApplyBtn}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsApplying}" Value="True">
+                                    <Setter Property="Content"
+                                            Value="{Binding Source={StaticResource Localization}, Path=CurrentLanguage, Converter={StaticResource LocalizedText}, ConverterParameter=HomeApplyingBtn}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

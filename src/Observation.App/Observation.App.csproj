@@ -1,0 +1,99 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Только ради System.Windows.Forms.NotifyIcon (трей) — см. «Хранение данных, окно, локализация» в плане, готовый компонент, не своя реализация. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Observation.App</RootNamespace>
+    <AssemblyName>Observation</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Знак программы (голова Ктулху с щупальцами) — тот же исходник, что в сайдбаре/About/трее, см. «Знак программы» в плане. -->
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+
+    <!--
+      Позволяет собирать (не запускать) WPF-проект вне Windows — проверено вживую:
+      dotnet build здесь реально компилирует XAML. Условие ограничивает флаг только
+      не-Windows хостами, на реальной Windows-машине пользователя ничего не меняется.
+    -->
+    <EnableWindowsTargeting Condition="'$(OS)' != 'Windows_NT'">true</EnableWindowsTargeting>
+
+    <!--
+      Портативная self-contained сборка в один exe — см. «Архитектура кода» в плане.
+      RuntimeIdentifier здесь фиксирован под win-x64 для публикации;
+      для обычной разработки (dotnet build без -r) он не мешает.
+    -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!--
+      InvariantGlobalization ломает WPF: биндинги без явного ConverterCulture вызывают
+      XmlLanguage.GetSpecificCulture() на Language окна (по умолчанию en-US), а в invariant-режиме
+      доступна только invariant-культура — приложение падает на старте с XamlParseException
+      ("Cannot find non-neutral culture related to 'en-us'") на первом же таком биндинге.
+      Проверено вживую на реальной Windows-машине.
+    -->
+  </PropertyGroup>
+
+  <!--
+    Портативная публикация реально проверена на машине: рядом с exe оказались три .pdb
+    (Observation/.Core/.Handlers) — лишние файлы для того, кто просто копирует папку
+    целиком, а не только exe. Embedded, не none — символы остаются доступны для отладки
+    будущих крашей (их уже дважды ловили только на реальном запуске), просто зашиты в
+    сам exe/dll, а не лежат отдельными файлами.
+  -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!--
+    UseWindowsForms=true (только ради NotifyIcon) добавляет глобальный using на
+    System.Windows.Forms рядом с WPF-шными System.Windows/System.Windows.Controls —
+    Application/UserControl/MessageBox и т.п. становятся неоднозначными сразу везде.
+    Убираем именно этот глобальный using; TrayIconService.cs подключает
+    System.Windows.Forms явно у себя, локально, где он и нужен.
+  -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Observation.Core\Observation.Core.csproj" />
+    <ProjectReference Include="..\Observation.Handlers\Observation.Handlers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Тот же сэмпл-реестр твиков, что уже используется в Observation.Core/Observation.Tests. -->
+    <Content Include="..\Observation.Core\TweakData\tweaks.sample.json" Link="TweakData\tweaks.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Observation.Core\TweakData\presets.sample.json" Link="TweakData\presets.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Observation.Core\TweakData\scripts.sample.json" Link="TweakData\scripts.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!--
+    Шрифты макета (Cinzel, IBM Plex Sans/Mono) — Google Fonts, SIL Open Font License
+    (тексты лицензий рядом, Fonts/OFL-*.txt), встроены как WPF font resource, а не
+    подключены как веб-шрифт (в WPF нет аналога <link> на google fonts, только реальные
+    файлы). См. Themes/Fonts.xaml — там объявлены FontFamily-ресурсы по этим файлам.
+  -->
+  <ItemGroup>
+    <Resource Include="Fonts\*.ttf" />
+    <Resource Include="Assets\AppIcon.png" />
+    <Resource Include="Assets\AppIcon.ico" />
+    <!-- Фоновая иллюстрация окна (щупальца/руны/пентаграммы) — тот же исходник пользователя,
+         что и icon.png/AppIcon, из макета Observation Interface. См. «Знак программы» и
+         «Дизайн-система» в плане. -->
+    <Resource Include="Assets\Background.jpg" />
+  </ItemGroup>
+
+</Project>

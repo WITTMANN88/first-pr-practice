@@ -1,17 +1,48 @@
-# First PR Practice
+# Observation
 
-A tiny sandbox repo for practicing the GitHub pull request workflow.
+Своя программа для тонкой настройки Windows — по образцу WinUtil (Chris Titus Tech) и MakuTweaker.
+13 вкладок по группам функций: производительность и игры, приватность, безопасность, деблоат UWP,
+очистка системы, кастомизация интерфейса, установка программ, скрипты, сеть, автозагрузка/процессы/службы,
+обновления Windows, диагностика и драйверы, плюс главная с пресетами.
 
-## What is this?
+Портативная self-contained сборка, всегда запускается от администратора, тёмно-бордовая
+оккультная визуальная тема.
 
-This repo exsits so you can practice: fork/branch, make a small change,
-and open your first pull request without any risk to real code.
+**Статус: активная разработка.** Техническая часть (реестровые ключи/API/команды по всем 13
+вкладкам, механизм отката, применение накопительным пакетом, применение ко всем профилям,
+проверка версии/редакции Windows) полностью спроектирована и не по одному разу перепроверена
+через открытые источники. Observation.Core и Observation.Handlers реализованы и покрыты
+тестами. Observation.App — каркас готов (окно, сайдбар, навигация по 13 вкладкам, локализация,
+генератор списка твиков из JSON-реестра); пиксель-точная стилизация по макету — следующий шаг.
 
-## How to use it
+## Структура решения
 
-1. Create a new branch
-2. Make a small edit (fix a typo, tweak this file, add a line)
-3. Push the branch and open a pull request
-4. Review and merge it
+```
+Observation.sln
+src/
+  Observation.App/         — WPF-интерфейс: окно, сайдбар, вкладки, локализация
+  Observation.App.Tests/   — тесты ViewModels (требуют рантайм WPF — только Windows, см. ниже)
+  Observation.Core/        — движок: модель твика, JSON-реестр твиков, накопительная очередь,
+                              применение/проверка/откат, журнал
+  Observation.Handlers/    — процедурные обработчики твиков, не описываемых одним значением реестра
+  Observation.Tests/       — модульные тесты Core/Handlers (без реальных изменений системы)
+```
 
-Have fun shipping your first PR!
+## Требования для сборки
+
+- .NET 8 SDK
+- Windows 10/11 (проект целиком завязан на Windows API — Registry, ServiceController, WMI, WinRT)
+
+```
+dotnet build
+dotnet test src/Observation.Tests/Observation.Tests.csproj
+```
+
+Вне Windows (например, в этой песочнице) `Observation.App`/`Observation.App.Tests` собираются
+благодаря `EnableWindowsTargeting` (проверено вживую), но не запускаются — WPF не имеет рантайма
+для Linux. `dotnet test` для `Observation.App.Tests` тоже не выполнится вне Windows по той же
+причине (`Observation.Tests` этой проблемы не имеет и гоняется где угодно).
+
+## Лицензия
+
+MIT — см. [LICENSE](LICENSE).

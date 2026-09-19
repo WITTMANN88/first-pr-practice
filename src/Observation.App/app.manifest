@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="Observation.App"/>
+
+  <!-- Всегда запускаемся от администратора — см. «Журнал решений»: Права администратора -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <!--
+    Совместимость с Windows 10/11 и 8.1.
+    Без этого блока Win32-API (в т.ч. проверки версии, часть системных диалогов)
+    считают приложение несовместимым с текущей ОС и подменяют реальную версию —
+    см. «Определение версии и редакции Windows» в плане, почему это важно
+    даже при использовании RtlGetVersion.
+  -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10 и Windows 11 — один и тот же GUID для обеих версий -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+      <!-- Windows 8.1 — ниже не поддерживаем, но пусть ОС хотя бы не подделывает версию,
+           чтобы наша собственная проверка минимальной сборки могла честно отказать -->
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+    </application>
+  </compatibility>
+
+  <!-- Per-Monitor DPI v2 — чтобы кастомный интерфейс не размывало на мульти-мониторных
+       и HiDPI системах; длинные пути — портативная папка данных может уйти глубоко во вложенность -->
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+    </windowsSettings>
+  </application>
+</assembly>

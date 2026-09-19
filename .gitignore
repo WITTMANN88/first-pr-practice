@@ -1,0 +1,23 @@
+# .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.dbmdl
+*.dotCover
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Publish output
+publish/
+*.pubxml.user
+
+# Observation's own portable runtime data (never committed, always local to a build)
+Observation_Data/
+
+# OS junk
+.DS_Store
+Thumbs.db
