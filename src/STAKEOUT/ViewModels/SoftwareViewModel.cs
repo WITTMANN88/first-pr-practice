@@ -14,18 +14,22 @@ public sealed class SoftwareItemViewModel : ViewModelBase
     private InstallStage _stage = InstallStage.Idle;
     private bool _busy;
 
+    private CancellationTokenSource? _cts;
+
     public SoftwareItemViewModel(SoftwareItem item, SoftwareInstallService service, ToastService toast)
     {
         Item = item;
         _service = service;
         _toast = toast;
         InstallCommand = new AsyncRelayCommand(_ => InstallAsync(), _ => !Busy);
+        CancelCommand = new RelayCommand(_ => _cts?.Cancel(), _ => Busy);
     }
 
     public SoftwareItem Item { get; }
     public string DisplayName => Item.DisplayName;
     public string MethodText => Item.Method == InstallMethod.Winget ? "winget" : "прямая ссылка";
     public AsyncRelayCommand InstallCommand { get; }
+    public RelayCommand CancelCommand { get; }
 
     public bool Busy { get => _busy; private set => SetProperty(ref _busy, value); }
     public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
@@ -54,18 +58,24 @@ public sealed class SoftwareItemViewModel : ViewModelBase
         Busy = true;
         OnPropertyChanged(nameof(IsIndeterminate));
         Progress = 0;
+        _cts = new CancellationTokenSource();
+        CancelCommand.RaiseCanExecuteChanged();
         var stageProgress = new Progress<InstallStage>(s => Stage = s);
         var barProgress = new Progress<double>(p => Progress = p);
         try
         {
-            var ok = await _service.InstallAsync(Item, stageProgress, barProgress);
+            var ok = await _service.InstallAsync(Item, stageProgress, barProgress, _cts.Token);
             if (ok) _toast.Success($"{DisplayName}: установка запущена");
+            else if (_cts.IsCancellationRequested) _toast.Show($"{DisplayName}: отменено");
             else _toast.Error($"{DisplayName}: {StageText}");
         }
         finally
         {
+            _cts.Dispose();
+            _cts = null;
             Busy = false;
             OnPropertyChanged(nameof(IsIndeterminate));
+            CancelCommand.RaiseCanExecuteChanged();
         }
     }
 }

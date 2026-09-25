@@ -18,6 +18,10 @@ public sealed class UwpItemViewModel : ViewModelBase
     public string PackageFullName => App.PackageFullName;
     public string SizeText => App.SizeText;
     public bool IsCritical => App.IsCritical;
+    public string? IconPath => App.IconPath;
+    public bool HasIcon => !string.IsNullOrEmpty(App.IconPath);
+    /// <summary>First letter, used as a fallback tile when no icon is resolved.</summary>
+    public string Initial => string.IsNullOrEmpty(App.DisplayName) ? "?" : App.DisplayName[..1].ToUpperInvariant();
 
     /// <summary>Protected apps cannot be checked for removal.</summary>
     public bool CanRemove => !App.IsCritical;
@@ -72,7 +76,9 @@ public sealed class UwpViewModel : ViewModelBase
         try
         {
             Apps.Clear();
-            var list = await _service.ListAsync();
+            // Guard the PowerShell enumeration so a hung host releases the UI.
+            var list = await TimeoutGuard.Await(
+                _service.ListAsync(), TimeSpan.FromSeconds(90), new(), "Uwp.List");
             foreach (var a in list) Apps.Add(new UwpItemViewModel(a));
             _toast.Success($"Найдено приложений: {Apps.Count}");
         }

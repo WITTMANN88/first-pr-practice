@@ -93,6 +93,9 @@ public sealed class MainViewModel : ViewModelBase
         await SysInfo.LoadAsync();
     }
 
+    /// <summary>Release timers/resources on shutdown.</summary>
+    public void Shutdown() => SysInfo.StopLivePolling();
+
     private void Navigate(Page page)
     {
         Selected = page;

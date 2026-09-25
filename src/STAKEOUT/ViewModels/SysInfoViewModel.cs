@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using Stakeout.Core;
 using Stakeout.Models;
 using Stakeout.Services;
@@ -9,6 +10,8 @@ namespace Stakeout.ViewModels;
 public sealed class SysInfoViewModel : ViewModelBase
 {
     private readonly SystemInfoService _service;
+    private readonly DispatcherTimer _tempTimer;
+    private bool _tempPollBusy;
 
     private bool _isLoading = true;
     private string _cpuName = "—";
@@ -22,6 +25,11 @@ public sealed class SysInfoViewModel : ViewModelBase
     {
         _service = service;
         RefreshCommand = new AsyncRelayCommand(_ => LoadAsync());
+
+        // Live temperature: re-poll only the (cheap) CPU temperature every 3 s so
+        // the bar tracks reality without re-running the heavy WMI queries.
+        _tempTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        _tempTimer.Tick += async (_, _) => await PollTemperatureAsync();
     }
 
     public AsyncRelayCommand RefreshCommand { get; }
@@ -50,7 +58,11 @@ public sealed class SysInfoViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsLoaded));
         try
         {
-            var info = await _service.GatherAsync();
+            // Cap the wait: even if a WMI provider hangs past its own timeout, the
+            // UI is released with whatever data (or fallback) we have.
+            var info = await TimeoutGuard.Await(
+                _service.GatherAsync(), TimeSpan.FromSeconds(30), new SystemInfoModel(), "SysInfo.Load");
+
             CpuName = info.CpuName;
             _cpuTemp = info.CpuTemperatureC;
             Motherboard = info.Motherboard;
@@ -67,8 +79,33 @@ public sealed class SysInfoViewModel : ViewModelBase
         {
             IsLoading = false;
             OnPropertyChanged(nameof(IsLoaded));
+            _tempTimer.Start(); // begin live temperature polling after first load
         }
     }
+
+    /// <summary>Re-poll just the CPU temperature (guarded, non-overlapping).</summary>
+    private async Task PollTemperatureAsync()
+    {
+        if (_tempPollBusy) return;         // skip if a previous poll is still running
+        _tempPollBusy = true;
+        try
+        {
+            var t = await TimeoutGuard.Await(
+                _service.RefreshTemperatureAsync(), TimeSpan.FromSeconds(6), _cpuTemp, "SysInfo.Temp");
+            if (!Nullable.Equals(t, _cpuTemp))
+            {
+                _cpuTemp = t;
+                RaiseTempChanged();
+            }
+        }
+        finally
+        {
+            _tempPollBusy = false;
+        }
+    }
+
+    /// <summary>Stop live polling (called when the app shuts down).</summary>
+    public void StopLivePolling() => _tempTimer.Stop();
 
     private void RaiseTempChanged()
     {

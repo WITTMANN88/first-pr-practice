@@ -34,6 +34,9 @@ public sealed class SystemInfoService : IDisposable
         return model;
     });
 
+    /// <summary>Re-read only the CPU temperature (cheap; used for live polling).</summary>
+    public Task<double?> RefreshTemperatureAsync() => Task.Run(GetCpuTemperature);
+
     // --- CPU ---------------------------------------------------------------
 
     private static string GetCpuName()
@@ -123,7 +126,7 @@ public sealed class SystemInfoService : IDisposable
         var list = new List<GpuInfo>();
         try
         {
-            using var searcher = new ManagementObjectSearcher(
+            using var searcher = MakeSearcher(
                 "SELECT Name, AdapterCompatibility FROM Win32_VideoController");
             foreach (ManagementObject mo in searcher.Get())
             {
@@ -134,7 +137,7 @@ public sealed class SystemInfoService : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("GPU enumeration", ex);
+            LogWmiError("GPU enumeration", ex);
         }
         if (list.Count == 0) list.Add(new GpuInfo { Name = "—" });
         return list;
@@ -160,13 +163,13 @@ public sealed class SystemInfoService : IDisposable
         {
             ulong totalBytes = 0;
             var type = "";
-            using (var cs = new ManagementObjectSearcher(
+            using (var cs = MakeSearcher(
                 "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
             {
                 foreach (ManagementObject mo in cs.Get())
                     totalBytes = Convert.ToUInt64(mo["TotalPhysicalMemory"] ?? 0UL);
             }
-            using (var pm = new ManagementObjectSearcher(
+            using (var pm = MakeSearcher(
                 "SELECT SMBIOSMemoryType, MemoryType FROM Win32_PhysicalMemory"))
             {
                 foreach (ManagementObject mo in pm.Get())
@@ -180,7 +183,7 @@ public sealed class SystemInfoService : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("RAM", ex);
+            LogWmiError("RAM", ex);
             return "—";
         }
     }
@@ -213,7 +216,7 @@ public sealed class SystemInfoService : IDisposable
         try
         {
             ulong total = 0;
-            using var searcher = new ManagementObjectSearcher(
+            using var searcher = MakeSearcher(
                 "SELECT Size FROM Win32_DiskDrive");
             foreach (ManagementObject mo in searcher.Get())
                 total += Convert.ToUInt64(mo["Size"] ?? 0UL);
@@ -225,7 +228,7 @@ public sealed class SystemInfoService : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Disks", ex);
+            LogWmiError("Disks", ex);
             return "—";
         }
     }
@@ -252,13 +255,32 @@ public sealed class SystemInfoService : IDisposable
         return $"{product}{displayPart} сборка {buildFull}".Trim();
     }
 
-    // --- WMI helper --------------------------------------------------------
+    // --- WMI helpers -------------------------------------------------------
+
+    /// <summary>WMI enumeration timeout. Keeps a slow/hung provider from
+    /// stalling the (background) info gather indefinitely.</summary>
+    private static readonly TimeSpan WmiTimeout = TimeSpan.FromSeconds(8);
+
+    /// <summary>
+    /// Build a searcher configured for semisynchronous enumeration with a hard
+    /// timeout, so <c>Get()</c> gives up instead of blocking forever.
+    /// </summary>
+    private static ManagementObjectSearcher MakeSearcher(string query)
+    {
+        var options = new EnumerationOptions
+        {
+            Timeout = WmiTimeout,
+            ReturnImmediately = true, // semisynchronous: enables the timeout
+            Rewindable = false,
+        };
+        return new ManagementObjectSearcher(new ObjectQuery(query)) { Options = options };
+    }
 
     private static string? WmiFirst(string wmiClass, string property)
     {
         try
         {
-            using var searcher = new ManagementObjectSearcher($"SELECT {property} FROM {wmiClass}");
+            using var searcher = MakeSearcher($"SELECT {property} FROM {wmiClass}");
             foreach (ManagementObject mo in searcher.Get())
             {
                 var v = mo[property]?.ToString();
@@ -267,9 +289,19 @@ public sealed class SystemInfoService : IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError($"WMI {wmiClass}.{property}", ex);
+            LogWmiError($"WMI {wmiClass}.{property}", ex);
         }
         return null;
+    }
+
+    /// <summary>Log a WMI failure, flagging access-denied explicitly.</summary>
+    private static void LogWmiError(string action, Exception ex)
+    {
+        var denied = ex is UnauthorizedAccessException
+            || (ex is ManagementException me &&
+                me.ErrorCode is ManagementStatus.AccessDenied);
+        if (denied) Logger.Log(action, "ACCESS_DENIED", ex.Message);
+        else Logger.LogError(action, ex);
     }
 
     public void Dispose()

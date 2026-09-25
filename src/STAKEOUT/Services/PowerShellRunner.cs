@@ -12,14 +12,19 @@ namespace Stakeout.Services;
 /// </summary>
 public static class PowerShellRunner
 {
-    /// <summary>Run a script block hidden with the execution policy bypassed.</summary>
-    public static Task<ProcessResult> RunScriptAsync(string script, CancellationToken ct = default)
+    /// <summary>
+    /// Run a script block hidden with the execution policy bypassed. A hard
+    /// timeout (default 120 s) guarantees a hung script is killed rather than
+    /// blocking the caller forever.
+    /// </summary>
+    public static Task<ProcessResult> RunScriptAsync(
+        string script, CancellationToken ct = default, int timeoutMs = ProcessRunner.DefaultTimeoutMs)
     {
         // -EncodedCommand expects UTF-16LE Base64.
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var args = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encoded}";
         Logger.Log("PowerShell", "RUN", Truncate(script));
-        return ProcessRunner.RunAsync("powershell.exe", args, ct);
+        return ProcessRunner.RunAsync("powershell.exe", args, ct, timeoutMs);
     }
 
     private static string Truncate(string s)

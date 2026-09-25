@@ -16,6 +16,7 @@ public partial class MainWindow : Window
         DataContext = _vm;
 
         Loaded += OnLoaded;
+        Closed += (_, _) => _vm.Shutdown();
         _vm.PropertyChanged += OnVmPropertyChanged;
     }
 

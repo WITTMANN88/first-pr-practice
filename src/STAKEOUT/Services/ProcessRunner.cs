@@ -18,9 +18,17 @@ public readonly record struct ProcessResult(int ExitCode, string StdOut, string 
 /// </summary>
 public static class ProcessRunner
 {
-    /// <summary>Run a program hidden and capture its output.</summary>
+    /// <summary>Default hard timeout for console utilities (ms).</summary>
+    public const int DefaultTimeoutMs = 120_000;
+
+    /// <summary>
+    /// Run a program hidden and capture its output. If it runs longer than
+    /// <paramref name="timeoutMs"/> it is killed and a TIMEOUT result returned,
+    /// so a hung external tool can never stall the caller indefinitely.
+    /// </summary>
     public static async Task<ProcessResult> RunAsync(
-        string fileName, string arguments, CancellationToken ct = default)
+        string fileName, string arguments,
+        CancellationToken ct = default, int timeoutMs = DefaultTimeoutMs)
     {
         var psi = new ProcessStartInfo
         {
@@ -33,7 +41,7 @@ public static class ProcessRunner
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
-        return await RunInternalAsync(psi, ct);
+        return await RunInternalAsync(psi, ct, timeoutMs);
     }
 
     /// <summary>
@@ -61,7 +69,7 @@ public static class ProcessRunner
     }
 
     private static async Task<ProcessResult> RunInternalAsync(
-        ProcessStartInfo psi, CancellationToken ct)
+        ProcessStartInfo psi, CancellationToken ct, int timeoutMs)
     {
         try
         {
@@ -78,13 +86,49 @@ public static class ProcessRunner
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
-            await proc.WaitForExitAsync(ct);
+            // Enforce a hard timeout on top of any external cancellation.
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(timeoutMs);
+            try
+            {
+                await proc.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                // Timed out (not user-cancelled): kill the whole process tree.
+                TryKill(proc);
+                Logger.Log($"ProcessRunner {Path.GetFileName(psi.FileName)}", "TIMEOUT",
+                    $"exceeded {timeoutMs} ms; process killed");
+                return new ProcessResult(-1, sbOut.ToString(), $"timeout after {timeoutMs} ms");
+            }
+
             return new ProcessResult(proc.ExitCode, sbOut.ToString(), sbErr.ToString());
+        }
+        catch (OperationCanceledException)
+        {
+            // External cancellation requested by the caller.
+            throw;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"ProcessRunner {psi.FileName}", ex);
+            LogProcessError(psi.FileName, ex);
             return new ProcessResult(-1, "", ex.Message);
         }
+    }
+
+    private static void TryKill(Process proc)
+    {
+        try { if (!proc.HasExited) proc.Kill(entireProcessTree: true); } catch { /* already gone */ }
+    }
+
+    private static void LogProcessError(string fileName, Exception ex)
+    {
+        var name = "ProcessRunner " + Path.GetFileName(fileName);
+        // Win32 error 5 == ERROR_ACCESS_DENIED.
+        if (ex is System.ComponentModel.Win32Exception { NativeErrorCode: 5 }
+            || ex is UnauthorizedAccessException)
+            Logger.Log(name, "ACCESS_DENIED", ex.Message);
+        else
+            Logger.LogError(name, ex);
     }
 }

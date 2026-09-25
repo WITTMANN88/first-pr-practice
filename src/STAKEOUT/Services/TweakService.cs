@@ -210,13 +210,17 @@ public sealed class TweakService
             requiresRestart: false));
 
         // Mouse polling helper value from the guide.
-        list.Add(new RegistryTweak(_store, "rawmouse",
+        // TODO: Verify exact path on Windows build. The exact hive/subkey for
+        // RawMouseThrottleDuration is not publicly documented; HKCU\Control
+        // Panel\Mouse is the working assumption. This tweak is wrapped in its
+        // own try/catch with verbose logging so a wrong path (or a locked key)
+        // never breaks the rest of the catalogue and is traceable in the log.
+        list.Add(new ActionTweak(_store, "rawmouse",
             "Опрос мыши (RawMouseThrottleDuration)",
             "Устанавливает RawMouseThrottleDuration=50 (по гайду).",
-            TweakCategory.Performance, new[]
-            {
-                new RegistryOp(HKCU, @"Control Panel\Mouse", "RawMouseThrottleDuration", 50, RegistryValueKind.DWord),
-            }));
+            TweakCategory.Performance,
+            apply: ApplyRawMouse,
+            revert: TweakOps.RestoreAll));
 
         // USB power saving off — programmatic walk of the USB device tree.
         list.Add(new ActionTweak(_store, "usbpower",
@@ -296,10 +300,18 @@ public sealed class TweakService
     {
         try
         {
-            var scope = new ManagementScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption");
+            // Bound the WMI connect/enumeration so a hung provider cannot stall
+            // the background task indefinitely.
+            var connectOptions = new ConnectionOptions { Timeout = TimeSpan.FromSeconds(15) };
+            var scope = new ManagementScope(
+                @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption", connectOptions);
             scope.Connect();
             var query = new ObjectQuery("SELECT * FROM Win32_EncryptableVolume");
-            using var searcher = new ManagementObjectSearcher(scope, query);
+            var enumOptions = new EnumerationOptions
+            {
+                Timeout = TimeSpan.FromSeconds(15), ReturnImmediately = true, Rewindable = false,
+            };
+            using var searcher = new ManagementObjectSearcher(scope, query, enumOptions);
             using var results = searcher.Get();
 
             var any = false;
@@ -321,6 +333,16 @@ public sealed class TweakService
                 }
             }
             return any;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.Log("BitLocker", "ACCESS_DENIED", ex.Message);
+            return false;
+        }
+        catch (ManagementException ex) when (ex.ErrorCode == ManagementStatus.AccessDenied)
+        {
+            Logger.Log("BitLocker", "ACCESS_DENIED", ex.Message);
+            return false;
         }
         catch (Exception ex)
         {
@@ -367,6 +389,43 @@ public sealed class TweakService
             "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
         return m.Success ? m.Value : null;
     }
+
+    // --- RawMouseThrottleDuration (guarded) --------------------------------
+
+    /// <summary>
+    /// Apply RawMouseThrottleDuration=50 with defensive error handling.
+    /// TODO: Verify exact path on Windows build.
+    /// </summary>
+    private Task<bool> ApplyRawMouse(TweakState s) => Task.Run(() =>
+    {
+        const string subKey = @"Control Panel\Mouse";
+        const string name = "RawMouseThrottleDuration";
+        try
+        {
+            // Capture the prior value (or "absent") so revert is exact, then set 50.
+            var snap = RegistryHelper.Capture(HKCU, subKey, name);
+            s.Saved.Add(TweakStateStore.ToSaved(HKCU, subKey, name, snap));
+
+            var ok = RegistryHelper.SetValue(HKCU, subKey, name, 50, RegistryValueKind.DWord);
+            if (ok)
+                Logger.Log("RawMouseThrottleDuration", "APPLIED",
+                    $@"HKCU\{subKey}\{name}=50 (prior: {(snap.Existed ? snap.Value : "absent")})");
+            else
+                Logger.Log("RawMouseThrottleDuration", "FAILED",
+                    $@"SetValue returned false for HKCU\{subKey}\{name}");
+            return ok;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.Log("RawMouseThrottleDuration", "ACCESS_DENIED", ex.Message);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("RawMouseThrottleDuration", ex);
+            return false;
+        }
+    });
 
     // --- USB power saving (registry tree walk) -----------------------------
 

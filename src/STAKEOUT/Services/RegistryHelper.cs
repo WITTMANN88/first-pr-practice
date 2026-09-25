@@ -19,6 +19,19 @@ public static class RegistryHelper
     private static RegistryKey BaseKey(RegistryHive hive)
         => RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
 
+    /// <summary>
+    /// Log a registry failure, distinguishing permission problems so
+    /// "Access Denied" is always visible in the encrypted TEMP log with an
+    /// explicit ACCESS_DENIED status.
+    /// </summary>
+    private static void LogRegistryError(string action, Exception ex)
+    {
+        if (ex is UnauthorizedAccessException or System.Security.SecurityException)
+            Logger.Log(action, "ACCESS_DENIED", ex.Message);
+        else
+            Logger.LogError(action, ex);
+    }
+
     /// <summary>Read a value. Returns snapshot with Existed=false when missing.</summary>
     public static ValueSnapshot Capture(RegistryHive hive, string subKey, string name)
     {
@@ -36,7 +49,7 @@ public static class RegistryHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Registry.Capture {subKey}\\{name}", ex);
+            LogRegistryError($"Registry.Capture {subKey}\\{name}", ex);
             return new ValueSnapshot(null, RegistryValueKind.Unknown, false);
         }
     }
@@ -55,7 +68,7 @@ public static class RegistryHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Registry.SetValue {subKey}\\{name}", ex);
+            LogRegistryError($"Registry.SetValue {subKey}\\{name}", ex);
             return false;
         }
     }
@@ -72,7 +85,7 @@ public static class RegistryHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Registry.DeleteValue {subKey}\\{name}", ex);
+            LogRegistryError($"Registry.DeleteValue {subKey}\\{name}", ex);
             return false;
         }
     }
@@ -103,7 +116,7 @@ public static class RegistryHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Registry.ValueNames {subKey}", ex);
+            LogRegistryError($"Registry.ValueNames {subKey}", ex);
             return Array.Empty<string>();
         }
     }
@@ -119,7 +132,7 @@ public static class RegistryHelper
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Registry.SubKeyNames {subKey}", ex);
+            LogRegistryError($"Registry.SubKeyNames {subKey}", ex);
             return Array.Empty<string>();
         }
     }

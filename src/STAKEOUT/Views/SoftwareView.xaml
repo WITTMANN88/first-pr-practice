@@ -83,10 +83,15 @@
                                     </Border>
                                 </Grid>
 
-                                <!-- The AsyncRelayCommand disables itself while running. -->
-                                <Button Grid.Row="3" Content="Установить" Style="{StaticResource PrimaryButton}"
-                                        HorizontalAlignment="Left"
-                                        Command="{Binding InstallCommand}" />
+                                <!-- Install (auto-disables while running) / Cancel while busy. -->
+                                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                    <Button Content="Установить" Style="{StaticResource PrimaryButton}"
+                                            Command="{Binding InstallCommand}"
+                                            Visibility="{Binding Busy, Converter={StaticResource InverseBoolToVis}}" />
+                                    <Button Content="Отмена" Style="{StaticResource PrimaryButton}"
+                                            Command="{Binding CancelCommand}"
+                                            Visibility="{Binding Busy, Converter={StaticResource BoolToVis}}" />
+                                </StackPanel>
                             </Grid>
                         </Border>
                     </DataTemplate>

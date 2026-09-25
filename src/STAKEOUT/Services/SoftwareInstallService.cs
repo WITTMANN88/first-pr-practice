@@ -26,13 +26,13 @@ public sealed class SoftwareInstallService
         new() { Key = "7zip",     DisplayName = "7-Zip",         Method = InstallMethod.Winget, WingetId = "7zip.7zip" },
         new() { Key = "discord",  DisplayName = "Discord",       Method = InstallMethod.Winget, WingetId = "Discord.Discord" },
         new() { Key = "steam",    DisplayName = "Steam",         Method = InstallMethod.Winget, WingetId = "Valve.Steam" },
-        // Direct downloads — set the real URLs provided to you.
+        // Direct downloads.
         new() { Key = "islc",     DisplayName = "ISLC (Intelligent Standby List Cleaner)",
-                Method = InstallMethod.DirectDownload, FileName = "ISLC.exe",
-                DownloadUrl = "REPLACE_WITH_ISLC_DIRECT_LINK" },
+                Method = InstallMethod.DirectDownload, FileName = "ISLC_v1.0.4.7_setup.exe",
+                DownloadUrl = "https://download.wagnardsoft.com/ISLC/ISLC%20v1.0.4.7_setup.exe" },
         new() { Key = "maku",     DisplayName = "MakuTweaker",
-                Method = InstallMethod.DirectDownload, FileName = "MakuTweaker.exe",
-                DownloadUrl = "REPLACE_WITH_MAKUTWEAKER_DIRECT_LINK" },
+                Method = InstallMethod.DirectDownload, FileName = "MakuTweaker.5.7.3.Setup.exe",
+                DownloadUrl = "https://github.com/MarkAdderly/MakuTweaker/releases/download/release57/MakuTweaker.5.7.3.Setup.exe" },
     };
 
     /// <summary>

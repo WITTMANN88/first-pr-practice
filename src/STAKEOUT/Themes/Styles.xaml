@@ -269,8 +269,9 @@
         </Setter>
     </Style>
 
-    <!-- Slim, self-hiding scrollbar (macOS / Win11 style). -->
-    <Style x:Key="SlimScrollBar" TargetType="ScrollBar">
+    <!-- Slim, self-hiding scrollbar (macOS / Win11 style). Implicit: applies to
+         every ScrollBar in the app (all ScrollViewers pick it up). -->
+    <Style TargetType="ScrollBar">
         <Setter Property="Width" Value="8" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">

@@ -68,6 +68,7 @@ public sealed class UwpService
                 DisplayName = Prettify(name),
                 PackageFullName = full,
                 InstallLocation = loc,
+                IconPath = ResolveIcon(loc),
                 IsCritical = IsCritical(name),
                 SizeBytes = 0, // computed lazily right before removal (fast listing)
             });
@@ -116,6 +117,63 @@ public sealed class UwpService
 
     private bool IsCritical(string name)
         => CriticalMarkers.Any(m => name.Contains(m, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Best-effort resolution of a package's logo for the table thumbnail.
+    /// Reads AppxManifest.xml, finds the square logo reference, and picks a real
+    /// file on disk (logos ship with scale/targetsize qualifiers, e.g.
+    /// "Square44x44Logo.scale-200.png"). Returns null when nothing usable is found.
+    /// Fully guarded: a locked folder or malformed manifest never throws.
+    /// </summary>
+    private static string? ResolveIcon(string installLocation)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(installLocation) || !Directory.Exists(installLocation))
+                return null;
+
+            var manifest = Path.Combine(installLocation, "AppxManifest.xml");
+            if (!File.Exists(manifest)) return null;
+
+            var doc = System.Xml.Linq.XDocument.Load(manifest);
+            // Search by local name to be namespace-agnostic across manifest versions.
+            var logoRel =
+                doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value
+                ?? doc.Descendants()
+                      .Where(e => e.Name.LocalName == "VisualElements")
+                      .Select(e => (string?)e.Attribute("Square44x44Logo") ?? (string?)e.Attribute("Square150x150Logo"))
+                      .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+            if (string.IsNullOrWhiteSpace(logoRel)) return null;
+
+            // Normalize separators and split into folder + base filename.
+            var rel = logoRel.Replace('/', '\\');
+            var dir = Path.Combine(installLocation, Path.GetDirectoryName(rel) ?? "");
+            var baseName = Path.GetFileNameWithoutExtension(rel);
+            var ext = Path.GetExtension(rel);
+            if (!Directory.Exists(dir)) return null;
+
+            // Exact file first, then any scale/targetsize variant.
+            var exact = Path.Combine(dir, baseName + ext);
+            if (File.Exists(exact)) return exact;
+
+            var candidates = Directory.EnumerateFiles(dir, baseName + "*" + ext).ToList();
+            // Prefer a mid-size asset if several exist.
+            return candidates.FirstOrDefault(f => f.Contains("targetsize-32", StringComparison.OrdinalIgnoreCase))
+                ?? candidates.FirstOrDefault(f => f.Contains("scale-200", StringComparison.OrdinalIgnoreCase))
+                ?? candidates.FirstOrDefault();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            Logger.Log("UWP icon", "ACCESS_DENIED", ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("UWP icon", ex);
+            return null;
+        }
+    }
 
     /// <summary>Sum the install folder size (best-effort, guarded).</summary>
     private static long MeasureSize(string location)

@@ -156,7 +156,9 @@
                 <DataTemplate>
                     <Border Background="#FF141414" BorderThickness="0,0,0,3"
                             BorderBrush="{Binding Kind, Converter={StaticResource ToastKindToBrush}}"
-                            Padding="16,10" Margin="0,6,0,0" MinWidth="220">
+                            Padding="16,10" Margin="0,6,0,0" MinWidth="220"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform><TranslateTransform X="0" /></Border.RenderTransform>
                         <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="0" Opacity="0.7" /></Border.Effect>
                         <TextBlock Text="{Binding Text}" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
                         <Border.Triggers>
@@ -168,6 +170,28 @@
                                 </BeginStoryboard>
                             </EventTrigger>
                         </Border.Triggers>
+                        <!-- Error toasts shake on appearance. -->
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Kind}" Value="Error">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.X">
+                                                        <LinearDoubleKeyFrame Value="-8" KeyTime="0:0:0.04" />
+                                                        <LinearDoubleKeyFrame Value="8"  KeyTime="0:0:0.12" />
+                                                        <LinearDoubleKeyFrame Value="-6" KeyTime="0:0:0.20" />
+                                                        <LinearDoubleKeyFrame Value="6"  KeyTime="0:0:0.28" />
+                                                        <LinearDoubleKeyFrame Value="0"  KeyTime="0:0:0.36" />
+                                                    </DoubleAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

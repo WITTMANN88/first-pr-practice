@@ -52,6 +52,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="28" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="120" />
                                     <ColumnDefinition Width="90" />
@@ -59,11 +60,25 @@
 
                                 <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                           IsEnabled="{Binding CanRemove}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" Style="{StaticResource Body}"
+
+                                <!-- parsed icon, with a letter-tile fallback -->
+                                <Grid Grid.Column="1" Width="20" Height="20" VerticalAlignment="Center">
+                                    <Border Background="{StaticResource HoverBrush}"
+                                            Visibility="{Binding HasIcon, Converter={StaticResource InverseBoolToVis}}">
+                                        <TextBlock Text="{Binding Initial}" FontSize="11"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <Image Source="{Binding IconPath}" Stretch="Uniform"
+                                           Visibility="{Binding HasIcon, Converter={StaticResource BoolToVis}}"
+                                           RenderOptions.BitmapScalingMode="HighQuality" />
+                                </Grid>
+
+                                <TextBlock Grid.Column="2" Text="{Binding DisplayName}" Style="{StaticResource Body}"
                                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                <TextBlock Grid.Column="2" Text="{Binding SizeText}" Style="{StaticResource Caption}"
+                                <TextBlock Grid.Column="3" Text="{Binding SizeText}" Style="{StaticResource Caption}"
                                            VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="3" Text="защищено" Style="{StaticResource Caption}"
+                                <TextBlock Grid.Column="4" Text="защищено" Style="{StaticResource Caption}"
                                            Foreground="{StaticResource AccentBrightBrush}" VerticalAlignment="Center"
                                            Visibility="{Binding IsCritical, Converter={StaticResource BoolToVis}}" />
                             </Grid>
