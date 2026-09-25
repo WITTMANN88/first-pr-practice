@@ -42,6 +42,36 @@ public sealed class TempHotToBrushConverter : IValueConverter
     public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
 }
 
+/// <summary>
+/// Resolves a resource key (e.g. "Logo.chrome") to an <see cref="ImageSource"/>
+/// from application resources. Used to bind vector logos by key from view models.
+/// </summary>
+public sealed class ResourceKeyToImageConverter : IValueConverter
+{
+    public object? Convert(object? value, Type t, object? p, CultureInfo c)
+        => value is string key ? Application.Current?.TryFindResource(key) as ImageSource : null;
+    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+}
+
+/// <summary>Log status colour: error → red, success → green, info → secondary text.</summary>
+public sealed class LogLevelToBrushConverter : IValueConverter
+{
+    // Frozen, shared brushes: no per-line allocations in the virtualized list.
+    private static readonly Brush ErrorBrush = Freeze(new SolidColorBrush(Color.FromRgb(0xE0, 0x45, 0x3A)));
+    private static readonly Brush SuccessBrush = Freeze(new SolidColorBrush(Color.FromRgb(0x5C, 0xB8, 0x5C)));
+    private static readonly Brush InfoBrush = Freeze(new SolidColorBrush(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)));
+
+    public object Convert(object? value, Type t, object? p, CultureInfo c) => value switch
+    {
+        Models.LogLevel.Error => ErrorBrush,
+        Models.LogLevel.Success => SuccessBrush,
+        _ => InfoBrush,
+    };
+    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+
+    private static Brush Freeze(Brush b) { b.Freeze(); return b; }
+}
+
 /// <summary>Toast accent colour by kind.</summary>
 public sealed class ToastKindToBrushConverter : IValueConverter
 {

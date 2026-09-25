@@ -27,6 +27,8 @@ public sealed class SoftwareItemViewModel : ViewModelBase
 
     public SoftwareItem Item { get; }
     public string DisplayName => Item.DisplayName;
+    /// <summary>Key of the vector logo DrawingImage in Themes/Logos.xaml.</summary>
+    public string LogoKey => "Logo." + Item.Key;
     public string MethodText => Item.Method == InstallMethod.Winget ? "winget" : "прямая ссылка";
     public AsyncRelayCommand InstallCommand { get; }
     public RelayCommand CancelCommand { get; }

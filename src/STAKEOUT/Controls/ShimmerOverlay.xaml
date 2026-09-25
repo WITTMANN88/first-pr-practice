@@ -1,0 +1,39 @@
+<UserControl x:Class="Stakeout.Controls.ShimmerOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False" Focusable="False">
+
+    <!-- Running highlight ("skeleton shimmer").
+         A light band in a horizontal LinearGradientBrush is swept left→right by
+         animating the brush's RelativeTransform. RelativeTransform works in
+         brush-relative units, so X = -1 parks the band fully off the left edge
+         and X = 1 fully off the right edge, whatever the element's size.
+         SineEase makes the band linger off-screen briefly between passes. -->
+    <UserControl.Resources>
+        <Storyboard x:Key="Sweep" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="SheenShift"
+                             Storyboard.TargetProperty="X"
+                             From="-1" To="1" Duration="0:0:1.5">
+                <DoubleAnimation.EasingFunction>
+                    <SineEase EasingMode="EaseInOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </UserControl.Resources>
+
+    <Border CornerRadius="{Binding CornerRadius, RelativeSource={RelativeSource AncestorType=UserControl}}">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                <LinearGradientBrush.RelativeTransform>
+                    <TranslateTransform x:Name="SheenShift" X="-1" />
+                </LinearGradientBrush.RelativeTransform>
+                <!-- Transparent edges + Pad spread → nothing outside the band. -->
+                <GradientStop Color="#00FFFFFF" Offset="0.30" />
+                <GradientStop Color="#14FFFFFF" Offset="0.42" />
+                <GradientStop Color="#2EFFFFFF" Offset="0.50" />
+                <GradientStop Color="#14FFFFFF" Offset="0.58" />
+                <GradientStop Color="#00FFFFFF" Offset="0.70" />
+            </LinearGradientBrush>
+        </Border.Background>
+    </Border>
+</UserControl>

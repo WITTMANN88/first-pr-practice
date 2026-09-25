@@ -43,6 +43,7 @@ public sealed class MainViewModel : ViewModelBase
         Tweaks = new TweaksViewModel(_tweakService, toast);
         Uwp = new UwpViewModel(uwpService, toast);
         Software = new SoftwareViewModel(softwareService, toast);
+        Logs = new LogViewerViewModel(toast);
         CurrentPage = SysInfo;
 
         // --- commands ---
@@ -62,6 +63,9 @@ public sealed class MainViewModel : ViewModelBase
     public TweaksViewModel Tweaks { get; }
     public UwpViewModel Uwp { get; }
     public SoftwareViewModel Software { get; }
+
+    /// <summary>In-app log viewer overlay (sidebar "Логи").</summary>
+    public LogViewerViewModel Logs { get; }
 
     public ObservableCollection<ToastMessage> Toasts { get; } = new();
 

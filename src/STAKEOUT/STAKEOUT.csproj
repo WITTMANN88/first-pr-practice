@@ -41,4 +41,19 @@
     <PackageReference Include="System.Management" Version="10.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Heading font (Cinzel, SIL OFL 1.1), fetched by prepare-assets.ps1.
+         Build action "Resource" compiles it into the WPF .g.resources blob, so
+         pack://application:,,,/Assets/Fonts/#Cinzel resolves inside the
+         single-file exe without the font being installed on the machine.
+         The wildcard matches nothing (and is harmless) if the script was not run. -->
+    <Resource Include="Assets\Fonts\*.ttf" />
+  </ItemGroup>
+
+  <!-- Surface a missing font at build time instead of silently falling back. -->
+  <Target Name="WarnMissingFonts" BeforeTargets="BeforeBuild"
+          Condition="!Exists('$(MSBuildProjectDirectory)\Assets\Fonts\Cinzel-Regular.ttf')">
+    <Warning Text="Cinzel font not found in Assets\Fonts. Run prepare-assets.ps1; headings will fall back to Constantia/Georgia." />
+  </Target>
+
 </Project>

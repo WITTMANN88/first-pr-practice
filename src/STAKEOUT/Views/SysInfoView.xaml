@@ -1,6 +1,7 @@
 <UserControl x:Class="Stakeout.Views.SysInfoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Stakeout.Controls"
              RenderTransformOrigin="0.5,0.5">
     <UserControl.RenderTransform><TranslateTransform x:Name="Slide" Y="15" /></UserControl.RenderTransform>
     <UserControl.Triggers>
@@ -29,27 +30,56 @@
                     Command="{Binding RefreshCommand}" />
         </StackPanel>
 
-        <!-- Shimmer skeleton shown while WMI/LHM queries run. -->
-        <ItemsControl Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <Border Style="{StaticResource Card}" Width="260" Height="110" Margin="0,0,16,16">
-                <Border.Triggers>
-                    <EventTrigger RoutedEvent="Border.Loaded">
-                        <BeginStoryboard>
-                            <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                 From="0.35" To="0.8" Duration="0:0:0.9" />
-                            </Storyboard>
-                        </BeginStoryboard>
-                    </EventTrigger>
-                </Border.Triggers>
+        <!-- Skeleton shown while WMI/LHM queries run: placeholder cards that
+             mirror the real layout (caption bar, value bar, detail bar), each bar
+             carrying a running highlight. All bars start together when the panel
+             becomes visible, so the sweep stays in sync; they stop when hidden. -->
+        <WrapPanel Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+            <!-- CPU (with temperature bar) -->
+            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="80" Height="10" HorizontalAlignment="Left" />
+                    <c:SkeletonBlock Width="250" Height="18" HorizontalAlignment="Left" Margin="0,8,0,14" />
+                    <c:SkeletonBlock Height="10" />
+                </StackPanel>
             </Border>
-            <Border Style="{StaticResource Card}" Width="260" Height="110" Margin="0,0,16,16" Opacity="0.5" />
-            <Border Style="{StaticResource Card}" Width="260" Height="110" Margin="0,0,16,16" Opacity="0.5" />
-            <Border Style="{StaticResource Card}" Width="260" Height="110" Margin="0,0,16,16" Opacity="0.5" />
-        </ItemsControl>
+            <!-- Motherboard -->
+            <Border Style="{StaticResource Card}" Width="260" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="130" Height="10" HorizontalAlignment="Left" />
+                    <c:SkeletonBlock Width="190" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+            <!-- GPUs -->
+            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" Margin="0,0,0,10" />
+                    <c:SkeletonBlock Width="280" Height="13" HorizontalAlignment="Left" Margin="0,0,0,8" />
+                    <c:SkeletonBlock Width="230" Height="13" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+            <!-- RAM -->
+            <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="120" Height="10" HorizontalAlignment="Left" />
+                    <c:SkeletonBlock Width="110" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+            <!-- Disks -->
+            <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" />
+                    <c:SkeletonBlock Width="140" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+            <!-- Windows -->
+            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
+                <StackPanel>
+                    <c:SkeletonBlock Width="70" Height="10" HorizontalAlignment="Left" />
+                    <c:SkeletonBlock Width="300" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+        </WrapPanel>
 
         <!-- Real content. -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"

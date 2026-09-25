@@ -1,6 +1,9 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using Stakeout.ViewModels;
 
 namespace Stakeout;
@@ -8,6 +11,8 @@ namespace Stakeout;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _vm;
+    /// <summary>Element that had focus before the log modal opened (restored on close).</summary>
+    private IInputElement? _focusBeforeLogs;
 
     public MainWindow()
     {
@@ -17,7 +22,9 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         Closed += (_, _) => _vm.Shutdown();
+        PreviewKeyDown += OnPreviewKeyDown;
         _vm.PropertyChanged += OnVmPropertyChanged;
+        _vm.Logs.PropertyChanged += OnLogsPropertyChanged;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -62,6 +69,77 @@ public partial class MainWindow : Window
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
         };
         Sidebar.BeginAnimation(WidthProperty, anim);
+    }
+
+    // --- log viewer modal ---
+
+    private void OnLogsPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LogViewerViewModel.IsOpen))
+            AnimateLogOverlay(_vm.Logs.IsOpen);
+    }
+
+    /// <summary>
+    /// Open: backdrop fades in (180 ms) while the panel scales 0.96→1 and rises
+    /// 12px (240 ms, cubic ease-out). Close: the reverse, faster (150 ms), then
+    /// the overlay is collapsed so it costs nothing while hidden.
+    /// All animations are "To"-only, so a close during an open (or vice versa)
+    /// continues smoothly from the current value instead of jumping.
+    /// </summary>
+    private void AnimateLogOverlay(bool open)
+    {
+        if (open)
+        {
+            _focusBeforeLogs = Keyboard.FocusedElement;
+            LogOverlay.Visibility = Visibility.Visible;
+
+            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+            var grow = new DoubleAnimation(1, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease };
+            LogOverlay.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(180)));
+            LogPanelScale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+            LogPanelScale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
+            LogPanelShift.BeginAnimation(TranslateTransform.YProperty,
+                new DoubleAnimation(0, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease });
+
+            // Move focus into the modal once it is visible, so Tab cycles inside it.
+            Dispatcher.BeginInvoke(() => LogCloseBtn.Focus(), DispatcherPriority.Input);
+        }
+        else
+        {
+            var ease = new CubicEase { EasingMode = EasingMode.EaseIn };
+            var shrink = new DoubleAnimation(0.96, TimeSpan.FromMilliseconds(150)) { EasingFunction = ease };
+            var fade = new DoubleAnimation(0, TimeSpan.FromMilliseconds(150));
+            fade.Completed += (_, _) =>
+            {
+                // Guard: the modal may have been reopened while fading out.
+                if (!_vm.Logs.IsOpen) LogOverlay.Visibility = Visibility.Collapsed;
+            };
+            LogOverlay.BeginAnimation(OpacityProperty, fade);
+            LogPanelScale.BeginAnimation(ScaleTransform.ScaleXProperty, shrink);
+            LogPanelScale.BeginAnimation(ScaleTransform.ScaleYProperty, shrink);
+            LogPanelShift.BeginAnimation(TranslateTransform.YProperty,
+                new DoubleAnimation(12, TimeSpan.FromMilliseconds(150)) { EasingFunction = ease });
+
+            _focusBeforeLogs?.Focus();
+            _focusBeforeLogs = null;
+        }
+    }
+
+    /// <summary>Esc closes the log modal.</summary>
+    private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && _vm.Logs.IsOpen)
+        {
+            _vm.Logs.CloseCommand.Execute(null);
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Click on the dimmed backdrop (outside the panel) closes the modal.</summary>
+    private void OnLogBackdropClick(object sender, MouseButtonEventArgs e)
+    {
+        _vm.Logs.CloseCommand.Execute(null);
+        e.Handled = true;
     }
 
     // --- caption buttons ---

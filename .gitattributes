@@ -1,0 +1,5 @@
+# Pinned assets are SHA-256 verified by src/STAKEOUT/prepare-assets.ps1.
+# Never let Git rewrite their bytes: core.autocrlf (default on Git for Windows)
+# would convert OFL.txt to CRLF, change its hash and force a re-download.
+src/STAKEOUT/Assets/Fonts/** -text
+*.ttf binary

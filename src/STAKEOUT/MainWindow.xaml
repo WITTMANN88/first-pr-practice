@@ -4,6 +4,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:vm="clr-namespace:Stakeout.ViewModels"
         xmlns:views="clr-namespace:Stakeout.Views"
+        xmlns:c="clr-namespace:Stakeout.Controls"
         Title="STAKEOUT" Height="720" Width="1100"
         MinWidth="900" MinHeight="600"
         WindowStyle="None" ResizeMode="CanResize"
@@ -134,19 +135,155 @@
                         </RadioButton>
                     </StackPanel>
 
-                    <!-- hidden "revert all", double-click only -->
-                    <Border Grid.Row="2" x:Name="RevertAll" Height="44" Background="#FF3A0A0A"
-                            Cursor="Hand" MouseLeftButtonUp="OnRevertAllClick" ToolTip="Двойной клик — отменить все изменения">
-                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource AccentBrightBrush}"
-                                   Text="Отменить все"
-                                   Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
-                    </Border>
+                    <!-- bottom block: log viewer, then the hidden "revert all" -->
+                    <StackPanel Grid.Row="2">
+                        <Button Style="{StaticResource SideActionButton}" Command="{Binding Logs.OpenCommand}"
+                                ToolTip="Журнал действий (расшифровка лога из TEMP)">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
+                                      StrokeThickness="1.6"
+                                      Data="M5,2 H13 L17,6 V18 H5 Z M13,2 V6 H17 M8,10 H14 M8,13 H14 M8,16 H12" />
+                                <TextBlock Text="Логи" Margin="14,0,0,0" VerticalAlignment="Center"
+                                           Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- hidden "revert all", double-click only -->
+                        <Border x:Name="RevertAll" Height="44" Background="#FF3A0A0A"
+                                Cursor="Hand" MouseLeftButtonUp="OnRevertAllClick" ToolTip="Двойной клик — отменить все изменения">
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
+                                       Foreground="{StaticResource AccentBrightBrush}"
+                                       Text="Отменить все"
+                                       Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
+                        </Border>
+                    </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Content host -->
             <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding CurrentPage}" />
+        </Grid>
+
+        <!-- ===== Log viewer modal (in-app overlay) =====
+             Above the shell, below toasts (so "copied" toasts show on top), and
+             offset below the 40px title bar so the caption buttons stay usable.
+             Visibility / opacity / scale are animated from code-behind
+             (AnimateLogOverlay) off LogViewerViewModel.IsOpen. -->
+        <Grid x:Name="LogOverlay" Margin="0,40,0,0" Visibility="Collapsed" Opacity="0"
+              DataContext="{Binding Logs}">
+            <!-- dim backdrop; click outside the panel closes -->
+            <Border Background="#D9000000" MouseLeftButtonDown="OnLogBackdropClick" />
+
+            <Grid x:Name="LogPanel" MaxWidth="900" MaxHeight="600" Margin="40"
+                  RenderTransformOrigin="0.5,0.5"
+                  KeyboardNavigation.TabNavigation="Cycle"
+                  KeyboardNavigation.ControlTabNavigation="Cycle"
+                  KeyboardNavigation.DirectionalNavigation="Contained">
+                <Grid.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="LogPanelScale" ScaleX="0.96" ScaleY="0.96" />
+                        <TranslateTransform x:Name="LogPanelShift" Y="12" />
+                    </TransformGroup>
+                </Grid.RenderTransform>
+
+                <!-- Shadow on a static sibling: its effect output is cached and is
+                     not re-rasterized while the log list scrolls. -->
+                <Border Background="#FF0D0D0D">
+                    <Border.Effect><DropShadowEffect BlurRadius="36" ShadowDepth="0" Opacity="0.85" /></Border.Effect>
+                </Border>
+
+                <Border Background="#FF0D0D0D" BorderBrush="{StaticResource DividerBrush}" BorderThickness="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="3" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- accent rule -->
+                        <Border Grid.Row="0" Background="{StaticResource AccentBrush}" />
+
+                        <!-- header -->
+                        <Grid Grid.Row="1" Margin="22,16,12,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="ЖУРНАЛ ДЕЙСТВИЙ" Style="{StaticResource H2}" />
+                                <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+                                <TextBlock Text="{Binding LogPath}" Style="{StaticResource Caption}"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="✕" Width="36" Height="36" VerticalAlignment="Top"
+                                    Style="{StaticResource CaptionBtn}" Command="{Binding CloseCommand}"
+                                    ToolTip="Закрыть (Esc)" />
+                        </Grid>
+
+                        <!-- body -->
+                        <Border Grid.Row="2" Margin="22,0" Background="#FF080808"
+                                BorderBrush="{StaticResource DividerBrush}" BorderThickness="1" Padding="12,8,4,8">
+                            <Grid>
+                                <!-- loading: skeleton lines with running highlight -->
+                                <StackPanel Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+                                    <c:SkeletonBlock Height="11" Width="540" HorizontalAlignment="Left" Margin="0,4" />
+                                    <c:SkeletonBlock Height="11" Width="420" HorizontalAlignment="Left" Margin="0,4" />
+                                    <c:SkeletonBlock Height="11" Width="600" HorizontalAlignment="Left" Margin="0,4" />
+                                    <c:SkeletonBlock Height="11" Width="360" HorizontalAlignment="Left" Margin="0,4" />
+                                    <c:SkeletonBlock Height="11" Width="500" HorizontalAlignment="Left" Margin="0,4" />
+                                    <c:SkeletonBlock Height="11" Width="280" HorizontalAlignment="Left" Margin="0,4" />
+                                </StackPanel>
+
+                                <!-- empty state -->
+                                <TextBlock Text="Лог пуст" Style="{StaticResource Caption}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+
+                                <!-- entries: virtualized, recycled rows inside a ScrollViewer.
+                                     Lines wrap, so no horizontal scrolling is needed. -->
+                                <ItemsControl ItemsSource="{Binding Entries}"
+                                              Visibility="{Binding IsLoading, Converter={StaticResource InverseBoolToVis}}"
+                                              VirtualizingPanel.IsVirtualizing="True"
+                                              VirtualizingPanel.VirtualizationMode="Recycling"
+                                              VirtualizingPanel.ScrollUnit="Pixel">
+                                    <ItemsControl.Template>
+                                        <ControlTemplate TargetType="ItemsControl">
+                                            <ScrollViewer CanContentScroll="True" Focusable="False"
+                                                          VerticalScrollBarVisibility="Auto"
+                                                          HorizontalScrollBarVisibility="Disabled">
+                                                <ItemsPresenter />
+                                            </ScrollViewer>
+                                        </ControlTemplate>
+                                    </ItemsControl.Template>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!-- [time]  action  STATUS  detail — status coloured by level -->
+                                            <TextBlock FontFamily="Consolas, Courier New" FontSize="12"
+                                                       TextWrapping="Wrap" Margin="0,1,8,1"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"><Run Text="{Binding Time, Mode=OneWay}" Foreground="{StaticResource TextMutedBrush}" /><Run Text="  " /><Run Text="{Binding Action, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" /><Run Text="  " /><Run Text="{Binding Status, Mode=OneWay}" FontWeight="SemiBold" Foreground="{Binding Level, Mode=OneWay, Converter={StaticResource LogLevelToBrush}}" /><Run Text="  " /><Run Text="{Binding Detail, Mode=OneWay}" /></TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                        </Border>
+
+                        <!-- footer -->
+                        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="22,14,22,18">
+                            <Button Content="Обновить" Style="{StaticResource GhostButton}"
+                                    Command="{Binding RefreshCommand}" />
+                            <Button Content="Скопировать в буфер" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0"
+                                    Command="{Binding CopyCommand}" />
+                            <Button x:Name="LogCloseBtn" Content="Закрыть" Style="{StaticResource GhostButton}" Margin="10,0,0,0"
+                                    Command="{Binding CloseCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
 
         <!-- ===== Toast host (bottom-right) ===== -->

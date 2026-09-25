@@ -9,6 +9,8 @@
     <conv:StringToVisibilityConverter x:Key="StringToVis" />
     <conv:TempHotToBrushConverter x:Key="TempHotToBrush" />
     <conv:ToastKindToBrushConverter x:Key="ToastKindToBrush" />
+    <conv:ResourceKeyToImageConverter x:Key="ResourceKeyToImage" />
+    <conv:LogLevelToBrushConverter x:Key="LogLevelToBrush" />
 
     <!-- ============================================================
          STAKEOUT theme.
@@ -38,7 +40,14 @@
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#99FFFFFF" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#66FFFFFF" />
 
-    <FontFamily x:Key="HeadingFont">Cinzel, Trajan Pro, Constantia, Georgia, serif</FontFamily>
+    <!-- Heading font embedded as a <Resource> (see STAKEOUT.csproj and
+         prepare-assets.ps1). Verified against the WPF 8 runtime: the family list
+         tokenizer treats ",," as an escaped comma, so this string yields an
+         unresolvable "pack://application:," token (skipped) plus
+         "/Assets/Fonts/#Cinzel", which is resolved against this dictionary's
+         pack BaseUri to the embedded font. Constantia / Georgia are the
+         fallbacks if the font was not embedded. -->
+    <FontFamily x:Key="HeadingFont">pack://application:,,,/Assets/Fonts/#Cinzel, Constantia, Georgia</FontFamily>
     <FontFamily x:Key="BodyFont">Segoe UI, Arial, sans-serif</FontFamily>
 
     <!-- Typography -->
@@ -131,6 +140,63 @@
                             <Setter TargetName="Marker" Property="Opacity" Value="1" />
                             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                             <Setter TargetName="Hover" Property="Background" Value="{StaticResource HoverBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Sidebar action button (opens something, is not a page): same metrics
+         and hover as NavButton, without the active marker. Content starts at
+         21px so its icon lines up with the nav icons (3px marker + 18px). -->
+    <Style x:Key="SideActionButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="Height" Value="46" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="Transparent">
+                        <ContentPresenter VerticalAlignment="Center" Margin="21,0,0,0" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Secondary button: outlined, transparent, sharp corners. -->
+    <Style x:Key="GhostButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="18,9" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="Transparent" BorderThickness="1"
+                            BorderBrush="{StaticResource DividerBrush}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource AccentBrightBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -270,35 +336,75 @@
     </Style>
 
     <!-- Slim, self-hiding scrollbar (macOS / Win11 style). Implicit: applies to
-         every ScrollBar in the app (all ScrollViewers pick it up). -->
-    <Style TargetType="ScrollBar">
-        <Setter Property="Width" Value="8" />
-        <Setter Property="Background" Value="Transparent" />
+         every ScrollBar in the app. The thumb stays faint and brightens on hover
+         or drag. Vertical and horizontal need separate templates: a vertical
+         track is direction-reversed and pages up/down, a horizontal one pages
+         left/right, and each is thin along a different axis. -->
+    <Style x:Key="SlimThumb" TargetType="Thumb">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ScrollBar">
-                    <Grid Background="Transparent">
-                        <Track x:Name="PART_Track" IsDirectionReversed="True">
-                            <Track.Thumb>
-                                <Thumb>
-                                    <Thumb.Template>
-                                        <ControlTemplate TargetType="Thumb">
-                                            <Border CornerRadius="4" Background="#40FFFFFF" />
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
-                            </Track.Thumb>
-                            <Track.IncreaseRepeatButton>
-                                <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0" />
-                            </Track.IncreaseRepeatButton>
-                            <Track.DecreaseRepeatButton>
-                                <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0" />
-                            </Track.DecreaseRepeatButton>
-                        </Track>
-                    </Grid>
+                <ControlTemplate TargetType="Thumb">
+                    <Border x:Name="Bd" CornerRadius="4" Background="#33FFFFFF" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#66FFFFFF" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="#80FFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Invisible paging areas either side of the thumb; not tab stops. -->
+    <Style x:Key="SlimPager" TargetType="RepeatButton">
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+    </Style>
+
+    <ControlTemplate x:Key="SlimVerticalScrollBar" TargetType="ScrollBar">
+        <Grid Background="Transparent">
+            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                <Track.Thumb><Thumb Style="{StaticResource SlimThumb}" /></Track.Thumb>
+                <Track.IncreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageDownCommand" />
+                </Track.IncreaseRepeatButton>
+                <Track.DecreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageUpCommand" />
+                </Track.DecreaseRepeatButton>
+            </Track>
+        </Grid>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="SlimHorizontalScrollBar" TargetType="ScrollBar">
+        <Grid Background="Transparent">
+            <Track x:Name="PART_Track">
+                <Track.Thumb><Thumb Style="{StaticResource SlimThumb}" /></Track.Thumb>
+                <Track.IncreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageRightCommand" />
+                </Track.IncreaseRepeatButton>
+                <Track.DecreaseRepeatButton>
+                    <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageLeftCommand" />
+                </Track.DecreaseRepeatButton>
+            </Track>
+        </Grid>
+    </ControlTemplate>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="8" />
+        <Setter Property="Height" Value="Auto" />
+        <Setter Property="Template" Value="{StaticResource SlimVerticalScrollBar}" />
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Height" Value="8" />
+                <Setter Property="Template" Value="{StaticResource SlimHorizontalScrollBar}" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- Rounded progress bar with a moving highlight. -->

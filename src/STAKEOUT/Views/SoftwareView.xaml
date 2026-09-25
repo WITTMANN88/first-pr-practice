@@ -1,6 +1,7 @@
 <UserControl x:Class="Stakeout.Views.SoftwareView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Stakeout.Controls"
              RenderTransformOrigin="0.5,0.5">
     <UserControl.RenderTransform><TranslateTransform x:Name="Slide" Y="15" /></UserControl.RenderTransform>
     <UserControl.Triggers>
@@ -41,13 +42,10 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
-                                <!-- logo placeholder: first letter in an accent square -->
+                                <!-- vector logo (DrawingImage from Themes/Logos.xaml, no files) -->
                                 <StackPanel Grid.Row="0" Orientation="Horizontal">
-                                    <Border Width="40" Height="40" Background="{StaticResource AccentBrush}">
-                                        <TextBlock Text="{Binding DisplayName[0]}" Foreground="White"
-                                                   FontSize="20" FontWeight="Bold"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </Border>
+                                    <Image Width="44" Height="44" Stretch="Uniform"
+                                           Source="{Binding LogoKey, Converter={StaticResource ResourceKeyToImage}}" />
                                     <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding DisplayName}" Style="{StaticResource H2}"
                                                    TextTrimming="CharacterEllipsis" MaxWidth="200" />
@@ -66,21 +64,10 @@
                                     <ProgressBar Style="{StaticResource RoundedProgress}"
                                                  Minimum="0" Maximum="100" Value="{Binding Progress}"
                                                  IsIndeterminate="{Binding IsIndeterminate}" />
-                                    <Border x:Name="Blik" Width="40" HorizontalAlignment="Left" CornerRadius="5"
-                                            Background="#40FFFFFF" ClipToBounds="True">
-                                        <Border.RenderTransform><TranslateTransform x:Name="BlikShift" X="-40" /></Border.RenderTransform>
-                                        <Border.Triggers>
-                                            <EventTrigger RoutedEvent="Border.Loaded">
-                                                <BeginStoryboard>
-                                                    <Storyboard RepeatBehavior="Forever">
-                                                        <DoubleAnimation Storyboard.TargetName="BlikShift"
-                                                                         Storyboard.TargetProperty="X"
-                                                                         From="-40" To="260" Duration="0:0:1.2" />
-                                                    </Storyboard>
-                                                </BeginStoryboard>
-                                            </EventTrigger>
-                                        </Border.Triggers>
-                                    </Border>
+                                    <!-- Running highlight; only animates while this bar is visible
+                                         (i.e. while installing). Also signals activity for winget,
+                                         which reports no byte progress. -->
+                                    <c:ShimmerOverlay CornerRadius="5" />
                                 </Grid>
 
                                 <!-- Install (auto-disables while running) / Cancel while busy. -->
