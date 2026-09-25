@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- .NET 8 LTS, Windows desktop TFM required for WPF -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Stakeout</RootNamespace>
+    <AssemblyName>STAKEOUT</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!-- Single-file, self-contained publish target for x64 Windows 10.
+         Publish with:
+           dotnet publish -c Release -r win-x64
+         The RID / self-contained / single-file switches live here so a plain
+         `dotnet publish -c Release` already produces the one-file executable. -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <!-- Native LHM driver + WPF are not trim-safe, so trimming stays OFF. -->
+    <PublishTrimmed>false</PublishTrimmed>
+
+    <!-- Lets the project build on non-Windows CI agents. Harmless on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <Version>1.0.0</Version>
+    <Product>STAKEOUT</Product>
+    <Company>STAKEOUT</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Modern hardware sensors (CPU temps, GPUs). WMI is unreliable for
+         current mobile CPUs, so LibreHardwareMonitorLib is the primary source. -->
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
+    <!-- WMI access for board / RAM / disk / OS build fallbacks. -->
+    <PackageReference Include="System.Management" Version="10.0.2" />
+  </ItemGroup>
+
+</Project>
