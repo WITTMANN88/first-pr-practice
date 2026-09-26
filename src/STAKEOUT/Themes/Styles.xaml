@@ -8,7 +8,8 @@
     <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVis" />
     <conv:StringToVisibilityConverter x:Key="StringToVis" />
     <conv:TempHotToBrushConverter x:Key="TempHotToBrush" />
-    <conv:ToastKindToBrushConverter x:Key="ToastKindToBrush" />
+    <conv:NotificationKindToBrushConverter x:Key="NotificationKindToBrush" />
+    <conv:UwpCategoryToBrushConverter x:Key="UwpCategoryToBrush" />
     <conv:ResourceKeyToImageConverter x:Key="ResourceKeyToImage" />
     <conv:LogLevelToBrushConverter x:Key="LogLevelToBrush" />
 

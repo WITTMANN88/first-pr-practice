@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Windows;
+using System.Globalization;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 using Stakeout.Services;
 
@@ -10,20 +11,20 @@ namespace Stakeout.ViewModels;
 public sealed class TweakItemViewModel : ViewModelBase
 {
     private readonly ITweak _tweak;
-    private readonly ToastService _toast;
+    private readonly INotificationService _notify;
+    private readonly IDialogService _dialogs;
     private readonly Action _onStateChanged;
     private bool _busy;
     private bool _isOn;
-    private bool _suppress; // stops apply/revert firing during initial sync
+    private bool _suppress; // stops apply/revert firing during programmatic sync
 
-    public TweakItemViewModel(ITweak tweak, ToastService toast, Action onStateChanged)
+    public TweakItemViewModel(ITweak tweak, INotificationService notify, IDialogService dialogs, Action onStateChanged)
     {
         _tweak = tweak;
-        _toast = toast;
+        _notify = notify;
+        _dialogs = dialogs;
         _onStateChanged = onStateChanged;
-        _suppress = true;
         _isOn = tweak.IsApplied;
-        _suppress = false;
     }
 
     public string Title => _tweak.Title;
@@ -51,20 +52,17 @@ public sealed class TweakItemViewModel : ViewModelBase
         }
     }
 
+    private static string F(string format, params object[] args)
+        => string.Format(CultureInfo.CurrentCulture, format, args);
+
     private async Task ToggleAsync(bool turnOn)
     {
         // Confirm destructive actions before applying (BitLocker, MPO, UAC).
-        if (turnOn && IsDestructive)
+        if (turnOn && IsDestructive &&
+            !_dialogs.Confirm(Strings.Common_ConfirmTitle, F(Strings.Tweaks_ConfirmDestructive, Title, Description)))
         {
-            var ok = MessageBox.Show(
-                $"«{Title}» — потенциально опасное действие.\n\n{Description}\n\nПродолжить?",
-                "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Warning)
-                == MessageBoxResult.Yes;
-            if (!ok)
-            {
-                Revert(); // roll the toggle back visually
-                return;
-            }
+            SetSilently(false);
+            return;
         }
 
         Busy = true;
@@ -73,19 +71,19 @@ public sealed class TweakItemViewModel : ViewModelBase
             var success = turnOn ? await _tweak.ApplyAsync() : await _tweak.RevertAsync();
             if (success)
             {
-                _toast.Success($"{Title}: {(turnOn ? "включено" : "отключено")}");
+                _notify.Success(F(turnOn ? Strings.Tweaks_Enabled : Strings.Tweaks_Disabled, Title));
             }
             else
             {
-                _toast.Error($"{Title}: не удалось {(turnOn ? "применить" : "откатить")}");
-                Revert();
+                _notify.Error(F(turnOn ? Strings.Tweaks_ApplyFailed : Strings.Tweaks_RevertFailed, Title));
+                SetSilently(_tweak.IsApplied); // reflect the real state
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(Title, ex);
-            _toast.Error($"{Title}: ошибка");
-            Revert();
+            Logger.LogError(_tweak.Id, ex);
+            _notify.Error(F(Strings.Tweaks_Error, Title));
+            SetSilently(_tweak.IsApplied);
         }
         finally
         {
@@ -94,21 +92,16 @@ public sealed class TweakItemViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Flip the toggle back without re-triggering apply/revert.</summary>
-    private void Revert()
+    /// <summary>Set the toggle without triggering apply/revert.</summary>
+    private void SetSilently(bool value)
     {
         _suppress = true;
-        IsOn = !_isOn;
+        IsOn = value;
         _suppress = false;
     }
 
     /// <summary>Re-read applied state from the model without firing apply/revert.</summary>
-    public void SyncFromModel()
-    {
-        _suppress = true;
-        IsOn = _tweak.IsApplied;
-        _suppress = false;
-    }
+    public void SyncFromModel() => SetSilently(_tweak.IsApplied);
 }
 
 /// <summary>A category header plus its tweak rows.</summary>
@@ -118,41 +111,39 @@ public sealed class TweakGroup
     public ObservableCollection<TweakItemViewModel> Items { get; } = new();
 }
 
-/// <summary>The Tweaks page: grouped tweaks, explorer-restart pulse, revert-all.</summary>
+/// <summary>The Tweaks page: grouped tweaks, explorer-restart pulse.</summary>
 public sealed class TweaksViewModel : ViewModelBase
 {
-    private readonly TweakService _service;
-    private readonly ToastService _toast;
+    private readonly INotificationService _notify;
     private bool _pendingExplorerRestart;
 
-    public ObservableCollection<TweakGroup> Groups { get; } = new();
-    public RelayCommand RestartExplorerCommand { get; }
-
-    public bool PendingExplorerRestart
+    public TweaksViewModel(TweakService service, INotificationService notify, IDialogService dialogs)
     {
-        get => _pendingExplorerRestart;
-        private set => SetProperty(ref _pendingExplorerRestart, value);
-    }
-
-    public TweaksViewModel(TweakService service, ToastService toast)
-    {
-        _service = service;
-        _toast = toast;
+        _notify = notify;
 
         foreach (var group in service.Tweaks.GroupBy(t => t.Category))
         {
             var g = new TweakGroup { Header = CategoryLabel(group.Key) };
             foreach (var t in group)
-                g.Items.Add(new TweakItemViewModel(t, toast, RecomputePending));
+                g.Items.Add(new TweakItemViewModel(t, notify, dialogs, RecomputePending));
             Groups.Add(g);
         }
 
-        RestartExplorerCommand = new RelayCommand(async () =>
+        RestartExplorerCommand = new AsyncRelayCommand(async _ =>
         {
             await SystemActions.RestartExplorerAsync();
             PendingExplorerRestart = false;
-            _toast.Success("Проводник перезапущен");
+            _notify.Success(Strings.Tweaks_ExplorerRestarted);
         });
+    }
+
+    public ObservableCollection<TweakGroup> Groups { get; } = new();
+    public AsyncRelayCommand RestartExplorerCommand { get; }
+
+    public bool PendingExplorerRestart
+    {
+        get => _pendingExplorerRestart;
+        private set => SetProperty(ref _pendingExplorerRestart, value);
     }
 
     /// <summary>Refresh every toggle from the store (used after "Отменить всё").</summary>
@@ -173,12 +164,12 @@ public sealed class TweaksViewModel : ViewModelBase
 
     private static string CategoryLabel(TweakCategory c) => c switch
     {
-        TweakCategory.Privacy => "Приватность и телеметрия",
-        TweakCategory.Security => "Безопасность",
-        TweakCategory.Performance => "Производительность",
-        TweakCategory.Gaming => "Игры",
-        TweakCategory.System => "Система",
-        TweakCategory.Interface => "Интерфейс",
-        _ => c.ToString()
+        TweakCategory.Privacy => Strings.TweakCategory_Privacy,
+        TweakCategory.Security => Strings.TweakCategory_Security,
+        TweakCategory.Performance => Strings.TweakCategory_Performance,
+        TweakCategory.Gaming => Strings.TweakCategory_Gaming,
+        TweakCategory.System => Strings.TweakCategory_System,
+        TweakCategory.Interface => Strings.TweakCategory_Interface,
+        _ => c.ToString(),
     };
 }

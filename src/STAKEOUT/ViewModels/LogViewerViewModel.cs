@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 
 namespace Stakeout.ViewModels;
@@ -19,16 +21,16 @@ public sealed class LogViewerViewModel : ViewModelBase
     /// </summary>
     private const int MaxDisplayLines = 5000;
 
-    private readonly ToastService _toast;
+    private readonly INotificationService _notify;
     private IReadOnlyList<string> _raw = Array.Empty<string>();
     private IReadOnlyList<LogEntry> _entries = Array.Empty<LogEntry>();
     private bool _isOpen;
     private bool _isLoading;
     private string _summary = "";
 
-    public LogViewerViewModel(ToastService toast)
+    public LogViewerViewModel(INotificationService notify)
     {
-        _toast = toast;
+        _notify = notify;
         OpenCommand = new AsyncRelayCommand(_ => OpenAsync());
         RefreshCommand = new AsyncRelayCommand(_ => LoadAsync());
         CopyCommand = new AsyncRelayCommand(_ => CopyAsync(), _ => !IsLoading && _raw.Count > 0);
@@ -68,7 +70,7 @@ public sealed class LogViewerViewModel : ViewModelBase
 
     public bool IsEmpty => !IsLoading && Entries.Count == 0;
     public string Summary { get => _summary; private set => SetProperty(ref _summary, value); }
-    public string LogPath => string.IsNullOrEmpty(Logger.LogPath) ? "лог недоступен" : Logger.LogPath;
+    public string LogPath => string.IsNullOrEmpty(Logger.LogPath) ? Strings.Logs_Unavailable : Logger.LogPath;
 
     private async Task OpenAsync()
     {
@@ -95,8 +97,8 @@ public sealed class LogViewerViewModel : ViewModelBase
             _raw = lines;
             Entries = parsed;
             Summary = lines.Count > MaxDisplayLines
-                ? $"Строк: {lines.Count} (показаны последние {MaxDisplayLines})"
-                : $"Строк: {lines.Count}";
+                ? string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCountTruncated, lines.Count, MaxDisplayLines)
+                : string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCount, lines.Count);
         }
         finally
         {
@@ -119,7 +121,7 @@ public sealed class LogViewerViewModel : ViewModelBase
             try
             {
                 Clipboard.SetText(text);
-                _toast.Success($"Лог скопирован в буфер ({_raw.Count} строк)");
+                _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Logs_Copied, _raw.Count));
                 Logger.Log("LogViewer", "OK", "copied to clipboard");
                 return;
             }
@@ -130,7 +132,7 @@ public sealed class LogViewerViewModel : ViewModelBase
             catch (Exception ex)
             {
                 Logger.LogError("LogViewer.Copy", ex);
-                _toast.Error("Не удалось скопировать: буфер обмена занят");
+                _notify.Error(Strings.Logs_CopyFailed);
                 return;
             }
         }

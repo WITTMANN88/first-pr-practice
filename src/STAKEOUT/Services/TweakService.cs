@@ -1,213 +1,166 @@
 using System.Management;
-using Microsoft.Win32;
+using System.Text.RegularExpressions;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 
 namespace Stakeout.Services;
+
+/// <summary>Outcome of "revert all".</summary>
+public readonly record struct RevertAllResult(int Reverted, int Total)
+{
+    public bool Complete => Reverted == Total;
+}
 
 /// <summary>
 /// Builds and owns the catalogue of every optimisation tweak. Each tweak is
 /// reversible; the concrete apply/revert logic lives either in a generic
 /// <see cref="RegistryTweak"/> or an <see cref="ActionTweak"/> for changes that
-/// need powercfg / WMI / service control.
+/// need powercfg / WMI / service control. All registry writes go through
+/// <see cref="RegistryRollback"/>, which captures originals first.
 ///
 /// Registry keys are documented inline. Values that are set to a specific number
 /// come straight from the specification (e.g. MPO OverlayTestMode = 5,
 /// NetworkThrottlingIndex = 0xFFFFFFFF, MenuShowDelay = 0).
+/// Titles and descriptions come from Localization/Strings.resx.
 /// </summary>
 public sealed class TweakService
 {
-    private const RegistryHive HKLM = RegistryHive.LocalMachine;
-    private const RegistryHive HKCU = RegistryHive.CurrentUser;
+    private const RegHive HKLM = RegHive.LocalMachine;
+    private const RegHive HKCU = RegHive.CurrentUser;
 
     private readonly TweakStateStore _store;
+    private readonly RegistryRollback _rollback;
     private readonly YandexBlockService _yandex;
-    public IReadOnlyList<ITweak> Tweaks { get; }
 
-    public TweakService(TweakStateStore store, YandexBlockService yandex)
+    public TweakService(TweakStateStore store, RegistryRollback rollback, YandexBlockService yandex)
     {
         _store = store;
+        _rollback = rollback;
         _yandex = yandex;
         Tweaks = BuildCatalog();
     }
 
+    public IReadOnlyList<ITweak> Tweaks { get; }
+
     /// <summary>Revert every currently-applied tweak (drives "Отменить всё").</summary>
-    public async Task<int> RevertAllAsync()
+    public async Task<RevertAllResult> RevertAllAsync()
     {
         var applied = _store.AppliedTweakIds().ToHashSet();
-        var count = 0;
-        foreach (var t in Tweaks)
-        {
-            if (applied.Contains(t.Id))
-            {
-                if (await t.RevertAsync()) count++;
-            }
-        }
-        Logger.Log("RevertAll", "DONE", $"{count} tweak(s) reverted");
-        return count;
+        var targets = Tweaks.Where(t => applied.Contains(t.Id)).ToList();
+        var reverted = 0;
+        foreach (var t in targets)
+            if (await t.RevertAsync()) reverted++;
+
+        Logger.Log("RevertAll", reverted == targets.Count ? "DONE" : "PARTIAL",
+            $"{reverted}/{targets.Count} tweak(s) reverted");
+        return new RevertAllResult(reverted, targets.Count);
     }
 
-    private List<ITweak> BuildCatalog()
-    {
-        var list = new List<ITweak>();
+    private RegistryTweak Reg(TweakInfo info, params RegistryOp[] ops) => new(_store, _rollback, info, ops);
 
+    private ActionTweak Act(TweakInfo info, Func<TweakState, Task<bool>> apply, Func<TweakState, Task<bool>> revert)
+        => new(_store, _rollback, info, apply, revert);
+
+    /// <summary>Revert delegate for tweaks whose only side effects are registry writes.</summary>
+    private Task<bool> RestoreAllAsync(TweakState s) => Task.Run(() => _rollback.RestoreAll(s));
+
+    private List<ITweak> BuildCatalog() => new()
+    {
         // ---- Privacy & telemetry ------------------------------------------
 
         // Block telemetry collection services WITHOUT deleting any files: set the
         // service Start type to 4 (Disabled) and the DataCollection policy to 0,
         // then stop the running service. Reverting restores the prior Start type.
-        list.Add(new ActionTweak(_store, "diagtrack",
-            "Телеметрия (DiagTrack)",
-            "Блокирует службы сбора данных DiagTrack и dmwappushservice и задаёт AllowTelemetry=0. Файлы не удаляются.",
-            TweakCategory.Privacy,
+        Act(new TweakInfo("diagtrack", Strings.Tweak_DiagTrack_Title, Strings.Tweak_DiagTrack_Desc, TweakCategory.Privacy),
             apply: async s =>
             {
-                var ok = TweakOps.CaptureAndSet(s, HKLM,
-                    @"SYSTEM\CurrentControlSet\Services\DiagTrack", "Start", 4, RegistryValueKind.DWord);
-                ok &= TweakOps.CaptureAndSet(s, HKLM,
-                    @"SYSTEM\CurrentControlSet\Services\dmwappushservice", "Start", 4, RegistryValueKind.DWord);
-                ok &= TweakOps.CaptureAndSet(s, HKLM,
-                    @"SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 0, RegistryValueKind.DWord);
-                // Stop the live service now (best-effort; ignore failure).
+                var ok = _rollback.CaptureAndSet(s, HKLM,
+                    @"SYSTEM\CurrentControlSet\Services\DiagTrack", "Start", 4, RegValueKind.DWord);
+                ok &= _rollback.CaptureAndSet(s, HKLM,
+                    @"SYSTEM\CurrentControlSet\Services\dmwappushservice", "Start", 4, RegValueKind.DWord);
+                ok &= _rollback.CaptureAndSet(s, HKLM,
+                    @"SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 0, RegValueKind.DWord);
+                // Stop the live service now (best-effort; failure does not fail the tweak).
                 await ProcessRunner.RunAsync("sc.exe", "stop DiagTrack");
                 return ok;
             },
-            revert: TweakOps.RestoreAll));
+            revert: RestoreAllAsync),
 
         // Advertising ID off (machine policy + current-user switch).
-        list.Add(new RegistryTweak(_store, "advid",
-            "Advertising ID",
-            "Отключает рекламный идентификатор для приложений.",
-            TweakCategory.Privacy, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo", "DisabledByGroupPolicy", 1, RegistryValueKind.DWord),
-                new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo", "Enabled", 0, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("advid", Strings.Tweak_AdvertisingId_Title, Strings.Tweak_AdvertisingId_Desc, TweakCategory.Privacy),
+            new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo", "DisabledByGroupPolicy", 1, RegValueKind.DWord),
+            new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo", "Enabled", 0, RegValueKind.DWord)),
 
         // Cortana off via Windows Search policy.
-        list.Add(new RegistryTweak(_store, "cortana",
-            "Cortana",
-            "Блокирует Cortana через параметр AllowCortana в политиках Windows Search.",
-            TweakCategory.Privacy, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 0, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("cortana", Strings.Tweak_Cortana_Title, Strings.Tweak_Cortana_Desc, TweakCategory.Privacy),
+            new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 0, RegValueKind.DWord)),
 
         // ---- Security -----------------------------------------------------
 
         // UAC off. EnableLUA=0 needs a reboot to take effect.
-        list.Add(new RegistryTweak(_store, "uac",
-            "UAC (Контроль учётных записей)",
-            "Отключает контроль учётных записей. Требуется перезагрузка.",
-            TweakCategory.Security, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "EnableLUA", 0, RegistryValueKind.DWord),
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "ConsentPromptBehaviorAdmin", 0, RegistryValueKind.DWord),
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "PromptOnSecureDesktop", 0, RegistryValueKind.DWord),
-            },
-            destructive: true, requiresRestart: true));
+        Reg(new TweakInfo("uac", Strings.Tweak_Uac_Title, Strings.Tweak_Uac_Desc, TweakCategory.Security,
+                Destructive: true, RequiresRestart: true),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "EnableLUA", 0, RegValueKind.DWord),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "ConsentPromptBehaviorAdmin", 0, RegValueKind.DWord),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "PromptOnSecureDesktop", 0, RegValueKind.DWord)),
 
         // BitLocker off via WMI encryption classes (more control than manage-bde).
-        list.Add(new ActionTweak(_store, "bitlocker",
-            "BitLocker",
-            "Отключает шифрование BitLocker на всех томах через WMI (Win32_EncryptableVolume).",
-            TweakCategory.Security,
+        Act(new TweakInfo("bitlocker", Strings.Tweak_BitLocker_Title, Strings.Tweak_BitLocker_Desc, TweakCategory.Security,
+                Destructive: true),
             apply: _ => Task.Run(() => SetBitLocker(decrypt: true)),
-            revert: _ => Task.Run(() => SetBitLocker(decrypt: false)),
-            destructive: true, requiresRestart: false));
+            revert: _ => Task.Run(() => SetBitLocker(decrypt: false))),
 
         // ---- System -------------------------------------------------------
 
         // Disable forced driver updates via local group policy (revertible by hand too).
-        list.Add(new RegistryTweak(_store, "drvupd",
-            "Обновление драйверов",
-            "Отключает принудительное обновление драйверов через Windows Update (групповые политики).",
-            TweakCategory.System, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUDriversInQualityUpdate", 1, RegistryValueKind.DWord),
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching", "SearchOrderConfig", 0, RegistryValueKind.DWord),
-                new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings", "PreventDeviceMetadataFromNetwork", 1, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("drvupd", Strings.Tweak_DriverUpdates_Title, Strings.Tweak_DriverUpdates_Desc, TweakCategory.System),
+            new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUDriversInQualityUpdate", 1, RegValueKind.DWord),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching", "SearchOrderConfig", 0, RegValueKind.DWord),
+            new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings", "PreventDeviceMetadataFromNetwork", 1, RegValueKind.DWord)),
 
         // Hibernation off via the hidden powercfg command.
-        list.Add(new ActionTweak(_store, "hibernate",
-            "Гибернация",
-            "Отключает гибернацию командой powercfg -h off (освобождает hiberfil.sys).",
-            TweakCategory.System,
+        Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System),
             apply: async _ => (await ProcessRunner.RunAsync("powercfg.exe", "-h off")).Success,
-            revert: async _ => (await ProcessRunner.RunAsync("powercfg.exe", "-h on")).Success));
+            revert: async _ => (await ProcessRunner.RunAsync("powercfg.exe", "-h on")).Success),
 
         // Windows animations + transparency off.
-        list.Add(new RegistryTweak(_store, "animations",
-            "Анимации Windows",
-            "Полностью отключает анимации и прозрачность интерфейса. Требуется перезапуск проводника.",
-            TweakCategory.Interface, new[]
-            {
-                new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects", "VisualFXSetting", 3, RegistryValueKind.DWord),
-                new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, RegistryValueKind.DWord),
-                new RegistryOp(HKCU, @"Control Panel\Desktop\WindowMetrics", "MinAnimate", "0", RegistryValueKind.String),
-                new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAnimations", 0, RegistryValueKind.DWord),
-            },
-            requiresExplorerRestart: true));
+        Reg(new TweakInfo("animations", Strings.Tweak_Animations_Title, Strings.Tweak_Animations_Desc, TweakCategory.Interface,
+                RequiresExplorerRestart: true),
+            new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects", "VisualFXSetting", 3, RegValueKind.DWord),
+            new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, RegValueKind.DWord),
+            new RegistryOp(HKCU, @"Control Panel\Desktop\WindowMetrics", "MinAnimate", "0", RegValueKind.String),
+            new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAnimations", 0, RegValueKind.DWord)),
 
         // Instant context menus.
-        list.Add(new RegistryTweak(_store, "menudelay",
-            "MenuShowDelay",
-            "Устанавливает MenuShowDelay=0 для мгновенного отклика контекстных меню.",
-            TweakCategory.Interface, new[]
-            {
-                new RegistryOp(HKCU, @"Control Panel\Desktop", "MenuShowDelay", "0", RegistryValueKind.String),
-            },
-            requiresExplorerRestart: true));
+        Reg(new TweakInfo("menudelay", Strings.Tweak_MenuShowDelay_Title, Strings.Tweak_MenuShowDelay_Desc, TweakCategory.Interface,
+                RequiresExplorerRestart: true),
+            new RegistryOp(HKCU, @"Control Panel\Desktop", "MenuShowDelay", "0", RegValueKind.String)),
 
         // ---- Performance --------------------------------------------------
 
         // MPO (Multi-Plane Overlay) off — OverlayTestMode=5 under Dwm.
-        list.Add(new RegistryTweak(_store, "mpo",
-            "MPO (Multi-Plane Overlay)",
-            "Отключает MPO (OverlayTestMode=5 в ветке Dwm). Помогает от мерцания/артефактов.",
-            TweakCategory.Performance, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\Dwm", "OverlayTestMode", 5, RegistryValueKind.DWord),
-            },
-            destructive: true, requiresRestart: true));
+        Reg(new TweakInfo("mpo", Strings.Tweak_Mpo_Title, Strings.Tweak_Mpo_Desc, TweakCategory.Performance,
+                Destructive: true, RequiresRestart: true),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\Dwm", "OverlayTestMode", 5, RegValueKind.DWord)),
 
         // Power Throttling off globally.
-        list.Add(new RegistryTweak(_store, "powerthrottle",
-            "Power Throttling",
-            "Глобально отключает энергосбережение фоновых процессов (PowerThrottlingOff=1).",
-            TweakCategory.Performance, new[]
-            {
-                new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", 1, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("powerthrottle", Strings.Tweak_PowerThrottling_Title, Strings.Tweak_PowerThrottling_Desc, TweakCategory.Performance),
+            new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", 1, RegValueKind.DWord)),
 
         // HAGS on — needs a reboot; UI shows the warning.
-        list.Add(new RegistryTweak(_store, "hags",
-            "HAGS (аппаратное планирование GPU)",
-            "Включает Hardware-accelerated GPU Scheduling (HwSchMode=2). Требуется перезагрузка.",
-            TweakCategory.Performance, new[]
-            {
-                new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegistryValueKind.DWord),
-            },
-            requiresRestart: true));
+        Reg(new TweakInfo("hags", Strings.Tweak_Hags_Title, Strings.Tweak_Hags_Desc, TweakCategory.Performance,
+                RequiresRestart: true),
+            new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegValueKind.DWord)),
 
         // Network throttling off — index 0xFFFFFFFF removes the limit entirely.
-        list.Add(new RegistryTweak(_store, "netthrottle",
-            "NetworkThrottlingIndex",
-            "Снимает сетевые ограничения (NetworkThrottlingIndex=FFFFFFFF).",
-            TweakCategory.Performance, new[]
-            {
-                new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("netthrottle", Strings.Tweak_NetworkThrottling_Title, Strings.Tweak_NetworkThrottling_Desc, TweakCategory.Performance),
+            new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegValueKind.DWord)),
 
         // Custom power plan: duplicate the Ultimate Performance scheme and activate it.
-        list.Add(new ActionTweak(_store, "powerplan",
-            "План электропитания",
-            "Применяет план e9a42b02-… (Ultimate Performance) с предварительной проверкой.",
-            TweakCategory.Performance,
+        Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, TweakCategory.Performance),
             apply: ApplyPowerPlan,
-            revert: RevertPowerPlan,
-            requiresRestart: false));
+            revert: RevertPowerPlan),
 
         // Mouse polling helper value from the guide.
         // TODO: Verify exact path on Windows build. The exact hive/subkey for
@@ -215,79 +168,53 @@ public sealed class TweakService
         // Panel\Mouse is the working assumption. This tweak is wrapped in its
         // own try/catch with verbose logging so a wrong path (or a locked key)
         // never breaks the rest of the catalogue and is traceable in the log.
-        list.Add(new ActionTweak(_store, "rawmouse",
-            "Опрос мыши (RawMouseThrottleDuration)",
-            "Устанавливает RawMouseThrottleDuration=50 (по гайду).",
-            TweakCategory.Performance,
+        Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, TweakCategory.Performance),
             apply: ApplyRawMouse,
-            revert: TweakOps.RestoreAll));
+            revert: RestoreAllAsync),
 
         // USB power saving off — programmatic walk of the USB device tree.
-        list.Add(new ActionTweak(_store, "usbpower",
-            "USB: энергосбережение",
-            "Отключает энергосбережение всех USB-контроллеров перебором дерева реестра.",
-            TweakCategory.Performance,
+        Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, TweakCategory.Performance),
             apply: ApplyUsbPower,
-            revert: TweakOps.RestoreAll));
+            revert: RestoreAllAsync),
 
         // ---- Gaming -------------------------------------------------------
 
         // GameDVR + Xbox deep block.
-        list.Add(new ActionTweak(_store, "gamedvr",
-            "GameDVR и Xbox",
-            "Глубоко отключает GameDVR, AppCaptureEnabled и службы Xbox.",
-            TweakCategory.Gaming,
-            apply: async s =>
+        Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, TweakCategory.Gaming),
+            apply: s => Task.Run(() =>
             {
-                var ok = TweakOps.CaptureAndSet(s, HKCU, @"System\GameConfigStore", "GameDVR_Enabled", 0, RegistryValueKind.DWord);
-                ok &= TweakOps.CaptureAndSet(s, HKLM, @"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, RegistryValueKind.DWord);
-                ok &= TweakOps.CaptureAndSet(s, HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegistryValueKind.DWord);
+                var ok = _rollback.CaptureAndSet(s, HKCU, @"System\GameConfigStore", "GameDVR_Enabled", 0, RegValueKind.DWord);
+                ok &= _rollback.CaptureAndSet(s, HKLM, @"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, RegValueKind.DWord);
+                ok &= _rollback.CaptureAndSet(s, HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegValueKind.DWord);
                 // Disable Xbox helper services (Start=4). Reverting restores prior Start.
                 foreach (var svc in new[] { "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc" })
-                    ok &= TweakOps.CaptureAndSet(s, HKLM, $@"SYSTEM\CurrentControlSet\Services\{svc}", "Start", 4, RegistryValueKind.DWord);
-                return await Task.FromResult(ok);
-            },
-            revert: TweakOps.RestoreAll));
+                    ok &= _rollback.CaptureAndSet(s, HKLM, $@"SYSTEM\CurrentControlSet\Services\{svc}", "Start", 4, RegValueKind.DWord);
+                return ok;
+            }),
+            revert: RestoreAllAsync),
 
         // Game Mode on.
-        list.Add(new RegistryTweak(_store, "gamemode",
-            "Игровой режим",
-            "Включает Game Mode.",
-            TweakCategory.Gaming, new[]
-            {
-                new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AutoGameModeEnabled", 1, RegistryValueKind.DWord),
-                new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AllowAutoGameMode", 1, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("gamemode", Strings.Tweak_GameMode_Title, Strings.Tweak_GameMode_Desc, TweakCategory.Gaming),
+            new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AutoGameModeEnabled", 1, RegValueKind.DWord),
+            new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AllowAutoGameMode", 1, RegValueKind.DWord)),
 
         // Mouse acceleration off.
-        list.Add(new RegistryTweak(_store, "mouseaccel",
-            "Акселерация мыши",
-            "Отключает ускорение указателя (MouseSpeed / MouseThreshold1/2 = 0).",
-            TweakCategory.Gaming, new[]
-            {
-                new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseSpeed", "0", RegistryValueKind.String),
-                new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold1", "0", RegistryValueKind.String),
-                new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold2", "0", RegistryValueKind.String),
-            }));
+        Reg(new TweakInfo("mouseaccel", Strings.Tweak_MouseAcceleration_Title, Strings.Tweak_MouseAcceleration_Desc, TweakCategory.Gaming),
+            new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseSpeed", "0", RegValueKind.String),
+            new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold1", "0", RegValueKind.String),
+            new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold2", "0", RegValueKind.String)),
 
         // Extra guide-compatibility tweaks ("Легендарная установка", "Лучшая настройка").
-        list.Add(new RegistryTweak(_store, "guidepack",
-            "Совместимость с гайдами",
-            "Дополнительные настройки: приоритет переднего плана и мгновенный запуск автозагрузки.",
-            TweakCategory.System, new[]
-            {
-                // Favor foreground app (0x26 = short, variable, high foreground boost).
-                new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 0x26, RegistryValueKind.DWord),
-                new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, RegistryValueKind.DWord),
-            }));
+        Reg(new TweakInfo("guidepack", Strings.Tweak_GuidePack_Title, Strings.Tweak_GuidePack_Desc, TweakCategory.System),
+            // Favor foreground app (0x26 = short, variable, high foreground boost).
+            new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 0x26, RegValueKind.DWord),
+            new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, RegValueKind.DWord)),
 
         // ---- Applications -------------------------------------------------
 
         // Yandex blocking (section 3) is exposed as a normal reversible tweak.
-        list.Add(_yandex);
-
-        return list;
-    }
+        _yandex,
+    };
 
     // --- BitLocker (WMI) ---------------------------------------------------
 
@@ -355,15 +282,15 @@ public sealed class TweakService
 
     private const string UltimateGuid = "e9a42b02-d5df-448d-aa00-03f14749eb61";
 
-    private async Task<bool> ApplyPowerPlan(TweakState s)
+    private static async Task<bool> ApplyPowerPlan(TweakState s)
     {
         // Pre-check: remember the currently active scheme so revert can restore it.
         var current = await ProcessRunner.RunAsync("powercfg.exe", "/getactivescheme");
         var prevGuid = ExtractGuid(current.StdOut);
         if (prevGuid != null) s.Notes["prevScheme"] = prevGuid;
 
-        // Duplicate the Ultimate Performance scheme (idempotent enough — a second
-        // copy is harmless) and activate it.
+        // Duplicate the Ultimate Performance scheme (a second copy is harmless)
+        // and activate it.
         var dup = await ProcessRunner.RunAsync("powercfg.exe", $"-duplicatescheme {UltimateGuid}");
         var newGuid = ExtractGuid(dup.StdOut) ?? UltimateGuid;
         s.Notes["appliedScheme"] = newGuid;
@@ -372,7 +299,7 @@ public sealed class TweakService
         return set.Success;
     }
 
-    private async Task<bool> RevertPowerPlan(TweakState s)
+    private static async Task<bool> RevertPowerPlan(TweakState s)
     {
         if (s.Notes.TryGetValue("prevScheme", out var prev) && !string.IsNullOrWhiteSpace(prev))
         {
@@ -385,7 +312,7 @@ public sealed class TweakService
     private static string? ExtractGuid(string text)
     {
         // powercfg prints "Power Scheme GUID: xxxxxxxx-xxxx-... (Name)".
-        var m = System.Text.RegularExpressions.Regex.Match(text,
+        var m = Regex.Match(text,
             "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
         return m.Success ? m.Value : null;
     }
@@ -403,16 +330,10 @@ public sealed class TweakService
         try
         {
             // Capture the prior value (or "absent") so revert is exact, then set 50.
-            var snap = RegistryHelper.Capture(HKCU, subKey, name);
-            s.Saved.Add(TweakStateStore.ToSaved(HKCU, subKey, name, snap));
-
-            var ok = RegistryHelper.SetValue(HKCU, subKey, name, 50, RegistryValueKind.DWord);
-            if (ok)
-                Logger.Log("RawMouseThrottleDuration", "APPLIED",
-                    $@"HKCU\{subKey}\{name}=50 (prior: {(snap.Existed ? snap.Value : "absent")})");
-            else
-                Logger.Log("RawMouseThrottleDuration", "FAILED",
-                    $@"SetValue returned false for HKCU\{subKey}\{name}");
+            var ok = _rollback.CaptureAndSet(s, HKCU, subKey, name, 50, RegValueKind.DWord);
+            var prior = s.Saved.Count > 0 && s.Saved[^1].Existed ? "present" : "absent";
+            Logger.Log("RawMouseThrottleDuration", ok ? "APPLIED" : "FAILED",
+                $@"HKCU\{subKey}\{name}=50 (prior value: {prior})");
             return ok;
         }
         catch (UnauthorizedAccessException ex)
@@ -431,8 +352,9 @@ public sealed class TweakService
 
     /// <summary>
     /// Walk HKLM\SYSTEM\CurrentControlSet\Enum\USB and clear the power-management
-    /// flags in every device's "Device Parameters" sub-key. Each changed value is
-    /// captured for exact rollback.
+    /// flags in every device's "Device Parameters" sub-key. Only flags that already
+    /// exist are touched (no new values are created in the device tree); each one
+    /// is captured for exact rollback.
     /// </summary>
     private Task<bool> ApplyUsbPower(TweakState s) => Task.Run(() =>
     {
@@ -454,22 +376,16 @@ public sealed class TweakService
             {
                 var paramPath = $@"{root}\{device}\{instance}\Device Parameters";
                 foreach (var flag in flags)
-                {
-                    var snap = RegistryHelper.Capture(HKLM, paramPath, flag);
-                    // Only touch flags that already exist, to avoid polluting the tree.
-                    if (!snap.Existed) continue;
-                    s.Saved.Add(TweakStateStore.ToSaved(HKLM, paramPath, flag, snap));
-                    if (RegistryHelper.SetValue(HKLM, paramPath, flag, 0, RegistryValueKind.DWord))
+                    if (_rollback.SetIfExists(s, HKLM, paramPath, flag, 0, RegValueKind.DWord))
                         touched++;
-                }
             }
         }
 
         // Also disable global USB selective suspend via the service key.
-        TweakOps.CaptureAndSet(s, HKLM,
-            @"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1, RegistryValueKind.DWord);
+        var ok = _rollback.CaptureAndSet(s, HKLM,
+            @"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1, RegValueKind.DWord);
 
-        Logger.Log("USB power", "APPLIED", $"{touched} device flag(s) cleared");
-        return true;
+        Logger.Log("USB power", ok ? "APPLIED" : "PARTIAL", $"{touched} device flag(s) cleared");
+        return ok;
     });
 }

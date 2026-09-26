@@ -18,20 +18,34 @@ public enum TweakCategory
 /// </summary>
 public sealed class SavedValue
 {
-    public string Hive { get; set; } = "";       // "HKLM" / "HKCU"
+    public string Hive { get; set; } = "";       // "HKLM" / "HKCU" / "HKU" / "HKCR" / "HKCC"
     public string SubKey { get; set; } = "";
     public string Name { get; set; } = "";
     public bool Existed { get; set; }
     public string Kind { get; set; } = "";        // RegistryValueKind name
-    public string? ValueBase64 { get; set; }      // original value, encoded
+    public string? ValueBase64 { get; set; }      // original value, encoded (RegistryValueCodec)
+
+    public SavedValue Clone() => (SavedValue)MemberwiseClone(); // all members immutable
 }
 
-/// <summary>Persisted per-tweak state: whether applied, and captured originals.</summary>
+/// <summary>
+/// Per-tweak rollback record: whether applied, and the originals captured before
+/// the tweak wrote anything. A tweak builds its own instance while applying; the
+/// store only ever keeps deep copies, so no instance is shared across threads.
+/// </summary>
 public sealed class TweakState
 {
     public bool Applied { get; set; }
     public DateTime? AppliedUtc { get; set; }
     public List<SavedValue> Saved { get; set; } = new();
-    /// <summary>Free-form notes for command tweaks (e.g. prior powercfg state).</summary>
+    /// <summary>Free-form notes for command tweaks (e.g. prior powercfg scheme).</summary>
     public Dictionary<string, string> Notes { get; set; } = new();
+
+    public TweakState Clone() => new()
+    {
+        Applied = Applied,
+        AppliedUtc = AppliedUtc,
+        Saved = Saved.Select(s => s.Clone()).ToList(),
+        Notes = new Dictionary<string, string>(Notes),
+    };
 }

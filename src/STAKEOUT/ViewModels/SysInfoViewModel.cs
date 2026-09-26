@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows.Threading;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 using Stakeout.Services;
 
@@ -47,7 +49,9 @@ public sealed class SysInfoViewModel : ViewModelBase
 
     /// <summary>CPU temperature in °C (0 when unavailable, for the progress bar).</summary>
     public double CpuTempValue => _cpuTemp ?? 0;
-    public string CpuTempText => _cpuTemp.HasValue ? $"{_cpuTemp.Value:0.#} °C" : "н/д";
+    public string CpuTempText => _cpuTemp.HasValue
+        ? string.Format(CultureInfo.CurrentCulture, Strings.Unit_Celsius, _cpuTemp.Value)
+        : Strings.Common_NotAvailable;
     /// <summary>Over 85 °C the temperature bar turns red.</summary>
     public bool TempIsHot => _cpuTemp is >= 85;
 

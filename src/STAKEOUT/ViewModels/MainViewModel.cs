@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
-using System.Windows;
-using System.Windows.Threading;
+using System.Globalization;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Services;
 
 namespace Stakeout.ViewModels;
@@ -10,53 +10,43 @@ namespace Stakeout.ViewModels;
 public enum Page { SysInfo, Tweaks, Uwp, Software }
 
 /// <summary>
-/// Application shell view model. Constructs the service graph, owns the four page
-/// view models, drives navigation, the sidebar collapse state, the toast stack
-/// and the global "revert all" action.
+/// Application shell view model: navigation, sidebar collapse state, the toast
+/// stack (bound to <see cref="INotificationFeed"/>) and "revert all".
+/// Everything is constructor-injected by the composition root in App.xaml.cs.
 /// </summary>
 public sealed class MainViewModel : ViewModelBase
 {
     private readonly TweakService _tweakService;
-    private readonly Dispatcher _dispatcher;
+    private readonly INotificationService _notify;
 
-    private object _currentPage = null!;
+    private object _currentPage;
     private Page _selected = Page.SysInfo;
     private bool _isSidebarCollapsed;
 
-    public MainViewModel()
+    public MainViewModel(
+        SysInfoViewModel sysInfo,
+        TweaksViewModel tweaks,
+        UwpViewModel uwp,
+        SoftwareViewModel software,
+        LogViewerViewModel logs,
+        TweakService tweakService,
+        INotificationService notify,
+        INotificationFeed feed)
     {
-        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+        SysInfo = sysInfo;
+        Tweaks = tweaks;
+        Uwp = uwp;
+        Software = software;
+        Logs = logs;
+        _tweakService = tweakService;
+        _notify = notify;
+        Toasts = feed.Active;
+        _currentPage = SysInfo;
 
-        // --- service graph ---
-        var toast = new ToastService();
-        var store = new TweakStateStore();
-        var yandex = new YandexBlockService(store);
-        _tweakService = new TweakService(store, yandex);
-
-        var sysService = new SystemInfoService();
-        var uwpService = new UwpService();
-        var download = new DownloadService();
-        var softwareService = new SoftwareInstallService(download);
-
-        // --- page view models ---
-        SysInfo = new SysInfoViewModel(sysService);
-        Tweaks = new TweaksViewModel(_tweakService, toast);
-        Uwp = new UwpViewModel(uwpService, toast);
-        Software = new SoftwareViewModel(softwareService, toast);
-        Logs = new LogViewerViewModel(toast);
-        CurrentPage = SysInfo;
-
-        // --- commands ---
         NavigateCommand = new RelayCommand(p => Navigate(Enum.Parse<Page>(p!.ToString()!)));
         ToggleSidebarCommand = new RelayCommand(() => IsSidebarCollapsed = !IsSidebarCollapsed);
         RevertAllCommand = new AsyncRelayCommand(_ => RevertAllAsync());
-
-        // --- toast plumbing (marshal to UI thread, auto-expire after 5s) ---
-        toast.Raised += OnToastRaised;
-        _toast = toast;
     }
-
-    private readonly ToastService _toast;
 
     // Page view models
     public SysInfoViewModel SysInfo { get; }
@@ -67,7 +57,8 @@ public sealed class MainViewModel : ViewModelBase
     /// <summary>In-app log viewer overlay (sidebar "Логи").</summary>
     public LogViewerViewModel Logs { get; }
 
-    public ObservableCollection<ToastMessage> Toasts { get; } = new();
+    /// <summary>Active toasts (bottom-right stack), owned by the notification service.</summary>
+    public ReadOnlyObservableCollection<Notification> Toasts { get; }
 
     public RelayCommand NavigateCommand { get; }
     public RelayCommand ToggleSidebarCommand { get; }
@@ -92,10 +83,7 @@ public sealed class MainViewModel : ViewModelBase
     }
 
     /// <summary>Called once from the window Loaded event to kick off first load.</summary>
-    public async Task InitializeAsync()
-    {
-        await SysInfo.LoadAsync();
-    }
+    public Task InitializeAsync() => SysInfo.LoadAsync();
 
     /// <summary>Release timers/resources on shutdown.</summary>
     public void Shutdown() => SysInfo.StopLivePolling();
@@ -109,7 +97,7 @@ public sealed class MainViewModel : ViewModelBase
             Page.Tweaks => Tweaks,
             Page.Uwp => Uwp,
             Page.Software => Software,
-            _ => SysInfo
+            _ => SysInfo,
         };
 
         // Lazy-load the UWP list the first time that page is opened.
@@ -119,24 +107,12 @@ public sealed class MainViewModel : ViewModelBase
 
     private async Task RevertAllAsync()
     {
-        var count = await _tweakService.RevertAllAsync();
+        var result = await _tweakService.RevertAllAsync();
         Tweaks.SyncAll();
-        _toast.Success($"Откат выполнен: {count} твик(ов)");
-    }
 
-    private void OnToastRaised(ToastMessage msg)
-    {
-        _dispatcher.Invoke(() =>
-        {
-            Toasts.Add(msg);
-            // Auto-remove this toast after 5 seconds (single-shot).
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-            timer.Tick += (s, _) =>
-            {
-                ((DispatcherTimer)s!).Stop();
-                Toasts.Remove(msg);
-            };
-            timer.Start();
-        });
+        if (result.Complete)
+            _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Tweaks_RevertAllDone, result.Reverted));
+        else
+            _notify.Warning(string.Format(CultureInfo.CurrentCulture, Strings.Tweaks_RevertAllPartial, result.Reverted, result.Total));
     }
 }

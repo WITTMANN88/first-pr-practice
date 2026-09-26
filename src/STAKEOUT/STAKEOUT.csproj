@@ -39,6 +39,14 @@
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
     <!-- WMI access for board / RAM / disk / OS build fallbacks. -->
     <PackageReference Include="System.Management" Version="10.0.2" />
+    <!-- Composition root: constructor injection of services and view models. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- OS-independent core (crypto log, rollback engine, state store, UWP
+         catalogue, notifications, localized strings). Unit-tested separately. -->
+    <ProjectReference Include="..\STAKEOUT.Core\STAKEOUT.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

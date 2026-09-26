@@ -1,6 +1,7 @@
 <UserControl x:Class="Stakeout.Views.SysInfoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Stakeout.Localization;assembly=STAKEOUT.Core"
              xmlns:c="clr-namespace:Stakeout.Controls"
              RenderTransformOrigin="0.5,0.5">
     <UserControl.RenderTransform><TranslateTransform x:Name="Slide" Y="15" /></UserControl.RenderTransform>
@@ -24,8 +25,8 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
-            <TextBlock Text="СИСТЕМА" Style="{StaticResource H1}" />
-            <Button Content="Обновить" Style="{StaticResource PrimaryButton}"
+            <TextBlock Text="{x:Static loc:Strings.SysInfo_Title}" Style="{StaticResource H1}" />
+            <Button Content="{x:Static loc:Strings.Common_Refresh}" Style="{StaticResource PrimaryButton}"
                     Margin="20,0,0,0" VerticalAlignment="Center"
                     Command="{Binding RefreshCommand}" />
         </StackPanel>
@@ -88,7 +89,7 @@
                 <!-- CPU card with temperature bar -->
                 <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="ПРОЦЕССОР" Style="{StaticResource Caption}" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Cpu}" Style="{StaticResource Caption}" />
                         <TextBlock Text="{Binding CpuName}" Style="{StaticResource H2}"
                                    TextWrapping="Wrap" Margin="0,4,0,12" />
                         <Grid>
@@ -109,7 +110,7 @@
                 <!-- Motherboard -->
                 <Border Style="{StaticResource Card}" Width="260" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="МАТЕРИНСКАЯ ПЛАТА" Style="{StaticResource Caption}" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Motherboard}" Style="{StaticResource Caption}" />
                         <TextBlock Text="{Binding Motherboard}" Style="{StaticResource H2}"
                                    TextWrapping="Wrap" Margin="0,4,0,0" />
                     </StackPanel>
@@ -118,7 +119,7 @@
                 <!-- GPUs (integrated + discrete as separate rows) -->
                 <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="ВИДЕОКАРТЫ" Style="{StaticResource Caption}" Margin="0,0,0,6" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Gpus}" Style="{StaticResource Caption}" Margin="0,0,0,6" />
                         <ItemsControl ItemsSource="{Binding Gpus}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -141,7 +142,7 @@
                 <!-- RAM -->
                 <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="ОПЕРАТИВНАЯ ПАМЯТЬ" Style="{StaticResource Caption}" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Ram}" Style="{StaticResource Caption}" />
                         <TextBlock Text="{Binding RamSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
@@ -149,7 +150,7 @@
                 <!-- Disks -->
                 <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="НАКОПИТЕЛИ" Style="{StaticResource Caption}" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Disks}" Style="{StaticResource Caption}" />
                         <TextBlock Text="{Binding DiskSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
@@ -157,7 +158,7 @@
                 <!-- Windows build -->
                 <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
                     <StackPanel>
-                        <TextBlock Text="WINDOWS" Style="{StaticResource Caption}" />
+                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Windows}" Style="{StaticResource Caption}" />
                         <TextBlock Text="{Binding WindowsVersion}" Style="{StaticResource H2}"
                                    TextWrapping="Wrap" Margin="0,4,0,0" />
                     </StackPanel>

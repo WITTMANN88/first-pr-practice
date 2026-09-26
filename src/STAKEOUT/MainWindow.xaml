@@ -1,6 +1,7 @@
 <Window x:Class="Stakeout.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:Stakeout.Localization;assembly=STAKEOUT.Core"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:vm="clr-namespace:Stakeout.ViewModels"
         xmlns:views="clr-namespace:Stakeout.Views"
@@ -75,9 +76,12 @@
                            VerticalAlignment="Center" Margin="16,0,0,0" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                             shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button x:Name="MinBtn" Content="—" Width="44" Click="OnMinimize" Style="{StaticResource CaptionBtn}" />
-                    <Button x:Name="MaxBtn" Content="▢" Width="44" Click="OnMaximize" Style="{StaticResource CaptionBtn}" />
-                    <Button x:Name="CloseBtn" Content="✕" Width="44" Click="OnClose" Style="{StaticResource CaptionBtn}" />
+                    <Button x:Name="MinBtn" Content="—" Width="44" Click="OnMinimize" Style="{StaticResource CaptionBtn}"
+                            ToolTip="{x:Static loc:Strings.Caption_Minimize}" AutomationProperties.Name="{x:Static loc:Strings.Caption_Minimize}" />
+                    <Button x:Name="MaxBtn" Content="▢" Width="44" Click="OnMaximize" Style="{StaticResource CaptionBtn}"
+                            ToolTip="{x:Static loc:Strings.Caption_Maximize}" AutomationProperties.Name="{x:Static loc:Strings.Caption_Maximize}" />
+                    <Button x:Name="CloseBtn" Content="✕" Width="44" Click="OnClose" Style="{StaticResource CaptionBtn}"
+                            ToolTip="{x:Static loc:Strings.Common_Close}" AutomationProperties.Name="{x:Static loc:Strings.Common_Close}" />
                 </StackPanel>
             </Grid>
 
@@ -93,7 +97,8 @@
                     <!-- hamburger -->
                     <Button Grid.Row="0" HorizontalAlignment="Left" Margin="14,10"
                             Command="{Binding ToggleSidebarCommand}" Style="{StaticResource CaptionBtn}"
-                            Width="36" Height="36" Content="≡" FontSize="18" />
+                            Width="36" Height="36" Content="≡" FontSize="18"
+                            ToolTip="{x:Static loc:Strings.Nav_Menu}" AutomationProperties.Name="{x:Static loc:Strings.Nav_Menu}" />
 
                     <!-- nav -->
                     <StackPanel Grid.Row="1" Margin="0,10,0,0">
@@ -102,7 +107,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M2,3 H18 V13 H2 Z M7,17 H13 M10,13 V17" />
-                                <TextBlock Text="Система" Margin="14,0,0,0" VerticalAlignment="Center"
+                                <TextBlock Text="{x:Static loc:Strings.Nav_System}" Margin="14,0,0,0" VerticalAlignment="Center"
                                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                             </StackPanel>
                         </RadioButton>
@@ -111,7 +116,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M3,5 H17 M3,10 H17 M3,15 H17 M7,5 A1.6,1.6 0 1 0 7,5.01 M13,10 A1.6,1.6 0 1 0 13,10.01 M9,15 A1.6,1.6 0 1 0 9,15.01" />
-                                <TextBlock Text="Твики" Margin="14,0,0,0" VerticalAlignment="Center"
+                                <TextBlock Text="{x:Static loc:Strings.Nav_Tweaks}" Margin="14,0,0,0" VerticalAlignment="Center"
                                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                             </StackPanel>
                         </RadioButton>
@@ -120,7 +125,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M3,3 H8 V8 H3 Z M12,3 H17 V8 H12 Z M3,12 H8 V17 H3 Z M12,12 H17 V17 H12 Z" />
-                                <TextBlock Text="Приложения" Margin="14,0,0,0" VerticalAlignment="Center"
+                                <TextBlock Text="{x:Static loc:Strings.Nav_Apps}" Margin="14,0,0,0" VerticalAlignment="Center"
                                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                             </StackPanel>
                         </RadioButton>
@@ -129,7 +134,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M10,2 V12 M6,9 L10,13 L14,9 M3,16 H17" />
-                                <TextBlock Text="Установка" Margin="14,0,0,0" VerticalAlignment="Center"
+                                <TextBlock Text="{x:Static loc:Strings.Nav_Install}" Margin="14,0,0,0" VerticalAlignment="Center"
                                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                             </StackPanel>
                         </RadioButton>
@@ -138,22 +143,22 @@
                     <!-- bottom block: log viewer, then the hidden "revert all" -->
                     <StackPanel Grid.Row="2">
                         <Button Style="{StaticResource SideActionButton}" Command="{Binding Logs.OpenCommand}"
-                                ToolTip="Журнал действий (расшифровка лога из TEMP)">
+                                ToolTip="{x:Static loc:Strings.Nav_LogsTooltip}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6"
                                       Data="M5,2 H13 L17,6 V18 H5 Z M13,2 V6 H17 M8,10 H14 M8,13 H14 M8,16 H12" />
-                                <TextBlock Text="Логи" Margin="14,0,0,0" VerticalAlignment="Center"
+                                <TextBlock Text="{x:Static loc:Strings.Nav_Logs}" Margin="14,0,0,0" VerticalAlignment="Center"
                                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                             </StackPanel>
                         </Button>
 
                         <!-- hidden "revert all", double-click only -->
                         <Border x:Name="RevertAll" Height="44" Background="#FF3A0A0A"
-                                Cursor="Hand" MouseLeftButtonUp="OnRevertAllClick" ToolTip="Двойной клик — отменить все изменения">
+                                Cursor="Hand" MouseLeftButtonUp="OnRevertAllClick" ToolTip="{x:Static loc:Strings.Nav_RevertAllTooltip}">
                             <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
                                        Foreground="{StaticResource AccentBrightBrush}"
-                                       Text="Отменить все"
+                                       Text="{x:Static loc:Strings.Nav_RevertAll}"
                                        Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource InverseBoolToVis}}" />
                         </Border>
                     </StackPanel>
@@ -211,7 +216,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="ЖУРНАЛ ДЕЙСТВИЙ" Style="{StaticResource H2}" />
+                                <TextBlock Text="{x:Static loc:Strings.Logs_Title}" Style="{StaticResource H2}" />
                                 <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
                                 <TextBlock Text="{Binding LogPath}" Style="{StaticResource Caption}"
                                            Foreground="{StaticResource TextMutedBrush}"
@@ -219,7 +224,7 @@
                             </StackPanel>
                             <Button Grid.Column="1" Content="✕" Width="36" Height="36" VerticalAlignment="Top"
                                     Style="{StaticResource CaptionBtn}" Command="{Binding CloseCommand}"
-                                    ToolTip="Закрыть (Esc)" />
+                                    ToolTip="{x:Static loc:Strings.Logs_CloseTooltip}" />
                         </Grid>
 
                         <!-- body -->
@@ -237,7 +242,7 @@
                                 </StackPanel>
 
                                 <!-- empty state -->
-                                <TextBlock Text="Лог пуст" Style="{StaticResource Caption}"
+                                <TextBlock Text="{x:Static loc:Strings.Logs_Empty}" Style="{StaticResource Caption}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
 
@@ -274,11 +279,11 @@
 
                         <!-- footer -->
                         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="22,14,22,18">
-                            <Button Content="Обновить" Style="{StaticResource GhostButton}"
+                            <Button Content="{x:Static loc:Strings.Common_Refresh}" Style="{StaticResource GhostButton}"
                                     Command="{Binding RefreshCommand}" />
-                            <Button Content="Скопировать в буфер" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0"
+                            <Button Content="{x:Static loc:Strings.Logs_Copy}" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0"
                                     Command="{Binding CopyCommand}" />
-                            <Button x:Name="LogCloseBtn" Content="Закрыть" Style="{StaticResource GhostButton}" Margin="10,0,0,0"
+                            <Button x:Name="LogCloseBtn" Content="{x:Static loc:Strings.Common_Close}" Style="{StaticResource GhostButton}" Margin="10,0,0,0"
                                     Command="{Binding CloseCommand}" />
                         </StackPanel>
                     </Grid>
@@ -292,7 +297,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Background="#FF141414" BorderThickness="0,0,0,3"
-                            BorderBrush="{Binding Kind, Converter={StaticResource ToastKindToBrush}}"
+                            BorderBrush="{Binding Kind, Converter={StaticResource NotificationKindToBrush}}"
                             Padding="16,10" Margin="0,6,0,0" MinWidth="220"
                             RenderTransformOrigin="0.5,0.5">
                         <Border.RenderTransform><TranslateTransform X="0" /></Border.RenderTransform>

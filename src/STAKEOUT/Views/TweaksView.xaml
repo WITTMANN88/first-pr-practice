@@ -1,6 +1,7 @@
 <UserControl x:Class="Stakeout.Views.TweaksView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:Stakeout.Localization;assembly=STAKEOUT.Core"
              RenderTransformOrigin="0.5,0.5">
     <UserControl.RenderTransform>
         <TranslateTransform x:Name="Slide" Y="15" />
@@ -26,8 +27,8 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="ТВИКИ" Style="{StaticResource H1}" VerticalAlignment="Center" />
-            <Button HorizontalAlignment="Right" Content="Перезапустить проводник"
+            <TextBlock Text="{x:Static loc:Strings.Tweaks_Title}" Style="{StaticResource H1}" VerticalAlignment="Center" />
+            <Button HorizontalAlignment="Right" Content="{x:Static loc:Strings.Tweaks_RestartExplorer}"
                     Command="{Binding RestartExplorerCommand}"
                     Visibility="{Binding PendingExplorerRestart, Converter={StaticResource BoolToVis}}">
                 <Button.Style>
@@ -85,7 +86,7 @@
                                                         </Border.ToolTip>
                                                     </Border>
                                                     <!-- restart / destructive badges -->
-                                                    <TextBlock Text="перезагрузка" Style="{StaticResource Caption}"
+                                                    <TextBlock Text="{x:Static loc:Strings.Tweaks_RebootBadge}" Style="{StaticResource Caption}"
                                                                Margin="8,0,0,0" VerticalAlignment="Center"
                                                                Foreground="{StaticResource AccentBrightBrush}"
                                                                Visibility="{Binding RequiresRestart, Converter={StaticResource BoolToVis}}" />

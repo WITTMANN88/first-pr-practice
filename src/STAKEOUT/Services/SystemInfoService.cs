@@ -1,7 +1,8 @@
 using System.Management;
 using LibreHardwareMonitor.Hardware;
-using Microsoft.Win32;
+using System.Globalization;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 
 namespace Stakeout.Services;
@@ -42,7 +43,7 @@ public sealed class SystemInfoService : IDisposable
     private static string GetCpuName()
     {
         // Registry is the fastest, most reliable name source.
-        var name = RegistryHelper.ReadString(RegistryHive.LocalMachine,
+        var name = RegistryHelper.ReadString(RegHive.LocalMachine,
             @"HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString");
         if (!string.IsNullOrWhiteSpace(name)) return name!.Trim();
 
@@ -114,7 +115,7 @@ public sealed class SystemInfoService : IDisposable
         var combined = string.Join(" ", new[] { man, prod }.Where(s => !string.IsNullOrWhiteSpace(s)));
         if (!string.IsNullOrWhiteSpace(combined)) return combined.Trim();
 
-        var biosBoard = RegistryHelper.ReadString(RegistryHive.LocalMachine,
+        var biosBoard = RegistryHelper.ReadString(RegHive.LocalMachine,
             @"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct");
         return string.IsNullOrWhiteSpace(biosBoard) ? "—" : biosBoard!.Trim();
     }
@@ -148,11 +149,11 @@ public sealed class SystemInfoService : IDisposable
     {
         var n = name.ToLowerInvariant();
         if (n.Contains("intel") && (n.Contains("uhd") || n.Contains("hd graphics") || n.Contains("iris")))
-            return "Встроенная";
+            return Strings.SysInfo_GpuIntegrated;
         if (n.Contains("radeon") && (n.Contains("vega") || n.Contains("graphics")) && !n.Contains("rx"))
-            return "Встроенная";
-        if (n.Contains("microsoft") || n.Contains("basic display")) return "Базовая";
-        return "Дискретная";
+            return Strings.SysInfo_GpuIntegrated;
+        if (n.Contains("microsoft") || n.Contains("basic display")) return Strings.SysInfo_GpuBasic;
+        return Strings.SysInfo_GpuDiscrete;
     }
 
     // --- RAM ---------------------------------------------------------------
@@ -179,7 +180,8 @@ public sealed class SystemInfoService : IDisposable
                 }
             }
             var gb = totalBytes / 1024d / 1024d / 1024d;
-            return $"{Math.Round(gb)} ГБ{(string.IsNullOrEmpty(type) ? "" : " " + type)}";
+            var size = string.Format(CultureInfo.CurrentCulture, Strings.Unit_Gigabytes, Math.Round(gb));
+            return string.IsNullOrEmpty(type) ? size : $"{size} {type}";
         }
         catch (Exception ex)
         {
@@ -223,8 +225,10 @@ public sealed class SystemInfoService : IDisposable
 
             var tb = total / 1024d / 1024d / 1024d / 1024d;
             return tb >= 1
-                ? $"Всего: {Math.Round(tb, 2)} ТБ"
-                : $"Всего: {Math.Round(total / 1024d / 1024d / 1024d)} ГБ";
+                ? string.Format(CultureInfo.CurrentCulture, Strings.SysInfo_DiskTotal,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Unit_Terabytes, tb))
+                : string.Format(CultureInfo.CurrentCulture, Strings.SysInfo_DiskTotal,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Unit_Gigabytes, total / 1024d / 1024d / 1024d));
         }
         catch (Exception ex)
         {
@@ -238,10 +242,10 @@ public sealed class SystemInfoService : IDisposable
     private static string GetWindowsVersion()
     {
         const string key = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
-        var product = RegistryHelper.ReadString(RegistryHive.LocalMachine, key, "ProductName") ?? "Windows";
-        var display = RegistryHelper.ReadString(RegistryHive.LocalMachine, key, "DisplayVersion"); // 22H2
-        var build = RegistryHelper.ReadString(RegistryHive.LocalMachine, key, "CurrentBuild") ?? "";
-        var ubrSnap = RegistryHelper.Capture(RegistryHive.LocalMachine, key, "UBR");
+        var product = RegistryHelper.ReadString(RegHive.LocalMachine, key, "ProductName") ?? "Windows";
+        var display = RegistryHelper.ReadString(RegHive.LocalMachine, key, "DisplayVersion"); // 22H2
+        var build = RegistryHelper.ReadString(RegHive.LocalMachine, key, "CurrentBuild") ?? "";
+        var ubrSnap = RegistryHelper.Capture(RegHive.LocalMachine, key, "UBR");
         var ubr = ubrSnap.Existed ? ubrSnap.Value?.ToString() : null;
 
         // Windows 11 keeps ProductName = "Windows 10 ..." in the registry, so fix
@@ -251,8 +255,9 @@ public sealed class SystemInfoService : IDisposable
 
         var buildFull = string.IsNullOrEmpty(ubr) ? build : $"{build}.{ubr}";
         var displayPart = string.IsNullOrWhiteSpace(display) ? "" : $" {display}";
-        // e.g. "Windows 10 Pro 22H2 сборка 19045.6456"
-        return $"{product}{displayPart} сборка {buildFull}".Trim();
+        // e.g. "Windows 10 Pro 22H2 сборка 19045.6456" / "... build 19045.6456"
+        return string.Format(CultureInfo.CurrentCulture, Strings.SysInfo_WindowsBuild,
+            $"{product}{displayPart}", buildFull).Trim();
     }
 
     // --- WMI helpers -------------------------------------------------------

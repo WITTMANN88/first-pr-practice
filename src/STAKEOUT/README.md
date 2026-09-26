@@ -7,40 +7,83 @@
 - **Сборка:** single-file, self-contained (win-x64)
 - **Логи:** зашифрованный файл в `%TEMP%\STAKEOUT` (AES-256-GCM, формат `[Время] [Действие] [Статус]`)
 
-## Сборка и запуск
+## Структура решения
 
-Только Windows x64 (приложение обращается к WMI, реестру, службам, PowerShell).
-
-```powershell
-# (опционально) обновить/перекачать шрифт заголовков — уже лежит в Assets/Fonts
-powershell -ExecutionPolicy Bypass -File .\prepare-assets.ps1
-
-# восстановление и обычная сборка (для разработки)
-dotnet build
-
-# готовый single-file .exe (self-contained)
-dotnet publish -c Release
-# → bin\Release\net8.0-windows\win-x64\publish\STAKEOUT.exe
+```
+src/
+  STAKEOUT.sln
+  STAKEOUT/         WPF-приложение (net8.0-windows): UI, WMI, реальный реестр, PowerShell
+  STAKEOUT.Core/    ядро без привязки к ОС (net8.0): шифрование лога, движок отката,
+                    tweak-state.json, каталог UWP, уведомления, локализованные строки
+  STAKEOUT.Tests/   xUnit-тесты ядра (net8.0) — запускаются на любой ОС
 ```
 
-> `EnableWindowsTargeting=true` в проекте позволяет компилировать проект и на
-> Linux/CI, но запускается приложение только под Windows.
+Windows-зависимое (реестр, диалоги, UI-поток) скрыто за интерфейсами ядра
+(`IRegistryAccess`, `IDialogService`, `IUiDispatcher`), поэтому логику отката и
+хранения можно проверять без Windows — на in-memory реестре.
+
+## Сборка, тесты, запуск
+
+Приложение запускается только под Windows x64 (WMI, реестр, службы, PowerShell).
+Сборка и тесты работают и на Linux/CI (`EnableWindowsTargeting=true`).
+
+```powershell
+cd src
+
+# сборка всего решения
+dotnet build STAKEOUT.sln
+
+# юнит-тесты ядра (шифрование, откат, tweak-state.json, UWP, уведомления, локализация)
+dotnet test STAKEOUT.sln
+
+# готовый single-file .exe (self-contained, ядро и переводы внутри)
+dotnet publish STAKEOUT -c Release
+# → STAKEOUT\bin\Release\net8.0-windows\win-x64\publish\STAKEOUT.exe
+
+# (опционально) перекачать шрифт заголовков — уже лежит в STAKEOUT/Assets/Fonts
+powershell -ExecutionPolicy Bypass -File .\STAKEOUT\prepare-assets.ps1
+```
 
 ## Архитектура (модули)
 
-| Слой | Файлы | Назначение |
-|------|-------|-----------|
-| Ядро | `Core/` | Логгер (шифрование), MVVM-база, команды, конвертеры, тосты, проверка прав |
-| Модели | `Models/` | DTO системной информации, твиков, UWP, ПО |
-| Сбор данных | `Services/SystemInfoService.cs` | CPU/температура (LibreHardwareMonitor), плата/ОЗУ/диски/GPU (WMI), сборка Windows (реестр) |
-| Твики реестра | `Services/TweakService.cs`, `Tweaks.cs`, `RegistryHelper.cs`, `TweakStateStore.cs` | Каталог твиков; каждый твик обратим (захват исходных значений → откат) |
-| Блокировка Яндекс | `Services/YandexBlockService.cs` | Политика `DisallowRun` |
-| Модуль UWP | `Services/UwpService.cs` | `Get-AppxPackage` / `Remove-AppxPackage`, защита критичных пакетов |
-| Установка ПО | `Services/SoftwareInstallService.cs`, `DownloadService.cs` | winget (`--interactive`) + прямые ссылки с Progress Bar |
-| UI | `Views/`, `MainWindow.xaml`, `Themes/Styles.xaml` | Кастомный TitleBar, боковое меню, страницы, анимации, модальное окно логов |
-| Контролы | `Controls/ShimmerOverlay`, `Controls/SkeletonBlock` | Skeleton-заглушки с бегущим бликом (анимация только пока видимы) |
-| Ресурсы | `Themes/Logos.xaml`, `Assets/Fonts/`, `prepare-assets.ps1` | Векторные логотипы ПО (DrawingImage), встроенный шрифт Cinzel |
-| ViewModels | `ViewModels/` | Логика страниц (MVVM) |
+| Слой | Где | Назначение |
+|------|-----|-----------|
+| Шифрование лога | `Core/Logging/` | `LogCipher` (AES-256-GCM), `EncryptedLogFile`, фасад `Logger` |
+| Движок отката | `Core/Registry/` | `RegistryRollback` (захват → запись → восстановление, транзакционно), кодеки значений |
+| Хранилище отката | `Core/Persistence/TweakStateStore.cs` | `tweak-state.json`: версия, атомарная запись, карантин повреждённого файла, потокобезопасность |
+| Каталог UWP | `Core/Uwp/` | Категории (мусор, игры, мультимедиа, утилиты, системные…), защита критичных, парсер вывода PowerShell |
+| Уведомления | `Core/Notifications/` | `INotificationService` (отправка), `INotificationFeed` (показ), `NotificationService` |
+| Локализация | `Core/Localization/` | `Strings.resx` (русский, по умолчанию), `Strings.en.resx`, `LocalizationManager` |
+| Сбор данных | `STAKEOUT/Services/SystemInfoService.cs` | CPU/температура (LibreHardwareMonitor), плата/ОЗУ/диски/GPU (WMI), сборка Windows (реестр) |
+| Твики | `STAKEOUT/Services/TweakService.cs`, `Tweaks.cs` | Каталог твиков поверх движка отката |
+| Реестр Windows | `STAKEOUT/Services/RegistryHelper.cs` | Реальный реестр за `IRegistryAccess` |
+| UWP / Яндекс / ПО | `STAKEOUT/Services/` | PowerShell, `DisallowRun`, winget + прямые ссылки |
+| Композиция | `STAKEOUT/Infrastructure/` | DI-контейнер (`ServiceRegistration`), WPF-реализации интерфейсов ядра |
+| UI | `STAKEOUT/Views/`, `MainWindow.xaml`, `Themes/`, `Controls/` | Окно, страницы, стили, логотипы, shimmer |
+| ViewModels | `STAKEOUT/ViewModels/` | MVVM; зависимости только через конструктор |
+
+## Уведомления (MVVM)
+
+ViewModel получает `INotificationService` через конструктор и вызывает
+`_notify.Success(...)`, `.Error(...)`, `.Warning(...)`, `.Info(...)` — без
+code-behind и без обращения к окну. Оболочка отображает `INotificationFeed.Active`:
+тост живёт 5 с, одновременно не больше 4 (старые вытесняются), изменения
+коллекции всегда идут через UI-поток, каждое уведомление пишется в лог.
+Подтверждения деструктивных действий — через `IDialogService`.
+
+## Локализация
+
+Все строки интерфейса — в `STAKEOUT.Core/Localization/Strings.resx` (русский —
+язык по умолчанию). Из кода: `Strings.Key`, из XAML: `{x:Static loc:Strings.Key}` —
+опечатка в ключе ломает сборку, а не интерфейс.
+
+- Язык: аргумент `--lang en` / `--lang=en`, затем переменная `STAKEOUT_LANG`,
+  иначе русский. Применяется при старте (смена — при следующем запуске).
+- **Добавить язык** = положить `Strings.<код>.resx` рядом (например `Strings.de.resx`).
+  Код менять не нужно: доступность языка определяется по наличию сателлитной сборки.
+- Тесты `ResourceParityTests` не дают разойтись переводам: одинаковый набор
+  ключей, нет пустых значений, совпадают плейсхолдеры `{0}`, каждая строка
+  форматируется без ошибок.
 
 ## Шрифт заголовков (Cinzel)
 
@@ -65,16 +108,29 @@ dotnet publish -c Release
 
 ## Откат изменений
 
-Все изменения реестра и политик захватывают исходное значение в
-`%ProgramData%\STAKEOUT\tweak-state.json` перед записью. Кнопка «Отменить все»
+Перед любой записью в реестр исходное значение (или факт его отсутствия)
+сохраняется в `%ProgramData%\STAKEOUT\tweak-state.json`. Кнопка «Отменить все»
 (двойной клик, внизу бокового меню) восстанавливает все применённые твики,
 даже после перезапуска приложения.
+
+- Применение транзакционно: если одна из записей твика не удалась, уже
+  сделанные записи этого твика откатываются.
+- Если откат прошёл частично, запись о твике сохраняется — откат можно повторить.
+- Файл пишется атомарно; повреждённый файл переименовывается в
+  `*.corrupt-<время>` (данные не теряются), приложение продолжает работу.
 
 ## Прямые ссылки
 
 **ISLC** (v1.0.4.7) и **MakuTweaker** (5.7.3) скачиваются по прямым ссылкам,
 заданным в `Services/SoftwareInstallService.cs`. При выходе новых версий
 обновите URL и имя файла там же.
+
+## Категории UWP
+
+Предустановленный мусор, игры, мультимедиа, утилиты, сторонние, прочие Microsoft,
+системные. «Выбрать всё (только мусор)» отмечает только предустановленный мусор;
+защищённые пакеты (Store, Калькулятор, App Installer, runtime-библиотеки)
+всегда получают категорию «Системные» и не удаляются.
 
 ## Категории твиков
 

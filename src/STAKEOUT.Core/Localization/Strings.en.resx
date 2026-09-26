@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English satellite. Keep keys and {n} placeholders in sync with Strings.resx (enforced by unit tests). -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_UnhandledError" xml:space="preserve">
+    <value>An error occurred. Details were written to the encrypted log.
+
+{0}</value>
+    <comment>{0} = exception message</comment>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>n/a</value>
+    <comment>Value could not be read</comment>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_ConfirmTitle" xml:space="preserve">
+    <value>Confirmation</value>
+    <comment>Dialog title</comment>
+  </data>
+  <data name="Unit_Megabytes" xml:space="preserve">
+    <value>{0:0.#} MB</value>
+    <comment>{0} = size in megabytes</comment>
+  </data>
+  <data name="Unit_Gigabytes" xml:space="preserve">
+    <value>{0:0} GB</value>
+    <comment>{0} = size in gigabytes</comment>
+  </data>
+  <data name="Unit_Terabytes" xml:space="preserve">
+    <value>{0:0.##} TB</value>
+    <comment>{0} = size in terabytes</comment>
+  </data>
+  <data name="Unit_Celsius" xml:space="preserve">
+    <value>{0:0.#} °C</value>
+    <comment>{0} = temperature</comment>
+  </data>
+  <data name="Nav_Menu" xml:space="preserve">
+    <value>Menu</value>
+    <comment>Hamburger button tooltip / accessible name</comment>
+  </data>
+  <data name="Caption_Minimize" xml:space="preserve">
+    <value>Minimize</value>
+    <comment>Title bar button</comment>
+  </data>
+  <data name="Caption_Maximize" xml:space="preserve">
+    <value>Maximize</value>
+    <comment>Title bar button</comment>
+  </data>
+  <data name="Nav_System" xml:space="preserve">
+    <value>System</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Tweaks" xml:space="preserve">
+    <value>Tweaks</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Apps" xml:space="preserve">
+    <value>Apps</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Install" xml:space="preserve">
+    <value>Install</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Logs" xml:space="preserve">
+    <value>Logs</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_LogsTooltip" xml:space="preserve">
+    <value>Action log (decrypts the log from TEMP)</value>
+  </data>
+  <data name="Nav_RevertAll" xml:space="preserve">
+    <value>Revert all</value>
+    <comment>Sidebar, red button</comment>
+  </data>
+  <data name="Nav_RevertAllTooltip" xml:space="preserve">
+    <value>Double-click to revert all changes</value>
+  </data>
+  <data name="SysInfo_Title" xml:space="preserve">
+    <value>SYSTEM</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="SysInfo_Cpu" xml:space="preserve">
+    <value>PROCESSOR</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Motherboard" xml:space="preserve">
+    <value>MOTHERBOARD</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Gpus" xml:space="preserve">
+    <value>GRAPHICS</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Ram" xml:space="preserve">
+    <value>MEMORY</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Disks" xml:space="preserve">
+    <value>STORAGE</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Windows" xml:space="preserve">
+    <value>WINDOWS</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_GpuIntegrated" xml:space="preserve">
+    <value>Integrated</value>
+    <comment>GPU kind</comment>
+  </data>
+  <data name="SysInfo_GpuDiscrete" xml:space="preserve">
+    <value>Discrete</value>
+    <comment>GPU kind</comment>
+  </data>
+  <data name="SysInfo_GpuBasic" xml:space="preserve">
+    <value>Basic</value>
+    <comment>GPU kind (Microsoft Basic Display)</comment>
+  </data>
+  <data name="SysInfo_DiskTotal" xml:space="preserve">
+    <value>Total: {0}</value>
+    <comment>{0} = formatted size</comment>
+  </data>
+  <data name="SysInfo_WindowsBuild" xml:space="preserve">
+    <value>{0} build {1}</value>
+    <comment>{0} = product and version, {1} = build.revision</comment>
+  </data>
+  <data name="Tweaks_Title" xml:space="preserve">
+    <value>TWEAKS</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Tweaks_RestartExplorer" xml:space="preserve">
+    <value>Restart Explorer</value>
+  </data>
+  <data name="Tweaks_RebootBadge" xml:space="preserve">
+    <value>reboot</value>
+    <comment>Badge: needs a restart</comment>
+  </data>
+  <data name="Tweaks_ConfirmDestructive" xml:space="preserve">
+    <value>“{0}” is a potentially dangerous action.
+
+{1}
+
+Continue?</value>
+    <comment>{0} = tweak title, {1} = description</comment>
+  </data>
+  <data name="Tweaks_Enabled" xml:space="preserve">
+    <value>{0}: enabled</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_Disabled" xml:space="preserve">
+    <value>{0}: disabled</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_ApplyFailed" xml:space="preserve">
+    <value>{0}: could not apply</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_RevertFailed" xml:space="preserve">
+    <value>{0}: could not revert</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_Error" xml:space="preserve">
+    <value>{0}: error</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_ExplorerRestarted" xml:space="preserve">
+    <value>Explorer restarted</value>
+  </data>
+  <data name="Tweaks_RevertAllDone" xml:space="preserve">
+    <value>Reverted: {0} tweak(s)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Tweaks_RevertAllPartial" xml:space="preserve">
+    <value>Partially reverted: {0} of {1}. See the log for details.</value>
+    <comment>{0} = reverted, {1} = total</comment>
+  </data>
+  <data name="TweakCategory_Privacy" xml:space="preserve">
+    <value>Privacy &amp; telemetry</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Security" xml:space="preserve">
+    <value>Security</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Performance" xml:space="preserve">
+    <value>Performance</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Gaming" xml:space="preserve">
+    <value>Gaming</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_System" xml:space="preserve">
+    <value>System</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Interface" xml:space="preserve">
+    <value>Interface</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="Tweak_DiagTrack_Title" xml:space="preserve">
+    <value>Telemetry (DiagTrack)</value>
+  </data>
+  <data name="Tweak_DiagTrack_Desc" xml:space="preserve">
+    <value>Blocks the DiagTrack and dmwappushservice data-collection services and sets AllowTelemetry=0. No files are deleted.</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Title" xml:space="preserve">
+    <value>Advertising ID</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Desc" xml:space="preserve">
+    <value>Turns off the advertising ID used by apps.</value>
+  </data>
+  <data name="Tweak_Cortana_Title" xml:space="preserve">
+    <value>Cortana</value>
+  </data>
+  <data name="Tweak_Cortana_Desc" xml:space="preserve">
+    <value>Blocks Cortana via the AllowCortana Windows Search policy.</value>
+  </data>
+  <data name="Tweak_Uac_Title" xml:space="preserve">
+    <value>UAC (User Account Control)</value>
+  </data>
+  <data name="Tweak_Uac_Desc" xml:space="preserve">
+    <value>Turns off User Account Control. Requires a restart.</value>
+  </data>
+  <data name="Tweak_BitLocker_Title" xml:space="preserve">
+    <value>BitLocker</value>
+  </data>
+  <data name="Tweak_BitLocker_Desc" xml:space="preserve">
+    <value>Turns off BitLocker encryption on all volumes via WMI (Win32_EncryptableVolume).</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Title" xml:space="preserve">
+    <value>Driver updates</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Desc" xml:space="preserve">
+    <value>Stops Windows Update from force-installing drivers (group policies).</value>
+  </data>
+  <data name="Tweak_Hibernation_Title" xml:space="preserve">
+    <value>Hibernation</value>
+  </data>
+  <data name="Tweak_Hibernation_Desc" xml:space="preserve">
+    <value>Turns off hibernation with powercfg -h off (frees hiberfil.sys).</value>
+  </data>
+  <data name="Tweak_Animations_Title" xml:space="preserve">
+    <value>Windows animations</value>
+  </data>
+  <data name="Tweak_Animations_Desc" xml:space="preserve">
+    <value>Turns off all UI animations and transparency. Requires restarting Explorer.</value>
+  </data>
+  <data name="Tweak_MenuShowDelay_Title" xml:space="preserve">
+    <value>MenuShowDelay</value>
+  </data>
+  <data name="Tweak_MenuShowDelay_Desc" xml:space="preserve">
+    <value>Sets MenuShowDelay=0 so context menus open instantly.</value>
+  </data>
+  <data name="Tweak_Mpo_Title" xml:space="preserve">
+    <value>MPO (Multi-Plane Overlay)</value>
+  </data>
+  <data name="Tweak_Mpo_Desc" xml:space="preserve">
+    <value>Turns off MPO (OverlayTestMode=5 under Dwm). Helps with flicker and artifacts.</value>
+  </data>
+  <data name="Tweak_PowerThrottling_Title" xml:space="preserve">
+    <value>Power Throttling</value>
+  </data>
+  <data name="Tweak_PowerThrottling_Desc" xml:space="preserve">
+    <value>Turns off power throttling of background processes globally (PowerThrottlingOff=1).</value>
+  </data>
+  <data name="Tweak_Hags_Title" xml:space="preserve">
+    <value>HAGS (hardware GPU scheduling)</value>
+  </data>
+  <data name="Tweak_Hags_Desc" xml:space="preserve">
+    <value>Turns on Hardware-accelerated GPU Scheduling (HwSchMode=2). Requires a restart.</value>
+  </data>
+  <data name="Tweak_NetworkThrottling_Title" xml:space="preserve">
+    <value>NetworkThrottlingIndex</value>
+  </data>
+  <data name="Tweak_NetworkThrottling_Desc" xml:space="preserve">
+    <value>Removes network throttling (NetworkThrottlingIndex=FFFFFFFF).</value>
+  </data>
+  <data name="Tweak_PowerPlan_Title" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
+  <data name="Tweak_PowerPlan_Desc" xml:space="preserve">
+    <value>Applies the e9a42b02-… (Ultimate Performance) plan after checking the current one.</value>
+  </data>
+  <data name="Tweak_RawMouse_Title" xml:space="preserve">
+    <value>Mouse polling (RawMouseThrottleDuration)</value>
+  </data>
+  <data name="Tweak_RawMouse_Desc" xml:space="preserve">
+    <value>Sets RawMouseThrottleDuration=50 (per the guide).</value>
+  </data>
+  <data name="Tweak_UsbPower_Title" xml:space="preserve">
+    <value>USB power saving</value>
+  </data>
+  <data name="Tweak_UsbPower_Desc" xml:space="preserve">
+    <value>Turns off power saving on every USB controller by walking the registry device tree.</value>
+  </data>
+  <data name="Tweak_GameDvr_Title" xml:space="preserve">
+    <value>GameDVR and Xbox</value>
+  </data>
+  <data name="Tweak_GameDvr_Desc" xml:space="preserve">
+    <value>Fully turns off GameDVR, AppCaptureEnabled and the Xbox services.</value>
+  </data>
+  <data name="Tweak_GameMode_Title" xml:space="preserve">
+    <value>Game Mode</value>
+  </data>
+  <data name="Tweak_GameMode_Desc" xml:space="preserve">
+    <value>Turns on Game Mode.</value>
+  </data>
+  <data name="Tweak_MouseAcceleration_Title" xml:space="preserve">
+    <value>Mouse acceleration</value>
+  </data>
+  <data name="Tweak_MouseAcceleration_Desc" xml:space="preserve">
+    <value>Turns off pointer acceleration (MouseSpeed / MouseThreshold1/2 = 0).</value>
+  </data>
+  <data name="Tweak_GuidePack_Title" xml:space="preserve">
+    <value>Guide compatibility</value>
+  </data>
+  <data name="Tweak_GuidePack_Desc" xml:space="preserve">
+    <value>Extra settings: foreground priority and no startup delay.</value>
+  </data>
+  <data name="Tweak_Yandex_Title" xml:space="preserve">
+    <value>Block Yandex services</value>
+  </data>
+  <data name="Tweak_Yandex_Desc" xml:space="preserve">
+    <value>Blocks Yandex processes (browser, updaters, Disk, Alice) via the DisallowRun policy. No files are deleted.</value>
+  </data>
+  <data name="Uwp_Title" xml:space="preserve">
+    <value>UWP APPS</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Uwp_RefreshList" xml:space="preserve">
+    <value>Refresh list</value>
+  </data>
+  <data name="Uwp_SelectJunk" xml:space="preserve">
+    <value>Select all (junk only)</value>
+  </data>
+  <data name="Uwp_RemoveSelected" xml:space="preserve">
+    <value>Remove selected</value>
+  </data>
+  <data name="Uwp_Loading" xml:space="preserve">
+    <value>Loading app list...</value>
+  </data>
+  <data name="Uwp_Protected" xml:space="preserve">
+    <value>protected</value>
+    <comment>Badge on apps that cannot be removed</comment>
+  </data>
+  <data name="Uwp_Freed" xml:space="preserve">
+    <value>Freed: {0:0.#} MB</value>
+    <comment>{0} = megabytes</comment>
+  </data>
+  <data name="Uwp_Found" xml:space="preserve">
+    <value>Apps found: {0}</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Uwp_NothingSelected" xml:space="preserve">
+    <value>Nothing selected</value>
+  </data>
+  <data name="Uwp_JunkSelected" xml:space="preserve">
+    <value>Selected: {0} (preinstalled junk only)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Uwp_RemoveDone" xml:space="preserve">
+    <value>Removed: {0} of {1}</value>
+    <comment>{0} = removed, {1} = selected</comment>
+  </data>
+  <data name="Uwp_RemoveFailed" xml:space="preserve">
+    <value>{0}: could not remove</value>
+    <comment>{0} = app name</comment>
+  </data>
+  <data name="UwpCategory_Bloatware" xml:space="preserve">
+    <value>Preinstalled junk</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Games" xml:space="preserve">
+    <value>Games</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Media" xml:space="preserve">
+    <value>Media</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Utilities" xml:space="preserve">
+    <value>Utilities</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_ThirdParty" xml:space="preserve">
+    <value>Third-party</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Other" xml:space="preserve">
+    <value>Other Microsoft</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_System" xml:space="preserve">
+    <value>System</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="Software_Title" xml:space="preserve">
+    <value>SOFTWARE</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Software_Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Software_MethodWinget" xml:space="preserve">
+    <value>winget</value>
+    <comment>Install method</comment>
+  </data>
+  <data name="Software_MethodDirect" xml:space="preserve">
+    <value>direct link</value>
+    <comment>Install method</comment>
+  </data>
+  <data name="Software_Started" xml:space="preserve">
+    <value>{0}: installation started</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_Cancelled" xml:space="preserve">
+    <value>{0}: cancelled</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_Failed" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} = product, {1} = stage text</comment>
+  </data>
+  <data name="Stage_Downloading" xml:space="preserve">
+    <value>Downloading...</value>
+  </data>
+  <data name="Stage_Extracting" xml:space="preserve">
+    <value>Extracting...</value>
+  </data>
+  <data name="Stage_Installing" xml:space="preserve">
+    <value>Installing...</value>
+  </data>
+  <data name="Stage_Done" xml:space="preserve">
+    <value>Done</value>
+  </data>
+  <data name="Stage_UrlMissing" xml:space="preserve">
+    <value>Link not configured</value>
+  </data>
+  <data name="Stage_Failed" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Logs_Title" xml:space="preserve">
+    <value>ACTION LOG</value>
+    <comment>Modal header, upper case</comment>
+  </data>
+  <data name="Logs_Unavailable" xml:space="preserve">
+    <value>log unavailable</value>
+  </data>
+  <data name="Logs_LineCount" xml:space="preserve">
+    <value>Lines: {0}</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Logs_LineCountTruncated" xml:space="preserve">
+    <value>Lines: {0} (showing the last {1})</value>
+    <comment>{0} = total, {1} = shown</comment>
+  </data>
+  <data name="Logs_Empty" xml:space="preserve">
+    <value>The log is empty</value>
+  </data>
+  <data name="Logs_Copy" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
+  <data name="Logs_CloseTooltip" xml:space="preserve">
+    <value>Close (Esc)</value>
+  </data>
+  <data name="Logs_Copied" xml:space="preserve">
+    <value>Log copied to clipboard ({0} lines)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Logs_CopyFailed" xml:space="preserve">
+    <value>Copy failed: the clipboard is busy</value>
+  </data>
+</root>

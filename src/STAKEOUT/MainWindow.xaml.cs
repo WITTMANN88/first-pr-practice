@@ -14,10 +14,11 @@ public partial class MainWindow : Window
     /// <summary>Element that had focus before the log modal opened (restored on close).</summary>
     private IInputElement? _focusBeforeLogs;
 
-    public MainWindow()
+    /// <summary>Created by the DI container (see Infrastructure/ServiceRegistration).</summary>
+    public MainWindow(MainViewModel vm)
     {
         InitializeComponent();
-        _vm = new MainViewModel();
+        _vm = vm;
         DataContext = _vm;
 
         Loaded += OnLoaded;

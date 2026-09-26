@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Neutral (default) language: Russian. Every key here must also exist in each Strings.<culture>.resx (enforced by unit tests). -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_UnhandledError" xml:space="preserve">
+    <value>Произошла ошибка. Подробности записаны в зашифрованный лог.
+
+{0}</value>
+    <comment>{0} = exception message</comment>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>н/д</value>
+    <comment>Value could not be read</comment>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="Common_Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Common_ConfirmTitle" xml:space="preserve">
+    <value>Подтверждение</value>
+    <comment>Dialog title</comment>
+  </data>
+  <data name="Unit_Megabytes" xml:space="preserve">
+    <value>{0:0.#} МБ</value>
+    <comment>{0} = size in megabytes</comment>
+  </data>
+  <data name="Unit_Gigabytes" xml:space="preserve">
+    <value>{0:0} ГБ</value>
+    <comment>{0} = size in gigabytes</comment>
+  </data>
+  <data name="Unit_Terabytes" xml:space="preserve">
+    <value>{0:0.##} ТБ</value>
+    <comment>{0} = size in terabytes</comment>
+  </data>
+  <data name="Unit_Celsius" xml:space="preserve">
+    <value>{0:0.#} °C</value>
+    <comment>{0} = temperature</comment>
+  </data>
+  <data name="Nav_Menu" xml:space="preserve">
+    <value>Меню</value>
+    <comment>Hamburger button tooltip / accessible name</comment>
+  </data>
+  <data name="Caption_Minimize" xml:space="preserve">
+    <value>Свернуть</value>
+    <comment>Title bar button</comment>
+  </data>
+  <data name="Caption_Maximize" xml:space="preserve">
+    <value>Развернуть</value>
+    <comment>Title bar button</comment>
+  </data>
+  <data name="Nav_System" xml:space="preserve">
+    <value>Система</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Tweaks" xml:space="preserve">
+    <value>Твики</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Apps" xml:space="preserve">
+    <value>Приложения</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Install" xml:space="preserve">
+    <value>Установка</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_Logs" xml:space="preserve">
+    <value>Логи</value>
+    <comment>Sidebar</comment>
+  </data>
+  <data name="Nav_LogsTooltip" xml:space="preserve">
+    <value>Журнал действий (расшифровка лога из TEMP)</value>
+  </data>
+  <data name="Nav_RevertAll" xml:space="preserve">
+    <value>Отменить все</value>
+    <comment>Sidebar, red button</comment>
+  </data>
+  <data name="Nav_RevertAllTooltip" xml:space="preserve">
+    <value>Двойной клик — отменить все изменения</value>
+  </data>
+  <data name="SysInfo_Title" xml:space="preserve">
+    <value>СИСТЕМА</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="SysInfo_Cpu" xml:space="preserve">
+    <value>ПРОЦЕССОР</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Motherboard" xml:space="preserve">
+    <value>МАТЕРИНСКАЯ ПЛАТА</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Gpus" xml:space="preserve">
+    <value>ВИДЕОКАРТЫ</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Ram" xml:space="preserve">
+    <value>ОПЕРАТИВНАЯ ПАМЯТЬ</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Disks" xml:space="preserve">
+    <value>НАКОПИТЕЛИ</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_Windows" xml:space="preserve">
+    <value>WINDOWS</value>
+    <comment>Card caption</comment>
+  </data>
+  <data name="SysInfo_GpuIntegrated" xml:space="preserve">
+    <value>Встроенная</value>
+    <comment>GPU kind</comment>
+  </data>
+  <data name="SysInfo_GpuDiscrete" xml:space="preserve">
+    <value>Дискретная</value>
+    <comment>GPU kind</comment>
+  </data>
+  <data name="SysInfo_GpuBasic" xml:space="preserve">
+    <value>Базовая</value>
+    <comment>GPU kind (Microsoft Basic Display)</comment>
+  </data>
+  <data name="SysInfo_DiskTotal" xml:space="preserve">
+    <value>Всего: {0}</value>
+    <comment>{0} = formatted size</comment>
+  </data>
+  <data name="SysInfo_WindowsBuild" xml:space="preserve">
+    <value>{0} сборка {1}</value>
+    <comment>{0} = product and version, {1} = build.revision</comment>
+  </data>
+  <data name="Tweaks_Title" xml:space="preserve">
+    <value>ТВИКИ</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Tweaks_RestartExplorer" xml:space="preserve">
+    <value>Перезапустить проводник</value>
+  </data>
+  <data name="Tweaks_RebootBadge" xml:space="preserve">
+    <value>перезагрузка</value>
+    <comment>Badge: needs a restart</comment>
+  </data>
+  <data name="Tweaks_ConfirmDestructive" xml:space="preserve">
+    <value>«{0}» — потенциально опасное действие.
+
+{1}
+
+Продолжить?</value>
+    <comment>{0} = tweak title, {1} = description</comment>
+  </data>
+  <data name="Tweaks_Enabled" xml:space="preserve">
+    <value>{0}: включено</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_Disabled" xml:space="preserve">
+    <value>{0}: отключено</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_ApplyFailed" xml:space="preserve">
+    <value>{0}: не удалось применить</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_RevertFailed" xml:space="preserve">
+    <value>{0}: не удалось откатить</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_Error" xml:space="preserve">
+    <value>{0}: ошибка</value>
+    <comment>{0} = tweak title</comment>
+  </data>
+  <data name="Tweaks_ExplorerRestarted" xml:space="preserve">
+    <value>Проводник перезапущен</value>
+  </data>
+  <data name="Tweaks_RevertAllDone" xml:space="preserve">
+    <value>Откат выполнен: {0} твик(ов)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Tweaks_RevertAllPartial" xml:space="preserve">
+    <value>Откат выполнен частично: {0} из {1}. Подробности в логе.</value>
+    <comment>{0} = reverted, {1} = total</comment>
+  </data>
+  <data name="TweakCategory_Privacy" xml:space="preserve">
+    <value>Приватность и телеметрия</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Security" xml:space="preserve">
+    <value>Безопасность</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Performance" xml:space="preserve">
+    <value>Производительность</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Gaming" xml:space="preserve">
+    <value>Игры</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_System" xml:space="preserve">
+    <value>Система</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="TweakCategory_Interface" xml:space="preserve">
+    <value>Интерфейс</value>
+    <comment>Section header</comment>
+  </data>
+  <data name="Tweak_DiagTrack_Title" xml:space="preserve">
+    <value>Телеметрия (DiagTrack)</value>
+  </data>
+  <data name="Tweak_DiagTrack_Desc" xml:space="preserve">
+    <value>Блокирует службы сбора данных DiagTrack и dmwappushservice и задаёт AllowTelemetry=0. Файлы не удаляются.</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Title" xml:space="preserve">
+    <value>Advertising ID</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Desc" xml:space="preserve">
+    <value>Отключает рекламный идентификатор для приложений.</value>
+  </data>
+  <data name="Tweak_Cortana_Title" xml:space="preserve">
+    <value>Cortana</value>
+  </data>
+  <data name="Tweak_Cortana_Desc" xml:space="preserve">
+    <value>Блокирует Cortana через параметр AllowCortana в политиках Windows Search.</value>
+  </data>
+  <data name="Tweak_Uac_Title" xml:space="preserve">
+    <value>UAC (Контроль учётных записей)</value>
+  </data>
+  <data name="Tweak_Uac_Desc" xml:space="preserve">
+    <value>Отключает контроль учётных записей. Требуется перезагрузка.</value>
+  </data>
+  <data name="Tweak_BitLocker_Title" xml:space="preserve">
+    <value>BitLocker</value>
+  </data>
+  <data name="Tweak_BitLocker_Desc" xml:space="preserve">
+    <value>Отключает шифрование BitLocker на всех томах через WMI (Win32_EncryptableVolume).</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Title" xml:space="preserve">
+    <value>Обновление драйверов</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Desc" xml:space="preserve">
+    <value>Отключает принудительное обновление драйверов через Windows Update (групповые политики).</value>
+  </data>
+  <data name="Tweak_Hibernation_Title" xml:space="preserve">
+    <value>Гибернация</value>
+  </data>
+  <data name="Tweak_Hibernation_Desc" xml:space="preserve">
+    <value>Отключает гибернацию командой powercfg -h off (освобождает hiberfil.sys).</value>
+  </data>
+  <data name="Tweak_Animations_Title" xml:space="preserve">
+    <value>Анимации Windows</value>
+  </data>
+  <data name="Tweak_Animations_Desc" xml:space="preserve">
+    <value>Полностью отключает анимации и прозрачность интерфейса. Требуется перезапуск проводника.</value>
+  </data>
+  <data name="Tweak_MenuShowDelay_Title" xml:space="preserve">
+    <value>MenuShowDelay</value>
+  </data>
+  <data name="Tweak_MenuShowDelay_Desc" xml:space="preserve">
+    <value>Устанавливает MenuShowDelay=0 для мгновенного отклика контекстных меню.</value>
+  </data>
+  <data name="Tweak_Mpo_Title" xml:space="preserve">
+    <value>MPO (Multi-Plane Overlay)</value>
+  </data>
+  <data name="Tweak_Mpo_Desc" xml:space="preserve">
+    <value>Отключает MPO (OverlayTestMode=5 в ветке Dwm). Помогает от мерцания/артефактов.</value>
+  </data>
+  <data name="Tweak_PowerThrottling_Title" xml:space="preserve">
+    <value>Power Throttling</value>
+  </data>
+  <data name="Tweak_PowerThrottling_Desc" xml:space="preserve">
+    <value>Глобально отключает энергосбережение фоновых процессов (PowerThrottlingOff=1).</value>
+  </data>
+  <data name="Tweak_Hags_Title" xml:space="preserve">
+    <value>HAGS (аппаратное планирование GPU)</value>
+  </data>
+  <data name="Tweak_Hags_Desc" xml:space="preserve">
+    <value>Включает Hardware-accelerated GPU Scheduling (HwSchMode=2). Требуется перезагрузка.</value>
+  </data>
+  <data name="Tweak_NetworkThrottling_Title" xml:space="preserve">
+    <value>NetworkThrottlingIndex</value>
+  </data>
+  <data name="Tweak_NetworkThrottling_Desc" xml:space="preserve">
+    <value>Снимает сетевые ограничения (NetworkThrottlingIndex=FFFFFFFF).</value>
+  </data>
+  <data name="Tweak_PowerPlan_Title" xml:space="preserve">
+    <value>План электропитания</value>
+  </data>
+  <data name="Tweak_PowerPlan_Desc" xml:space="preserve">
+    <value>Применяет план e9a42b02-… (Ultimate Performance) с предварительной проверкой.</value>
+  </data>
+  <data name="Tweak_RawMouse_Title" xml:space="preserve">
+    <value>Опрос мыши (RawMouseThrottleDuration)</value>
+  </data>
+  <data name="Tweak_RawMouse_Desc" xml:space="preserve">
+    <value>Устанавливает RawMouseThrottleDuration=50 (по гайду).</value>
+  </data>
+  <data name="Tweak_UsbPower_Title" xml:space="preserve">
+    <value>USB: энергосбережение</value>
+  </data>
+  <data name="Tweak_UsbPower_Desc" xml:space="preserve">
+    <value>Отключает энергосбережение всех USB-контроллеров перебором дерева реестра.</value>
+  </data>
+  <data name="Tweak_GameDvr_Title" xml:space="preserve">
+    <value>GameDVR и Xbox</value>
+  </data>
+  <data name="Tweak_GameDvr_Desc" xml:space="preserve">
+    <value>Глубоко отключает GameDVR, AppCaptureEnabled и службы Xbox.</value>
+  </data>
+  <data name="Tweak_GameMode_Title" xml:space="preserve">
+    <value>Игровой режим</value>
+  </data>
+  <data name="Tweak_GameMode_Desc" xml:space="preserve">
+    <value>Включает Game Mode.</value>
+  </data>
+  <data name="Tweak_MouseAcceleration_Title" xml:space="preserve">
+    <value>Акселерация мыши</value>
+  </data>
+  <data name="Tweak_MouseAcceleration_Desc" xml:space="preserve">
+    <value>Отключает ускорение указателя (MouseSpeed / MouseThreshold1/2 = 0).</value>
+  </data>
+  <data name="Tweak_GuidePack_Title" xml:space="preserve">
+    <value>Совместимость с гайдами</value>
+  </data>
+  <data name="Tweak_GuidePack_Desc" xml:space="preserve">
+    <value>Дополнительные настройки: приоритет переднего плана и мгновенный запуск автозагрузки.</value>
+  </data>
+  <data name="Tweak_Yandex_Title" xml:space="preserve">
+    <value>Блокировка сервисов Яндекс</value>
+  </data>
+  <data name="Tweak_Yandex_Desc" xml:space="preserve">
+    <value>Блокирует запуск процессов Яндекс (браузер, обновления, Диск, Алиса) через политику DisallowRun. Файлы не удаляются.</value>
+  </data>
+  <data name="Uwp_Title" xml:space="preserve">
+    <value>ПРИЛОЖЕНИЯ UWP</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Uwp_RefreshList" xml:space="preserve">
+    <value>Обновить список</value>
+  </data>
+  <data name="Uwp_SelectJunk" xml:space="preserve">
+    <value>Выбрать всё (только мусор)</value>
+  </data>
+  <data name="Uwp_RemoveSelected" xml:space="preserve">
+    <value>Удалить выбранные</value>
+  </data>
+  <data name="Uwp_Loading" xml:space="preserve">
+    <value>Загрузка списка приложений...</value>
+  </data>
+  <data name="Uwp_Protected" xml:space="preserve">
+    <value>защищено</value>
+    <comment>Badge on apps that cannot be removed</comment>
+  </data>
+  <data name="Uwp_Freed" xml:space="preserve">
+    <value>Освобождено: {0:0.#} МБ</value>
+    <comment>{0} = megabytes</comment>
+  </data>
+  <data name="Uwp_Found" xml:space="preserve">
+    <value>Найдено приложений: {0}</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Uwp_NothingSelected" xml:space="preserve">
+    <value>Ничего не выбрано</value>
+  </data>
+  <data name="Uwp_JunkSelected" xml:space="preserve">
+    <value>Выбрано: {0} (только предустановленный мусор)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Uwp_RemoveDone" xml:space="preserve">
+    <value>Удалено: {0} из {1}</value>
+    <comment>{0} = removed, {1} = selected</comment>
+  </data>
+  <data name="Uwp_RemoveFailed" xml:space="preserve">
+    <value>{0}: не удалось удалить</value>
+    <comment>{0} = app name</comment>
+  </data>
+  <data name="UwpCategory_Bloatware" xml:space="preserve">
+    <value>Предустановленный мусор</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Games" xml:space="preserve">
+    <value>Игры</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Media" xml:space="preserve">
+    <value>Мультимедиа</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Utilities" xml:space="preserve">
+    <value>Утилиты</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_ThirdParty" xml:space="preserve">
+    <value>Сторонние</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_Other" xml:space="preserve">
+    <value>Прочие Microsoft</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="UwpCategory_System" xml:space="preserve">
+    <value>Системные</value>
+    <comment>Badge</comment>
+  </data>
+  <data name="Software_Title" xml:space="preserve">
+    <value>УСТАНОВКА ПО</value>
+    <comment>Page header, upper case</comment>
+  </data>
+  <data name="Software_Install" xml:space="preserve">
+    <value>Установить</value>
+  </data>
+  <data name="Software_MethodWinget" xml:space="preserve">
+    <value>winget</value>
+    <comment>Install method</comment>
+  </data>
+  <data name="Software_MethodDirect" xml:space="preserve">
+    <value>прямая ссылка</value>
+    <comment>Install method</comment>
+  </data>
+  <data name="Software_Started" xml:space="preserve">
+    <value>{0}: установка запущена</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_Cancelled" xml:space="preserve">
+    <value>{0}: отменено</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_Failed" xml:space="preserve">
+    <value>{0}: {1}</value>
+    <comment>{0} = product, {1} = stage text</comment>
+  </data>
+  <data name="Stage_Downloading" xml:space="preserve">
+    <value>Скачивание...</value>
+  </data>
+  <data name="Stage_Extracting" xml:space="preserve">
+    <value>Распаковка...</value>
+  </data>
+  <data name="Stage_Installing" xml:space="preserve">
+    <value>Установка...</value>
+  </data>
+  <data name="Stage_Done" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Stage_UrlMissing" xml:space="preserve">
+    <value>Ссылка не настроена</value>
+  </data>
+  <data name="Stage_Failed" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="Logs_Title" xml:space="preserve">
+    <value>ЖУРНАЛ ДЕЙСТВИЙ</value>
+    <comment>Modal header, upper case</comment>
+  </data>
+  <data name="Logs_Unavailable" xml:space="preserve">
+    <value>лог недоступен</value>
+  </data>
+  <data name="Logs_LineCount" xml:space="preserve">
+    <value>Строк: {0}</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Logs_LineCountTruncated" xml:space="preserve">
+    <value>Строк: {0} (показаны последние {1})</value>
+    <comment>{0} = total, {1} = shown</comment>
+  </data>
+  <data name="Logs_Empty" xml:space="preserve">
+    <value>Лог пуст</value>
+  </data>
+  <data name="Logs_Copy" xml:space="preserve">
+    <value>Скопировать в буфер</value>
+  </data>
+  <data name="Logs_CloseTooltip" xml:space="preserve">
+    <value>Закрыть (Esc)</value>
+  </data>
+  <data name="Logs_Copied" xml:space="preserve">
+    <value>Лог скопирован в буфер ({0} строк)</value>
+    <comment>{0} = count</comment>
+  </data>
+  <data name="Logs_CopyFailed" xml:space="preserve">
+    <value>Не удалось скопировать: буфер обмена занят</value>
+  </data>
+</root>

@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using Stakeout.Core;
+using Stakeout.Localization;
 using Stakeout.Models;
 using Stakeout.Services;
 
 namespace Stakeout.ViewModels;
 
-/// <summary>One UWP package row with a checkbox and removal animation flag.</summary>
+/// <summary>One UWP package row with a checkbox, category badge and removal animation flag.</summary>
 public sealed class UwpItemViewModel : ViewModelBase
 {
     private bool _isSelected;
@@ -18,6 +20,8 @@ public sealed class UwpItemViewModel : ViewModelBase
     public string PackageFullName => App.PackageFullName;
     public string SizeText => App.SizeText;
     public bool IsCritical => App.IsCritical;
+    public UwpCategory Category => App.Category;
+    public string CategoryText => CategoryLabel(App.Category);
     public string? IconPath => App.IconPath;
     public bool HasIcon => !string.IsNullOrEmpty(App.IconPath);
     /// <summary>First letter, used as a fallback tile when no icon is resolved.</summary>
@@ -38,20 +42,31 @@ public sealed class UwpItemViewModel : ViewModelBase
         get => _isRemoving;
         set => SetProperty(ref _isRemoving, value);
     }
+
+    public static string CategoryLabel(UwpCategory c) => c switch
+    {
+        UwpCategory.Bloatware => Strings.UwpCategory_Bloatware,
+        UwpCategory.Games => Strings.UwpCategory_Games,
+        UwpCategory.Media => Strings.UwpCategory_Media,
+        UwpCategory.Utilities => Strings.UwpCategory_Utilities,
+        UwpCategory.ThirdParty => Strings.UwpCategory_ThirdParty,
+        UwpCategory.System => Strings.UwpCategory_System,
+        _ => Strings.UwpCategory_Other,
+    };
 }
 
 /// <summary>The UWP removal page.</summary>
 public sealed class UwpViewModel : ViewModelBase
 {
     private readonly UwpService _service;
-    private readonly ToastService _toast;
+    private readonly INotificationService _notify;
     private bool _isLoading;
     private double _freedMb;
 
-    public UwpViewModel(UwpService service, ToastService toast)
+    public UwpViewModel(UwpService service, INotificationService notify)
     {
         _service = service;
-        _toast = toast;
+        _notify = notify;
         LoadCommand = new AsyncRelayCommand(_ => LoadAsync());
         SelectJunkCommand = new RelayCommand(SelectJunk);
         RemoveSelectedCommand = new AsyncRelayCommand(_ => RemoveSelectedAsync());
@@ -67,7 +82,7 @@ public sealed class UwpViewModel : ViewModelBase
 
     /// <summary>Running total of megabytes freed by removals this session.</summary>
     public double FreedMb { get => _freedMb; private set => SetProperty(ref _freedMb, value); }
-    public string FreedText => $"Освобождено: {FreedMb:0.#} МБ";
+    public string FreedText => string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Freed, FreedMb);
 
     public async Task LoadAsync()
     {
@@ -80,7 +95,7 @@ public sealed class UwpViewModel : ViewModelBase
             var list = await TimeoutGuard.Await(
                 _service.ListAsync(), TimeSpan.FromSeconds(90), new(), "Uwp.List");
             foreach (var a in list) Apps.Add(new UwpItemViewModel(a));
-            _toast.Success($"Найдено приложений: {Apps.Count}");
+            _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Found, Apps.Count));
         }
         finally
         {
@@ -89,11 +104,19 @@ public sealed class UwpViewModel : ViewModelBase
         }
     }
 
-    /// <summary>"Умное" выделение: только мусор, критические приложения игнорируются.</summary>
+    /// <summary>
+    /// "Smart" select: only preinstalled junk (<see cref="UwpCategory.Bloatware"/>).
+    /// Protected apps, games, media, utilities and unknown packages stay unchecked.
+    /// </summary>
     private void SelectJunk()
     {
+        var count = 0;
         foreach (var a in Apps)
-            a.IsSelected = a.CanRemove;
+        {
+            a.IsSelected = a.CanRemove && a.Category == UwpCategory.Bloatware;
+            if (a.IsSelected) count++;
+        }
+        _notify.Info(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_JunkSelected, count));
     }
 
     private async Task RemoveSelectedAsync()
@@ -101,22 +124,32 @@ public sealed class UwpViewModel : ViewModelBase
         var selected = Apps.Where(a => a.IsSelected && a.CanRemove).ToList();
         if (selected.Count == 0)
         {
-            _toast.Show("Ничего не выбрано");
+            _notify.Info(Strings.Uwp_NothingSelected);
             return;
         }
 
+        var removed = 0;
         foreach (var item in selected)
         {
-            var freedBytes = await _service.RemoveAsync(item.App);
-            if (freedBytes >= 0 && !item.App.IsCritical)
+            var result = await _service.RemoveAsync(item.App);
+            if (!result.Success)
             {
-                item.IsRemoving = true;              // start slide-out animation
-                await Task.Delay(350);               // let the animation play
-                Apps.Remove(item);
-                FreedMb += freedBytes / 1024d / 1024d;
-                OnPropertyChanged(nameof(FreedText));
+                // Keep the row: the package is still installed.
+                item.IsSelected = false;
+                _notify.Error(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_RemoveFailed, item.DisplayName));
+                continue;
             }
+
+            item.IsRemoving = true;              // start slide-out animation
+            await Task.Delay(350);               // let the animation play
+            Apps.Remove(item);
+            removed++;
+            FreedMb += result.FreedBytes / 1024d / 1024d;
+            OnPropertyChanged(nameof(FreedText));
         }
-        _toast.Success("Удаление завершено");
+
+        var summary = string.Format(CultureInfo.CurrentCulture, Strings.Uwp_RemoveDone, removed, selected.Count);
+        if (removed == selected.Count) _notify.Success(summary);
+        else _notify.Warning(summary);
     }
 }
