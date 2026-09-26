@@ -134,6 +134,26 @@
     <value>{0} build {1}</value>
     <comment>{0} = product and version, {1} = build.revision</comment>
   </data>
+  <data name="SysInfo_TempHistory" xml:space="preserve">
+    <value>TEMPERATURE · ~2 MIN</value>
+    <comment>Sparkline caption, upper case</comment>
+  </data>
+  <data name="SysInfo_TempRange" xml:space="preserve">
+    <value>min {0:0} °C · max {1:0} °C</value>
+    <comment>{0} = min, {1} = max over the window</comment>
+  </data>
+  <data name="SysInfo_TempLimit" xml:space="preserve">
+    <value>{0:0} °C</value>
+    <comment>Label on the overheat reference line; {0} = threshold</comment>
+  </data>
+  <data name="SysInfo_TempSummary" xml:space="preserve">
+    <value>CPU temperature, last {0} readings: now {1:0} °C, min {2:0} °C, max {3:0} °C. Overheat threshold {4:0} °C.</value>
+    <comment>Tooltip / screen reader text; {0} = count, {1} = now, {2} = min, {3} = max, {4} = threshold</comment>
+  </data>
+  <data name="SysInfo_TempNoSensor" xml:space="preserve">
+    <value>No temperature sensor available</value>
+    <comment>Shown instead of the sparkline</comment>
+  </data>
   <data name="Tweaks_Title" xml:space="preserve">
     <value>TWEAKS</value>
     <comment>Page header, upper case</comment>
@@ -480,5 +500,9 @@ Continue?</value>
   </data>
   <data name="Logs_CopyFailed" xml:space="preserve">
     <value>Copy failed: the clipboard is busy</value>
+  </data>
+  <data name="State_RecoveredFromBackup" xml:space="preserve">
+    <value>The tweak state file was corrupt or missing and has been restored from backup {0}</value>
+    <comment>{0} = backup file name</comment>
   </data>
 </root>

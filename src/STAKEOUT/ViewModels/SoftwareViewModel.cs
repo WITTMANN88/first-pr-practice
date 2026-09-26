@@ -62,6 +62,15 @@ public sealed class SoftwareItemViewModel : ViewModelBase
     private static string F(string format, params object[] args)
         => string.Format(CultureInfo.CurrentCulture, format, args);
 
+    /// <summary>Freeze the card mid-install. Design-time entry point (Design/DesignData).</summary>
+    internal void ShowProgress(InstallStage stage, double progress)
+    {
+        Busy = true;
+        Stage = stage;
+        Progress = progress;
+        OnPropertyChanged(nameof(IsIndeterminate));
+    }
+
     private async Task InstallAsync()
     {
         Busy = true;

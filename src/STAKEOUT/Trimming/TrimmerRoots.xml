@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ILLink root descriptor for the EXPERIMENTAL trimmed flavor only
+  (dotnet publish -c Release -p:StakeoutFlavor=Trimmed).
+
+  Trimming a WPF app is unsupported by Microsoft (the SDK raises NETSDK1168;
+  the flavor suppresses it). The trimmer cannot see references made from
+  compiled XAML (BAML) or by reflection, so every assembly used that way is
+  preserved whole here. With TrimMode=partial the WPF assemblies themselves are
+  never trimmed; only BCL assemblies that declare themselves trimmable are.
+
+  Anything listed must exist in the publish output (a missing name is IL2007).
+-->
+<linker>
+  <!-- Our code: reached from XAML by binding paths, converters, DataTemplate
+       DataType and {x:Static}, none of which the trimmer can follow. -->
+  <assembly fullname="STAKEOUT" preserve="all" />
+  <assembly fullname="STAKEOUT.Core" preserve="all" />
+
+  <!-- DI container: services and view models are constructed by reflection. -->
+  <assembly fullname="Microsoft.Extensions.DependencyInjection" preserve="all" />
+  <assembly fullname="Microsoft.Extensions.DependencyInjection.Abstractions" preserve="all" />
+
+  <!-- WMI (COM interop, late-bound properties) and hardware sensors: not trim-annotated. -->
+  <assembly fullname="System.Management" preserve="all" />
+  <assembly fullname="LibreHardwareMonitorLib" preserve="all" />
+  <assembly fullname="DiskInfoToolkit" preserve="all" />
+  <assembly fullname="HidSharp" preserve="all" />
+  <assembly fullname="RAMSPDToolkit-NDD" preserve="all" />
+  <assembly fullname="System.IO.Ports" preserve="all" />
+  <assembly fullname="Mono.Posix.NETStandard" preserve="all" />
+
+  <!-- XAML attribute values are converted through TypeDescriptor, which finds
+       converters by reflection (e.g. "True" → BooleanConverter). -->
+  <assembly fullname="System.ComponentModel.TypeConverter" preserve="all" />
+  <assembly fullname="System.ComponentModel.Primitives" preserve="all" />
+</linker>

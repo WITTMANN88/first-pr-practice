@@ -13,17 +13,24 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!-- Single-file, self-contained publish target for x64 Windows 10.
-         Publish with:
-           dotnet publish -c Release -r win-x64
-         The RID / self-contained / single-file switches live here so a plain
-         `dotnet publish -c Release` already produces the one-file executable. -->
+         `dotnet publish -c Release` produces the one-file executable.
+         Flavors (see the StakeoutFlavor groups below):
+           (default)                     self-contained, supported config   ~65 MB
+           -p:StakeoutFlavor=Lite        needs .NET 8 Desktop Runtime       ~5.5 MB
+           -p:StakeoutFlavor=Trimmed     EXPERIMENTAL forced trimming       ~44 MB -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <!-- Native LHM driver + WPF are not trim-safe, so trimming stays OFF. -->
+    <!-- Trimming is off by default: the SDK rejects it for WPF (NETSDK1168),
+         because XAML/BAML and data binding reach code by reflection that the
+         trimmer cannot see. Only the opt-in Trimmed flavor overrides this. -->
     <PublishTrimmed>false</PublishTrimmed>
+    <!-- Ship only the UI languages we support. Drops the framework's localized
+         WPF/WinForms messages for 12 other languages (~5 MB) and keeps "ru",
+         so system dialogs/errors stay Russian. Supported, trimming-free. -->
+    <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
 
     <!-- Lets the project build on non-Windows CI agents. Harmless on Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
@@ -57,6 +64,35 @@
          The wildcard matches nothing (and is harmless) if the script was not run. -->
     <Resource Include="Assets\Fonts\*.ttf" />
   </ItemGroup>
+
+  <!-- Lite: framework-dependent single file. Tiny, but the target machine needs the
+       .NET 8 Desktop Runtime (x64). Compression only exists for self-contained bundles. -->
+  <PropertyGroup Condition="'$(StakeoutFlavor)' == 'Lite'">
+    <SelfContained>false</SelfContained>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <!-- Trimmed: EXPERIMENTAL. Forces trimming past NETSDK1168 via an internal SDK
+       switch. TrimMode=partial trims only BCL assemblies that declare themselves
+       trimmable; WPF and everything reached by reflection/XAML is preserved via
+       Trimming/TrimmerRoots.xml. Analyzer-clean is NOT proof of safety (BAML is
+       invisible to the trimmer): verify every page on Windows before shipping. -->
+  <PropertyGroup Condition="'$(StakeoutFlavor)' == 'Trimmed'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <_SuppressWpfTrimError>true</_SuppressWpfTrimError>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(StakeoutFlavor)' == 'Trimmed'">
+    <TrimmerRootDescriptor Include="Trimming\TrimmerRoots.xml" />
+  </ItemGroup>
+
+  <Target Name="ValidateStakeoutFlavor" BeforeTargets="Restore;BeforeBuild"
+          Condition="'$(StakeoutFlavor)' != '' and '$(StakeoutFlavor)' != 'Lite' and '$(StakeoutFlavor)' != 'Trimmed'">
+    <Error Text="Unknown StakeoutFlavor '$(StakeoutFlavor)'. Use Lite, Trimmed, or omit it." />
+  </Target>
+  <Target Name="WarnExperimentalTrim" BeforeTargets="BeforeBuild" Condition="'$(StakeoutFlavor)' == 'Trimmed'">
+    <Warning Text="EXPERIMENTAL trimmed WPF build (NETSDK1168 suppressed). Unsupported by Microsoft; verify on Windows before use." />
+  </Target>
 
   <!-- Surface a missing font at build time instead of silently falling back. -->
   <Target Name="WarnMissingFonts" BeforeTargets="BeforeBuild"

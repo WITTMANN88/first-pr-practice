@@ -94,7 +94,7 @@ public sealed class UwpViewModel : ViewModelBase
             // Guard the PowerShell enumeration so a hung host releases the UI.
             var list = await TimeoutGuard.Await(
                 _service.ListAsync(), TimeSpan.FromSeconds(90), new(), "Uwp.List");
-            foreach (var a in list) Apps.Add(new UwpItemViewModel(a));
+            ShowApps(list);
             _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Found, Apps.Count));
         }
         finally
@@ -102,6 +102,20 @@ public sealed class UwpViewModel : ViewModelBase
             IsLoading = false;
             OnPropertyChanged(nameof(IsLoaded));
         }
+    }
+
+    /// <summary>Replace the list. Also the design-time entry point (Design/DesignData).</summary>
+    internal void ShowApps(IEnumerable<UwpApp> apps)
+    {
+        Apps.Clear();
+        foreach (var a in apps) Apps.Add(new UwpItemViewModel(a));
+    }
+
+    /// <summary>Add to the session's "freed" counter.</summary>
+    internal void AddFreed(long bytes)
+    {
+        FreedMb += bytes / 1024d / 1024d;
+        OnPropertyChanged(nameof(FreedText));
     }
 
     /// <summary>
@@ -144,8 +158,7 @@ public sealed class UwpViewModel : ViewModelBase
             await Task.Delay(350);               // let the animation play
             Apps.Remove(item);
             removed++;
-            FreedMb += result.FreedBytes / 1024d / 1024d;
-            OnPropertyChanged(nameof(FreedText));
+            AddFreed(result.FreedBytes);
         }
 
         var summary = string.Format(CultureInfo.CurrentCulture, Strings.Uwp_RemoveDone, removed, selected.Count);

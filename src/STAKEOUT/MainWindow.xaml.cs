@@ -37,6 +37,7 @@ public partial class MainWindow : Window
         // the interface "unfolds" around it (fade + slight scale-up).
         await Task.Delay(700);
         PlayReveal();
+        _vm.AnnounceStartupState();
     }
 
     private void PlayReveal()
@@ -103,7 +104,7 @@ public partial class MainWindow : Window
                 new DoubleAnimation(0, TimeSpan.FromMilliseconds(240)) { EasingFunction = ease });
 
             // Move focus into the modal once it is visible, so Tab cycles inside it.
-            Dispatcher.BeginInvoke(() => LogCloseBtn.Focus(), DispatcherPriority.Input);
+            Dispatcher.BeginInvoke(() => LogView.FocusDefault(), DispatcherPriority.Input);
         }
         else
         {

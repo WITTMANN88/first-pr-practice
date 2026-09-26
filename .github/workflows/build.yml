@@ -1,0 +1,180 @@
+# Build, test and publish STAKEOUT on Windows.
+#
+#   test     restore → build (Release) → unit tests. Always uploads the test
+#            results and the MSBuild logs, so a red run can be diagnosed.
+#   publish  runs only when `test` is green; one job per flavor, each uploading
+#            STAKEOUT.exe + its SHA-256 and the publish logs:
+#              standard  self-contained single file (supported configuration)
+#              lite      framework-dependent, needs the .NET 8 Desktop Runtime
+#              trimmed   EXPERIMENTAL forced trimming; allowed to fail
+#
+# Security: read-only token, checkout credentials not persisted, no secrets
+# used. MSBuild binary logs record only the environment variables the build
+# reads, and this workflow sets none that are sensitive.
+name: build
+
+on:
+  push:
+    branches: ['**']
+    paths-ignore: ['**.md']
+  pull_request:
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8 SDK
+        id: dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      # The runner image also carries newer SDKs, and `dotnet` picks the newest.
+      # Pin this run to the SDK just installed: new analyzers in a newer SDK
+      # must not break a TreatWarningsAsErrors build by surprise.
+      - name: Pin SDK for this run
+        run: |
+          @{ sdk = @{ version = '${{ steps.dotnet.outputs.dotnet-version }}'; rollForward = 'disable' } } |
+            ConvertTo-Json | Set-Content global.json
+          dotnet --version
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore src/STAKEOUT.sln
+
+      - name: Build
+        run: >
+          dotnet build src/STAKEOUT.sln -c Release --no-restore
+          -bl:artifacts/logs/build.binlog
+          "-flp:logfile=artifacts/logs/build.log;verbosity=normal"
+
+      - name: Test
+        run: >
+          dotnet test src/STAKEOUT.Tests/STAKEOUT.Tests.csproj -c Release --no-build
+          --logger "trx;LogFileName=tests.trx"
+          --logger "console;verbosity=normal"
+          --results-directory artifacts/test-results
+          --blame-hang-timeout 5m
+
+      - name: Upload test results and build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-and-build-logs
+          path: |
+            artifacts/test-results/
+            artifacts/logs/
+          retention-days: 14
+          if-no-files-found: warn
+
+  publish:
+    name: Publish (${{ matrix.name }})
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 20
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: standard
+            flavor: ''
+            experimental: false
+          - name: lite
+            flavor: Lite
+            experimental: false
+          - name: trimmed
+            flavor: Trimmed
+            experimental: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8 SDK
+        id: dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Pin SDK for this run
+        run: |
+          @{ sdk = @{ version = '${{ steps.dotnet.outputs.dotnet-version }}'; rollForward = 'disable' } } |
+            ConvertTo-Json | Set-Content global.json
+          dotnet --version
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUGET_PACKAGES }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # An empty StakeoutFlavor selects the standard build (see STAKEOUT.csproj).
+      - name: Publish
+        env:
+          FLAVOR: ${{ matrix.flavor }}
+          NAME: ${{ matrix.name }}
+        run: >
+          dotnet publish src/STAKEOUT/STAKEOUT.csproj -c Release
+          "-p:StakeoutFlavor=$env:FLAVOR"
+          -o "artifacts/publish/$env:NAME"
+          "-bl:artifacts/logs/publish-$env:NAME.binlog"
+          "-flp:logfile=artifacts/logs/publish-$env:NAME.log;verbosity=normal"
+
+      - name: Checksum
+        env:
+          NAME: ${{ matrix.name }}
+        run: |
+          $exe = "artifacts/publish/$env:NAME/STAKEOUT.exe"
+          if (-not (Test-Path $exe)) { throw "STAKEOUT.exe was not produced" }
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash *STAKEOUT.exe" | Set-Content "artifacts/publish/$env:NAME/STAKEOUT.exe.sha256" -Encoding ascii
+          $mb = [math]::Round((Get-Item $exe).Length / 1MB, 1)
+          "| flavor | size | sha256 |`n|---|---|---|`n| $env:NAME | $mb MB | ``$hash`` |" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload STAKEOUT.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: STAKEOUT-${{ matrix.name }}
+          path: |
+            artifacts/publish/${{ matrix.name }}/STAKEOUT.exe
+            artifacts/publish/${{ matrix.name }}/STAKEOUT.exe.sha256
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload publish logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-logs-${{ matrix.name }}
+          path: artifacts/logs/
+          retention-days: 14
+          if-no-files-found: warn

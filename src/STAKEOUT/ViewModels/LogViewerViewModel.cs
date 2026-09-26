@@ -24,6 +24,7 @@ public sealed class LogViewerViewModel : ViewModelBase
     private readonly INotificationService _notify;
     private IReadOnlyList<string> _raw = Array.Empty<string>();
     private IReadOnlyList<LogEntry> _entries = Array.Empty<LogEntry>();
+    private string? _pathOverride;
     private bool _isOpen;
     private bool _isLoading;
     private string _summary = "";
@@ -70,7 +71,8 @@ public sealed class LogViewerViewModel : ViewModelBase
 
     public bool IsEmpty => !IsLoading && Entries.Count == 0;
     public string Summary { get => _summary; private set => SetProperty(ref _summary, value); }
-    public string LogPath => string.IsNullOrEmpty(Logger.LogPath) ? Strings.Logs_Unavailable : Logger.LogPath;
+    public string LogPath => _pathOverride
+        ?? (string.IsNullOrEmpty(Logger.LogPath) ? Strings.Logs_Unavailable : Logger.LogPath);
 
     private async Task OpenAsync()
     {
@@ -90,21 +92,39 @@ public sealed class LogViewerViewModel : ViewModelBase
                 TimeSpan.FromSeconds(15), Array.Empty<string>(), "LogViewer.Load");
 
             // Parse only what will be shown (the tail), also off the UI thread.
-            var start = Math.Max(0, lines.Count - MaxDisplayLines);
-            var parsed = await Task.Run(() =>
-                lines.Skip(start).Select(LogEntry.Parse).ToList());
-
-            _raw = lines;
-            Entries = parsed;
-            Summary = lines.Count > MaxDisplayLines
-                ? string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCountTruncated, lines.Count, MaxDisplayLines)
-                : string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCount, lines.Count);
+            var parsed = await Task.Run(() => ParseTail(lines));
+            Show(lines, parsed);
         }
         finally
         {
             IsLoading = false;
             CopyCommand.RaiseCanExecuteChanged();
         }
+    }
+
+    /// <summary>
+    /// Show already-decrypted lines synchronously. Design-time entry point
+    /// (Design/DesignData): no disk, no decryption, no background threads.
+    /// </summary>
+    internal void ShowLines(IReadOnlyList<string> lines, string? logPath = null, bool open = false)
+    {
+        _pathOverride = logPath;
+        OnPropertyChanged(nameof(LogPath));
+        Show(lines, ParseTail(lines));
+        IsOpen = open;
+        CopyCommand.RaiseCanExecuteChanged();
+    }
+
+    private static List<LogEntry> ParseTail(IReadOnlyList<string> lines)
+        => lines.Skip(Math.Max(0, lines.Count - MaxDisplayLines)).Select(LogEntry.Parse).ToList();
+
+    private void Show(IReadOnlyList<string> lines, IReadOnlyList<LogEntry> entries)
+    {
+        _raw = lines;
+        Entries = entries;
+        Summary = lines.Count > MaxDisplayLines
+            ? string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCountTruncated, lines.Count, MaxDisplayLines)
+            : string.Format(CultureInfo.CurrentCulture, Strings.Logs_LineCount, lines.Count);
     }
 
     /// <summary>

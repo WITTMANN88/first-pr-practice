@@ -43,6 +43,9 @@ public sealed class TweakService
 
     public IReadOnlyList<ITweak> Tweaks { get; }
 
+    /// <summary>Backup the tweak state was restored from at startup (see TweakStateStore), or null.</summary>
+    public string? StateRecoveredFrom => _store.RecoveredFrom;
+
     /// <summary>Revert every currently-applied tweak (drives "Отменить всё").</summary>
     public async Task<RevertAllResult> RevertAllAsync()
     {

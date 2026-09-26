@@ -4,7 +4,7 @@
 
 - **Стек:** C# / WPF, .NET 8 (LTS)
 - **Права:** встроенный манифест `requireAdministrator` (UAC при запуске)
-- **Сборка:** single-file, self-contained (win-x64)
+- **Сборка:** single-file, self-contained (win-x64); CI на GitHub Actions
 - **Логи:** зашифрованный файл в `%TEMP%\STAKEOUT` (AES-256-GCM, формат `[Время] [Действие] [Статус]`)
 
 ## Структура решения
@@ -16,6 +16,7 @@ src/
   STAKEOUT.Core/    ядро без привязки к ОС (net8.0): шифрование лога, движок отката,
                     tweak-state.json, каталог UWP, уведомления, локализованные строки
   STAKEOUT.Tests/   xUnit-тесты ядра (net8.0) — запускаются на любой ОС
+.github/workflows/build.yml   CI: тесты → publish → артефакты
 ```
 
 Windows-зависимое (реестр, диалоги, UI-поток) скрыто за интерфейсами ядра
@@ -40,9 +41,72 @@ dotnet test STAKEOUT.sln
 dotnet publish STAKEOUT -c Release
 # → STAKEOUT\bin\Release\net8.0-windows\win-x64\publish\STAKEOUT.exe
 
+# другие варианты (флейворы), см. «Размер exe»
+dotnet publish STAKEOUT -c Release -p:StakeoutFlavor=Lite
+dotnet publish STAKEOUT -c Release -p:StakeoutFlavor=Trimmed
+
 # (опционально) перекачать шрифт заголовков — уже лежит в STAKEOUT/Assets/Fonts
 powershell -ExecutionPolicy Bypass -File .\STAKEOUT\prepare-assets.ps1
 ```
+
+## Размер exe (флейворы)
+
+| Флейвор | Размер | Запуск | Статус |
+|---|---|---|---|
+| по умолчанию | 65.4 МБ | где угодно (Windows 10/11 x64) | поддерживаемая конфигурация |
+| `Lite` | 5.5 МБ | нужен .NET 8 Desktop Runtime x64 | поддерживается |
+| `Trimmed` | 44.4 МБ | где угодно | **экспериментальный** |
+
+- Во всех вариантах оставлены только языки `en;ru` (`SatelliteResourceLanguages`):
+  −5.1 МБ локализованных сообщений WPF/WinForms для 12 других языков.
+- `PublishTrimmed` для WPF SDK запрещает (ошибка `NETSDK1168`): XAML/BAML и
+  привязки обращаются к коду через рефлексию, которую триммер не видит.
+  `Trimmed` обходит запрет внутренним ключом `_SuppressWpfTrimError`, режет только
+  BCL-сборки, объявившие себя trimmable (`TrimMode=partial`), а приложение, ядро,
+  DI, WMI, LibreHardwareMonitor и их зависимости сохраняет целиком
+  (`Trimming/TrimmerRoots.xml`). Microsoft такую сборку не поддерживает: перед
+  использованием проверить каждую страницу на Windows.
+- `tweak-state.json` сериализуется через source-generated `JsonSerializerContext`
+  (без рефлексии), ядро помечено `IsTrimmable` — тримминг не может «обнулить» файл отката.
+
+## CI (GitHub Actions)
+
+`.github/workflows/build.yml`, раннер `windows-latest`, запуск на push, PR и вручную.
+
+1. **Build & test:** .NET 8 SDK (закреплён на время прогона через `global.json`,
+   чтобы новые анализаторы более свежего SDK не ломали `TreatWarningsAsErrors`),
+   кэш NuGet, `dotnet build` (Release), `dotnet test`. Артефакт
+   `test-results-and-build-logs` (TRX + `build.binlog` + текстовый лог)
+   выгружается всегда, даже при падении.
+2. **Publish** (только при зелёных тестах), по заданию на флейвор:
+   артефакты `STAKEOUT-standard`, `STAKEOUT-lite`, `STAKEOUT-trimmed` —
+   `STAKEOUT.exe` + `STAKEOUT.exe.sha256`; логи публикации — `publish-logs-*`.
+   Размер и SHA-256 выводятся в сводку прогона. `trimmed` может упасть, не
+   помечая прогон красным.
+
+Токен только на чтение, учётные данные checkout не сохраняются, секреты не используются.
+
+## Design-time данные (XAML-дизайнер)
+
+Каждое окно и страница объявляет
+`d:DataContext="{x:Static design:DesignData.<Страница>}"` — в дизайнере Visual
+Studio / Rider видны заполненные экраны: монитор системы с баром и графиком
+температуры, список UWP с цветными бейджами всех категорий, открытое окно логов
+с тестовыми строками всех уровней, твики во включённом состоянии, карточки ПО с
+прогрессом, тосты трёх типов.
+
+- `STAKEOUT/Design/DesignData.cs` строит **настоящие** ViewModel (дизайнер
+  проверяет реальные пути привязок) на безопасных заглушках: in-memory хранилище
+  твиков, реестр без записи, диалог без показа, тосты без таймеров. Диск, реестр,
+  WMI, датчики и PowerShell не трогаются.
+- Данные — `STAKEOUT.Core/Design/DesignSamples.cs`, проходят через реальный код
+  (категоризация UWP, формат и парсер лога) и покрыты тестами.
+- Пространство `d:` помечено `mc:Ignorable` — компилятор XAML его отбрасывает, в
+  BAML/exe ссылок на дизайн-данные нет.
+- `XamlLintTests` проверяют, что у каждого экрана есть дизайн-данные, что ссылки
+  `DesignData.*` существуют и что каждый `{Binding Путь}` называет реально
+  существующее свойство (так найден тост, привязанный к несуществующему `Text`).
+- `d:Visibility`/`d:Opacity` в `MainWindow` требуют VS 2019 16.7+ / VS 2022.
 
 ## Архитектура (модули)
 
@@ -50,7 +114,8 @@ powershell -ExecutionPolicy Bypass -File .\STAKEOUT\prepare-assets.ps1
 |------|-----|-----------|
 | Шифрование лога | `Core/Logging/` | `LogCipher` (AES-256-GCM), `EncryptedLogFile`, фасад `Logger` |
 | Движок отката | `Core/Registry/` | `RegistryRollback` (захват → запись → восстановление, транзакционно), кодеки значений |
-| Хранилище отката | `Core/Persistence/TweakStateStore.cs` | `tweak-state.json`: версия, атомарная запись, карантин повреждённого файла, потокобезопасность |
+| Хранилище отката | `Core/Persistence/TweakStateStore.cs` | `tweak-state.json`: версия, атомарная запись, ротация 3 бэкапов, автовосстановление, карантин повреждённого файла, потокобезопасность |
+| График температуры | `Core/Common/SampleHistory.cs`, `CpuTemperatureScale.cs` | Кольцевой буфер 40 замеров (~2 мин), расчёт координат спарклайна, порог 85 °C |
 | Каталог UWP | `Core/Uwp/` | Категории (мусор, игры, мультимедиа, утилиты, системные…), защита критичных, парсер вывода PowerShell |
 | Уведомления | `Core/Notifications/` | `INotificationService` (отправка), `INotificationFeed` (показ), `NotificationService` |
 | Локализация | `Core/Localization/` | `Strings.resx` (русский, по умолчанию), `Strings.en.resx`, `LocalizationManager` |
@@ -59,7 +124,8 @@ powershell -ExecutionPolicy Bypass -File .\STAKEOUT\prepare-assets.ps1
 | Реестр Windows | `STAKEOUT/Services/RegistryHelper.cs` | Реальный реестр за `IRegistryAccess` |
 | UWP / Яндекс / ПО | `STAKEOUT/Services/` | PowerShell, `DisallowRun`, winget + прямые ссылки |
 | Композиция | `STAKEOUT/Infrastructure/` | DI-контейнер (`ServiceRegistration`), WPF-реализации интерфейсов ядра |
-| UI | `STAKEOUT/Views/`, `MainWindow.xaml`, `Themes/`, `Controls/` | Окно, страницы, стили, логотипы, shimmer |
+| UI | `STAKEOUT/Views/`, `MainWindow.xaml`, `Themes/`, `Controls/` | Окно, страницы, модалка логов (`LogViewerView`), стили, логотипы, shimmer |
+| Дизайн-данные | `STAKEOUT/Design/`, `Core/Design/` | ViewModel с фейковыми данными для XAML-дизайнера |
 | ViewModels | `STAKEOUT/ViewModels/` | MVVM; зависимости только через конструктор |
 
 ## Уведомления (MVVM)
@@ -118,6 +184,28 @@ code-behind и без обращения к окну. Оболочка отоб�
 - Если откат прошёл частично, запись о твике сохраняется — откат можно повторить.
 - Файл пишется атомарно; повреждённый файл переименовывается в
   `*.corrupt-<время>` (данные не теряются), приложение продолжает работу.
+
+### Резервные копии состояния
+
+- После каждого успешного сохранения (применение **и** отмена твика) копия
+  пишется в `%ProgramData%\STAKEOUT\backups\tweak-state.<UTC-время>Z.json`;
+  хранятся 3 последних, старые удаляются. Копии идут за текущим состоянием: бэкап
+  только при применении «воскресил» бы уже отменённые твики.
+- Если основной файл повреждён или пропал, при запуске он восстанавливается из
+  самой новой копии, которая читается (битые копии пропускаются), и
+  перезаписывается; после показа интерфейса выводится предупреждение-тост.
+- Имена копий строго возрастают даже при переводе часов назад, поэтому ротация
+  никогда не удаляет самую свежую; посторонние файлы в папке не трогаются.
+- Сбой записи копии не срывает сохранение; неудачное сохранение копию не создаёт.
+
+## Температура процессора
+
+Бар (красный от 85 °C) и спарклайн за ~2 минуты (40 замеров каждые 3 с) на
+карточке процессора. Линия — белый 60 %, текущая точка — акцент с кольцом цвета
+фона, пунктир порога 85 °C подписан значением (не только цветом), мин/макс —
+текстом под графиком, полная сводка — во всплывающей подсказке и для экранного
+диктора. Шкала 30–100 °C расширяется, если замер выходит за неё. Пропущенный
+по таймауту опрос не рисуется.
 
 ## Прямые ссылки
 

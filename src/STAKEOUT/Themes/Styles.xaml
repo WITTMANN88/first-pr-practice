@@ -40,6 +40,12 @@
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#DEFFFFFF" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#99FFFFFF" />
     <SolidColorBrush x:Key="TextMutedBrush" Color="#66FFFFFF" />
+    <!-- Chart ink on the card surface (#0D0D0D): the data line is white 60%
+         (7.3:1); the reference line is white 40% (3.8:1, above the 3:1 needed
+         for non-text graphics). Chart labels are text, so they use
+         TextSecondaryBrush (4.5:1 minimum), never the reference-line ink. -->
+    <SolidColorBrush x:Key="ChartLineBrush" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="ChartReferenceBrush" Color="#66FFFFFF" />
 
     <!-- Heading font embedded as a <Resource> (see STAKEOUT.csproj and
          prepare-assets.ps1). Verified against the WPF 8 runtime: the family list

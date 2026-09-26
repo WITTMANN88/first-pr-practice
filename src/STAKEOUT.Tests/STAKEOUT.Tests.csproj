@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Unit tests for STAKEOUT.Core. Plain net8.0: runs on Windows, Linux and macOS
+  <!-- Unit tests for STAKEOUT.Core, plus source-level lint of the WPF project's XAML
+       (Xaml/XamlLintTests.cs reads the files; WPF itself is never loaded).
+       Plain net8.0: runs on Windows, Linux and macOS
        with no WPF and no real registry (the rollback engine is exercised against an
        in-memory IRegistryAccess fake). Run: dotnet test src/STAKEOUT.sln -->
   <PropertyGroup>

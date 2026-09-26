@@ -134,6 +134,26 @@
     <value>{0} сборка {1}</value>
     <comment>{0} = product and version, {1} = build.revision</comment>
   </data>
+  <data name="SysInfo_TempHistory" xml:space="preserve">
+    <value>ТЕМПЕРАТУРА · ~2 МИН</value>
+    <comment>Sparkline caption, upper case</comment>
+  </data>
+  <data name="SysInfo_TempRange" xml:space="preserve">
+    <value>мин {0:0} °C · макс {1:0} °C</value>
+    <comment>{0} = min, {1} = max over the window</comment>
+  </data>
+  <data name="SysInfo_TempLimit" xml:space="preserve">
+    <value>{0:0} °C</value>
+    <comment>Label on the overheat reference line; {0} = threshold</comment>
+  </data>
+  <data name="SysInfo_TempSummary" xml:space="preserve">
+    <value>Температура процессора, последние {0} измерений: сейчас {1:0} °C, минимум {2:0} °C, максимум {3:0} °C. Порог перегрева {4:0} °C.</value>
+    <comment>Tooltip / screen reader text; {0} = count, {1} = now, {2} = min, {3} = max, {4} = threshold</comment>
+  </data>
+  <data name="SysInfo_TempNoSensor" xml:space="preserve">
+    <value>Датчик температуры недоступен</value>
+    <comment>Shown instead of the sparkline</comment>
+  </data>
   <data name="Tweaks_Title" xml:space="preserve">
     <value>ТВИКИ</value>
     <comment>Page header, upper case</comment>
@@ -480,5 +500,9 @@
   </data>
   <data name="Logs_CopyFailed" xml:space="preserve">
     <value>Не удалось скопировать: буфер обмена занят</value>
+  </data>
+  <data name="State_RecoveredFromBackup" xml:space="preserve">
+    <value>Файл состояния твиков был повреждён или отсутствовал — восстановлен из резервной копии {0}</value>
+    <comment>{0} = backup file name</comment>
   </data>
 </root>

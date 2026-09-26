@@ -15,6 +15,12 @@
     <AssemblyName>STAKEOUT.Core</AssemblyName>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
+    <!-- Declared trim-safe. This also enables the trim analyzer on every build,
+         so (with TreatWarningsAsErrors) any reflection pattern trimming could
+         break — e.g. reflection-based JSON, which would silently empty
+         tweak-state.json — fails the build instead of shipping. -->
+    <IsTrimmable>true</IsTrimmable>
+
     <!-- Russian is the neutral (default) language compiled into this assembly;
          other languages ship as satellite assemblies (e.g. en/STAKEOUT.Core.resources.dll).
          Adding a language = adding Localization/Strings.<culture>.resx. -->

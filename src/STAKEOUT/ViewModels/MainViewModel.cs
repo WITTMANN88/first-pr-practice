@@ -85,6 +85,17 @@ public sealed class MainViewModel : ViewModelBase
     /// <summary>Called once from the window Loaded event to kick off first load.</summary>
     public Task InitializeAsync() => SysInfo.LoadAsync();
 
+    /// <summary>
+    /// Called once when the splash has gone: report startup events the user must
+    /// know about. A restored state file means the last save was lost or damaged,
+    /// so the toggles reflect the newest backup, not necessarily the last action.
+    /// </summary>
+    public void AnnounceStartupState()
+    {
+        if (_tweakService.StateRecoveredFrom is { } backup)
+            _notify.Warning(string.Format(CultureInfo.CurrentCulture, Strings.State_RecoveredFromBackup, System.IO.Path.GetFileName(backup)));
+    }
+
     /// <summary>Release timers/resources on shutdown.</summary>
     public void Shutdown() => SysInfo.StopLivePolling();
 
