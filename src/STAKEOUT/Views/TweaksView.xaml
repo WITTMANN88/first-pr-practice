@@ -61,6 +61,19 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="0,8" MaxWidth="720" HorizontalAlignment="Left">
+                                            <!-- Shakes when an apply/revert fails (spec: errors shake the element). -->
+                                            <Grid.RenderTransform><TranslateTransform /></Grid.RenderTransform>
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Failed}" Value="True">
+                                                            <DataTrigger.EnterActions>
+                                                                <BeginStoryboard Storyboard="{StaticResource ShakeStoryboard}" />
+                                                            </DataTrigger.EnterActions>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="56" />
                                                 <ColumnDefinition Width="*" />
@@ -68,8 +81,11 @@
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Custom spring toggle -->
+                                            <!-- Disabled while this tweak's apply/revert runs. -->
                                             <ToggleButton Grid.Column="0" Style="{StaticResource StakeoutToggle}"
                                                           IsChecked="{Binding IsOn, Mode=TwoWay}"
+                                                          IsEnabled="{Binding CanToggle}"
+                                                          AutomationProperties.Name="{Binding Title}"
                                                           VerticalAlignment="Top" Margin="0,2,0,0" />
 
                                             <StackPanel Grid.Column="1" Margin="6,0,0,0">

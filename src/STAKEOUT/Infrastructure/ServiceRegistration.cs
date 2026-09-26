@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Stakeout.Core;
@@ -28,7 +29,12 @@ public static class ServiceRegistration
         services.AddSingleton<INotificationFeed>(sp => sp.GetRequiredService<NotificationService>());
 
         // Services.
-        services.AddSingleton(_ => new TweakStateStore(TweakStateStore.DefaultPath));
+        services.AddSingleton(_ =>
+        {
+            // Lock the folder down before the state (replayed with admin rights) is read.
+            StateDirectorySecurity.Harden(Path.GetDirectoryName(TweakStateStore.DefaultPath)!);
+            return new TweakStateStore(TweakStateStore.DefaultPath);
+        });
         services.AddSingleton<RegistryRollback>();
         services.AddSingleton<YandexBlockService>();
         services.AddSingleton<TweakService>();

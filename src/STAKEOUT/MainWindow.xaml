@@ -57,7 +57,9 @@
         </DrawingBrush>
     </Window.Resources>
 
-    <Grid>
+    <!-- Root. Its margin is set in code while maximized: a WindowChrome window
+         then extends past the screen edge by the resize border. -->
+    <Grid x:Name="Root">
         <!-- Background pattern overlay -->
         <Rectangle Fill="{StaticResource CthulhuPattern}" IsHitTestVisible="False" />
 
@@ -160,7 +162,7 @@
 
                         <!-- hidden "revert all", double-click only -->
                         <Border x:Name="RevertAll" Height="44" Background="#FF3A0A0A"
-                                Cursor="Hand" MouseLeftButtonUp="OnRevertAllClick" ToolTip="{x:Static loc:Strings.Nav_RevertAllTooltip}">
+                                Cursor="Hand" MouseLeftButtonDown="OnRevertAllClick" ToolTip="{x:Static loc:Strings.Nav_RevertAllTooltip}">
                             <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center"
                                        Foreground="{StaticResource AccentBrightBrush}"
                                        Text="{x:Static loc:Strings.Nav_RevertAll}"

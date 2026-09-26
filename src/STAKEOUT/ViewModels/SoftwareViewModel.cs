@@ -15,6 +15,7 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
     private double _progress;
     private InstallStage _stage = InstallStage.Idle;
     private bool _busy;
+    private bool _failed;
 
     private CancellationTokenSource? _cts;
 
@@ -38,6 +39,9 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
     public RelayCommand CancelCommand { get; }
 
     public bool Busy { get => _busy; private set => SetProperty(ref _busy, value); }
+
+    /// <summary>Raised (false → true) on a failed install: the card shakes.</summary>
+    public bool Failed { get => _failed; private set => SetProperty(ref _failed, value); }
     public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
     /// <summary>Winget installs have no byte progress, so the bar runs indeterminate.</summary>
     public bool IsIndeterminate => Busy && Item.Method == InstallMethod.Winget;
@@ -56,6 +60,8 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
         InstallStage.Installing => Strings.Stage_Installing,
         InstallStage.Done => Strings.Stage_Done,
         InstallStage.Failed => Item.NeedsUrlConfig ? Strings.Stage_UrlMissing : Strings.Stage_Failed,
+        InstallStage.Background => Strings.Stage_Background,
+        InstallStage.Blocked => Strings.Stage_Blocked,
         _ => ""
     };
 
@@ -81,6 +87,7 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
 
     private async Task InstallAsync()
     {
+        Failed = false;
         Busy = true;
         OnPropertyChanged(nameof(IsIndeterminate));
         Progress = 0;
@@ -90,10 +97,31 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
         var barProgress = new Progress<double>(p => Progress = p);
         try
         {
-            var ok = await _service.InstallAsync(Item, stageProgress, barProgress, _cts.Token);
-            if (ok) _notify.Success(F(Strings.Software_Started, DisplayName));
-            else if (_cts.IsCancellationRequested) _notify.Info(F(Strings.Software_Cancelled, DisplayName));
-            else _notify.Error(F(Strings.Software_Failed, DisplayName, StageText));
+            var outcome = await _service.InstallAsync(Item, stageProgress, barProgress, _cts.Token);
+            switch (outcome)
+            {
+                case InstallOutcome.Started:
+                    _notify.Success(F(Strings.Software_Started, DisplayName));
+                    break;
+                case InstallOutcome.Cancelled:
+                    _notify.Info(F(Strings.Software_Cancelled, DisplayName));
+                    break;
+                case InstallOutcome.ContinuesInBackground:
+                    _notify.Warning(F(Strings.Software_Detached, DisplayName));
+                    break;
+                case InstallOutcome.IntegrityFailure:
+                    _notify.Error(F(Strings.Software_HashMismatch, DisplayName));
+                    Failed = true;
+                    break;
+                case InstallOutcome.HashNotConfigured:
+                    _notify.Error(F(Strings.Software_HashMissing, DisplayName));
+                    Failed = true;
+                    break;
+                default:
+                    _notify.Error(F(Strings.Software_Failed, DisplayName, StageText));
+                    Failed = true;
+                    break;
+            }
         }
         finally
         {

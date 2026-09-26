@@ -80,7 +80,7 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
     public string CpuTempText => _cpuTemp.HasValue
         ? string.Format(CultureInfo.CurrentCulture, Strings.Unit_Celsius, _cpuTemp.Value)
         : Strings.Common_NotAvailable;
-    /// <summary>At the overheat threshold the temperature bar turns red.</summary>
+    /// <summary>Above the overheat threshold the temperature bar turns red.</summary>
     public bool TempIsHot => CpuTemperatureScale.IsHot(_cpuTemp);
 
     // --- sparkline -----------------------------------------------------------
@@ -121,6 +121,11 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
             var info = await TimeoutGuard.Await(
                 _service.GatherAsync(), TimeSpan.FromSeconds(30), new SystemInfoModel(), "SysInfo.Load");
             ApplySnapshot(info);
+        }
+        catch (Exception ex)
+        {
+            // Started fire-and-forget at startup: never let a failure go unobserved.
+            Logger.LogError("SysInfo.Load", ex);
         }
         finally
         {

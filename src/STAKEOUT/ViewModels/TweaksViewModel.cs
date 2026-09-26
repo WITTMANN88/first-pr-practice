@@ -15,6 +15,7 @@ public sealed class TweakItemViewModel : ViewModelBase
     private readonly IDialogService _dialogs;
     private readonly Action _onStateChanged;
     private bool _busy;
+    private bool _failed;
     private bool _isOn;
     private bool _suppress; // stops apply/revert firing during programmatic sync
 
@@ -36,7 +37,20 @@ public sealed class TweakItemViewModel : ViewModelBase
     public bool Busy
     {
         get => _busy;
-        private set => SetProperty(ref _busy, value);
+        private set
+        {
+            if (SetProperty(ref _busy, value)) OnPropertyChanged(nameof(CanToggle));
+        }
+    }
+
+    /// <summary>The toggle is disabled while an apply/revert for this tweak runs.</summary>
+    public bool CanToggle => !Busy;
+
+    /// <summary>Raised (false → true) when an apply/revert fails: the row shakes.</summary>
+    public bool Failed
+    {
+        get => _failed;
+        private set => SetProperty(ref _failed, value);
     }
 
     /// <summary>Bound to the toggle. Applying/reverting happens on change.</summary>
@@ -46,6 +60,13 @@ public sealed class TweakItemViewModel : ViewModelBase
         set
         {
             if (_isOn == value) return;
+            if (Busy && !_suppress)
+            {
+                // A second click while the first change still runs would start an
+                // overlapping apply/revert: refuse it and let the toggle snap back.
+                OnPropertyChanged();
+                return;
+            }
             _isOn = value;
             OnPropertyChanged();
             if (!_suppress) _ = ToggleAsync(value);
@@ -66,6 +87,7 @@ public sealed class TweakItemViewModel : ViewModelBase
         }
 
         Busy = true;
+        Failed = false;
         try
         {
             var success = turnOn ? await _tweak.ApplyAsync() : await _tweak.RevertAsync();
@@ -77,6 +99,7 @@ public sealed class TweakItemViewModel : ViewModelBase
             {
                 _notify.Error(F(turnOn ? Strings.Tweaks_ApplyFailed : Strings.Tweaks_RevertFailed, Title));
                 SetSilently(_tweak.IsApplied); // reflect the real state
+                Failed = true;
             }
         }
         catch (Exception ex)
@@ -84,6 +107,7 @@ public sealed class TweakItemViewModel : ViewModelBase
             Logger.LogError(_tweak.Id, ex);
             _notify.Error(F(Strings.Tweaks_Error, Title));
             SetSilently(_tweak.IsApplied);
+            Failed = true;
         }
         finally
         {

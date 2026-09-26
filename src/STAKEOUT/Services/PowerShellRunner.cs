@@ -24,7 +24,7 @@ public static class PowerShellRunner
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var args = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encoded}";
         Logger.Log("PowerShell", "RUN", Truncate(script));
-        return ProcessRunner.RunAsync(SystemTools.PowerShell, args, timeoutMs, ct);
+        return ProcessRunner.RunAsync(SystemTools.PowerShell, args, timeoutMs, ct: ct);
     }
 
     private static string Truncate(string s)

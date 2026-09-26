@@ -101,6 +101,10 @@ dotnet_naming_rule.locals_camel.severity = warning
 
 #### Analyzer exceptions (AnalysisMode=All). Each one is a deliberate design decision. ####
 
+# CA2000: handing a disposable to the constructor of its owner (new HttpClient(handler),
+# new StreamReader(stream)) transfers ownership; the owner disposes it.
+dotnet_code_quality.dispose_ownership_transfer_at_constructor = true
+
 # CA1031 (catch general exception): the app's contract is "every action is
 # wrapped, logged and reported; nothing crashes the UI". Catch-all + log is used
 # only at those boundaries; narrowing them would let an unexpected WMI/COM/

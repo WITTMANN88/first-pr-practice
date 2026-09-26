@@ -297,10 +297,16 @@ public sealed class TweakService
 
     private static async Task<bool> ApplyPowerPlan(TweakState s)
     {
-        // Pre-check: remember the currently active scheme so revert can restore it.
+        // Pre-check: the currently active scheme must be known, or revert could
+        // not restore it. No known previous scheme → do not change anything.
         var current = await ProcessRunner.RunAsync(SystemTools.PowerCfg, "/getactivescheme");
         var prevGuid = ExtractGuid(current.StdOut);
-        if (prevGuid != null) s.Notes["prevScheme"] = prevGuid;
+        if (!current.Success || prevGuid is null)
+        {
+            Logger.Log("PowerPlan", "FAILED", "active scheme unknown; nothing changed");
+            return false;
+        }
+        s.Notes["prevScheme"] = prevGuid;
 
         // Duplicate the Ultimate Performance scheme (a second copy is harmless)
         // and activate it.
@@ -314,12 +320,23 @@ public sealed class TweakService
 
     private static async Task<bool> RevertPowerPlan(TweakState s)
     {
-        if (s.Notes.TryGetValue("prevScheme", out var prev) && !string.IsNullOrWhiteSpace(prev))
+        // Values come from the state file: only well-formed GUIDs reach powercfg.
+        if (!s.Notes.TryGetValue("prevScheme", out var prev) || ExtractGuid(prev) != prev)
+            return true; // nothing captured, nothing to restore
+
+        var set = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"/setactive {prev}");
+        if (!set.Success) return false;
+
+        // Delete the copy this tweak created (never the built-in scheme itself),
+        // so applying and reverting repeatedly does not pile up power plans.
+        if (s.Notes.TryGetValue("appliedScheme", out var applied) && ExtractGuid(applied) == applied &&
+            !string.Equals(applied, UltimateGuid, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(applied, prev, StringComparison.OrdinalIgnoreCase))
         {
-            var set = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"/setactive {prev}");
-            return set.Success;
+            var deleted = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"-delete {applied}");
+            Logger.Log("PowerPlan", deleted.Success ? "OK" : "WARNING", $"duplicate scheme {applied} delete exit {deleted.ExitCode}");
         }
-        return true; // nothing captured, nothing to restore
+        return true;
     }
 
     /// <summary>powercfg prints "Power Scheme GUID: xxxxxxxx-xxxx-... (Name)".</summary>

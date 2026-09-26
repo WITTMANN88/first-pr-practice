@@ -5,6 +5,12 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_StartupFailed" xml:space="preserve">
+    <value>STAKEOUT could not start. Details were written to the encrypted log.
+
+{0}</value>
+    <comment>{0} = exception message</comment>
+  </data>
   <data name="App_UnhandledError" xml:space="preserve">
     <value>An error occurred. Details were written to the encrypted log.
 
@@ -452,6 +458,18 @@ Continue?</value>
     <value>{0}: {1}</value>
     <comment>{0} = product, {1} = stage text</comment>
   </data>
+  <data name="Software_Detached" xml:space="preserve">
+    <value>{0}: installation continues in the background, the process was detached</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_HashMismatch" xml:space="preserve">
+    <value>{0}: SHA-256 checksum mismatch. Installation aborted, the file was deleted</value>
+    <comment>{0} = product; critical</comment>
+  </data>
+  <data name="Software_HashMissing" xml:space="preserve">
+    <value>{0}: no reference SHA-256 is configured. Installation blocked</value>
+    <comment>{0} = product</comment>
+  </data>
   <data name="Stage_Downloading" xml:space="preserve">
     <value>Downloading...</value>
   </data>
@@ -466,6 +484,13 @@ Continue?</value>
   </data>
   <data name="Stage_UrlMissing" xml:space="preserve">
     <value>Link not configured</value>
+  </data>
+  <data name="Stage_Background" xml:space="preserve">
+    <value>Continues in the background</value>
+    <comment>winget was detached on cancel</comment>
+  </data>
+  <data name="Stage_Blocked" xml:space="preserve">
+    <value>Blocked by the SHA-256 check</value>
   </data>
   <data name="Stage_Failed" xml:space="preserve">
     <value>Error</value>

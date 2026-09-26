@@ -44,11 +44,22 @@ public partial class App : Application
             args.SetObserved();
         };
 
-        // 4. Composition root → main window.
-        _services = ServiceRegistration.Build(Dispatcher);
-        var window = _services.GetRequiredService<MainWindow>();
-        MainWindow = window;
-        window.Show();
+        // 4. Composition root → main window. A failure here (e.g. a broken
+        //    registration) must not end as a silent crash: log, tell, exit.
+        try
+        {
+            _services = ServiceRegistration.Build(Dispatcher);
+            var window = _services.GetRequiredService<MainWindow>();
+            MainWindow = window;
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Startup", ex);
+            MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Strings.App_StartupFailed, ex.Message),
+                "STAKEOUT", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(1);
+        }
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Stakeout.Tests.Xaml;
 
@@ -103,6 +104,54 @@ public class XamlLintTests
                 {
                     if (!properties.Contains(Regex.Replace(segment, @"\[.*\]$", "")))
                         problems.Add($"{Path.GetFileName(file)}: {{Binding {path}}} — no property named '{segment}'");
+                }
+            }
+        }
+        Assert.Empty(problems);
+    }
+
+    /// <summary>
+    /// Dependency properties that bind TwoWay by default. Binding one of them to a
+    /// property without a public setter makes WPF throw when the view loads
+    /// ("A TwoWay or OneWayToSource binding cannot work on the read-only
+    /// property"), so every such binding must state its Mode explicitly.
+    /// This is how ProgressBar.Value → a read-only Progress was caught.
+    /// </summary>
+    private static readonly Dictionary<string, string[]> TwoWayByDefault = new(StringComparer.Ordinal)
+    {
+        ["ProgressBar"] = new[] { "Value" },
+        ["Slider"] = new[] { "Value" },
+        ["ScrollBar"] = new[] { "Value" },
+        ["ToggleButton"] = new[] { "IsChecked" },
+        ["CheckBox"] = new[] { "IsChecked" },
+        ["RadioButton"] = new[] { "IsChecked" },
+        ["TextBox"] = new[] { "Text" },
+        ["PasswordBox"] = new[] { "Password" },
+        ["ComboBox"] = new[] { "SelectedItem", "SelectedIndex", "SelectedValue", "Text" },
+        ["ListBox"] = new[] { "SelectedItem", "SelectedIndex", "SelectedValue" },
+        ["ListView"] = new[] { "SelectedItem", "SelectedIndex", "SelectedValue" },
+        ["TabControl"] = new[] { "SelectedItem", "SelectedIndex", "SelectedValue" },
+        ["Expander"] = new[] { "IsExpanded" },
+    };
+
+    [Fact]
+    public void TwoWayByDefaultProperties_DeclareTheirBindingMode()
+    {
+        var problems = new List<string>();
+        foreach (var file in Directory.GetFiles(AppDir, "*.xaml", SearchOption.AllDirectories).Where(f => !IsBuildOutput(f)))
+        {
+            foreach (var element in XDocument.Load(file).Descendants())
+            {
+                if (!TwoWayByDefault.TryGetValue(element.Name.LocalName, out var properties)) continue;
+                foreach (var name in properties)
+                {
+                    var value = (string?)element.Attribute(name);
+                    if (value is not null &&
+                        value.StartsWith("{Binding", StringComparison.Ordinal) &&
+                        !value.Contains("Mode=", StringComparison.Ordinal))
+                    {
+                        problems.Add($"{Path.GetFileName(file)}: <{element.Name.LocalName} {name}=\"{value}\"> needs an explicit Mode");
+                    }
                 }
             }
         }

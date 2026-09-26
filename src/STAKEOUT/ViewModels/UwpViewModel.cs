@@ -12,6 +12,7 @@ public sealed class UwpItemViewModel : ViewModelBase
 {
     private bool _isSelected;
     private bool _isRemoving;
+    private bool _failed;
 
     public UwpItemViewModel(UwpApp app) => App = app;
 
@@ -34,6 +35,13 @@ public sealed class UwpItemViewModel : ViewModelBase
     {
         get => _isSelected;
         set { if (CanRemove) SetProperty(ref _isSelected, value); }
+    }
+
+    /// <summary>Raised (false → true) when removing this package fails: the row shakes.</summary>
+    public bool Failed
+    {
+        get => _failed;
+        set => SetProperty(ref _failed, value);
     }
 
     /// <summary>Set true to trigger the SlideOut + FadeOut animation in the view.</summary>
@@ -97,6 +105,12 @@ public sealed class UwpViewModel : ViewModelBase
             ShowApps(list);
             _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Found, Apps.Count));
         }
+        catch (Exception ex)
+        {
+            // Also started fire-and-forget on first navigation: never let it go unobserved.
+            Logger.LogError("Uwp.Load", ex);
+            _notify.Error(string.Format(CultureInfo.CurrentCulture, Strings.App_UnhandledError, ex.Message));
+        }
         finally
         {
             IsLoading = false;
@@ -148,8 +162,10 @@ public sealed class UwpViewModel : ViewModelBase
             var result = await _service.RemoveAsync(item.App);
             if (!result.Success)
             {
-                // Keep the row: the package is still installed.
+                // Keep the row (the package is still installed) and shake it.
                 item.IsSelected = false;
+                item.Failed = false;
+                item.Failed = true;
                 _notify.Error(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_RemoveFailed, item.DisplayName));
                 continue;
             }

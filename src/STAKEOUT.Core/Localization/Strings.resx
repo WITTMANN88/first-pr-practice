@@ -5,6 +5,12 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="App_StartupFailed" xml:space="preserve">
+    <value>STAKEOUT не удалось запустить. Подробности записаны в зашифрованный лог.
+
+{0}</value>
+    <comment>{0} = exception message</comment>
+  </data>
   <data name="App_UnhandledError" xml:space="preserve">
     <value>Произошла ошибка. Подробности записаны в зашифрованный лог.
 
@@ -452,6 +458,18 @@
     <value>{0}: {1}</value>
     <comment>{0} = product, {1} = stage text</comment>
   </data>
+  <data name="Software_Detached" xml:space="preserve">
+    <value>{0}: установка продолжается в фоне, процесс отвязан</value>
+    <comment>{0} = product</comment>
+  </data>
+  <data name="Software_HashMismatch" xml:space="preserve">
+    <value>{0}: контрольная сумма SHA-256 не совпала. Установка прервана, файл удалён</value>
+    <comment>{0} = product; critical</comment>
+  </data>
+  <data name="Software_HashMissing" xml:space="preserve">
+    <value>{0}: эталонный SHA-256 не задан. Установка заблокирована</value>
+    <comment>{0} = product</comment>
+  </data>
   <data name="Stage_Downloading" xml:space="preserve">
     <value>Скачивание...</value>
   </data>
@@ -466,6 +484,13 @@
   </data>
   <data name="Stage_UrlMissing" xml:space="preserve">
     <value>Ссылка не настроена</value>
+  </data>
+  <data name="Stage_Background" xml:space="preserve">
+    <value>Продолжается в фоне</value>
+    <comment>winget was detached on cancel</comment>
+  </data>
+  <data name="Stage_Blocked" xml:space="preserve">
+    <value>Заблокировано проверкой SHA-256</value>
   </data>
   <data name="Stage_Failed" xml:space="preserve">
     <value>Ошибка</value>

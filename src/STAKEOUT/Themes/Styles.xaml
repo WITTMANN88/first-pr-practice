@@ -12,6 +12,7 @@
     <conv:UwpCategoryToBrushConverter x:Key="UwpCategoryToBrush" />
     <conv:ResourceKeyToImageConverter x:Key="ResourceKeyToImage" />
     <conv:LogLevelToBrushConverter x:Key="LogLevelToBrush" />
+    <conv:IconPathToImageConverter x:Key="IconPathToImage" />
 
     <!-- ============================================================
          STAKEOUT theme.
@@ -239,16 +240,25 @@
         </Setter>
     </Style>
 
-    <!-- "Apply" button that pulses when a restart-requiring tweak is pending.
-         Pulse is toggled by binding Tag to 'pulse'. -->
+    <!-- "Apply" button that pulses with a dark-red glow while a restart-requiring
+         tweak is pending (spec: "плавно пульсирует свечением"). Pulse is toggled
+         by setting Tag to 'pulse'; the glow is an accent-coloured shadow whose
+         opacity breathes, so the button itself stays fully readable. -->
     <Style x:Key="PulseButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="{StaticResource AccentBrightColor}" ShadowDepth="0" BlurRadius="22" Opacity="0" />
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
             <Trigger Property="Tag" Value="pulse">
                 <Trigger.EnterActions>
                     <BeginStoryboard Name="PulseSb">
                         <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                             From="1.0" To="0.55" Duration="0:0:0.9" />
+                            <DoubleAnimation Storyboard.TargetProperty="Effect.Opacity"
+                                             From="0.15" To="0.95" Duration="0:0:0.9">
+                                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
                         </Storyboard>
                     </BeginStoryboard>
                 </Trigger.EnterActions>
@@ -259,8 +269,8 @@
         </Style.Triggers>
     </Style>
 
-    <!-- Custom spring toggle switch (a restyled ToggleButton).
-         The thumb slides with a BackEase to give the springy feel (250ms). -->
+    <!-- Custom spring toggle switch (a restyled ToggleButton). The thumb moves
+         with a damped spring (ElasticEase: one overshoot and settle) in 250 ms. -->
     <Style x:Key="StakeoutToggle" TargetType="ToggleButton">
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Width" Value="46" />
@@ -292,7 +302,7 @@
                                                          Storyboard.TargetProperty="X"
                                                          To="22" Duration="0:0:0.25">
                                             <DoubleAnimation.EasingFunction>
-                                                <BackEase Amplitude="0.6" EasingMode="EaseOut" />
+                                                <ElasticEase Oscillations="1" Springiness="5" EasingMode="EaseOut" />
                                             </DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
                                     </Storyboard>
@@ -305,7 +315,7 @@
                                                          Storyboard.TargetProperty="X"
                                                          To="0" Duration="0:0:0.25">
                                             <DoubleAnimation.EasingFunction>
-                                                <BackEase Amplitude="0.6" EasingMode="EaseOut" />
+                                                <ElasticEase Oscillations="1" Springiness="5" EasingMode="EaseOut" />
                                             </DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
                                     </Storyboard>
@@ -343,21 +353,45 @@
     </Style>
 
     <!-- Slim, self-hiding scrollbar (macOS / Win11 style). Implicit: applies to
-         every ScrollBar in the app. The thumb stays faint and brightens on hover
-         or drag. Vertical and horizontal need separate templates: a vertical
-         track is direction-reversed and pages up/down, a horizontal one pages
-         left/right, and each is thin along a different axis. -->
-    <Style x:Key="SlimThumb" TargetType="Thumb">
+         every ScrollBar in the app. At rest it is a faint 3 px line; hovering the
+         scrollbar fades it in and widens the thumb to 6 px. Vertical and
+         horizontal need separate templates: a vertical track is
+         direction-reversed and pages up/down, a horizontal one pages left/right,
+         and each is thin along a different axis. -->
+    <Style x:Key="SlimThumbVertical" TargetType="Thumb">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="Bd" CornerRadius="4" Background="#33FFFFFF" />
+                    <Border x:Name="Bd" Width="3" HorizontalAlignment="Right" Margin="0,0,1,0"
+                            CornerRadius="3" Background="#4DFFFFFF" />
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#66FFFFFF" />
-                        </Trigger>
-                        <Trigger Property="IsDragging" Value="True">
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="True">
+                            <Setter TargetName="Bd" Property="Width" Value="6" />
                             <Setter TargetName="Bd" Property="Background" Value="#80FFFFFF" />
+                        </DataTrigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Bd" Property="Width" Value="6" />
+                            <Setter TargetName="Bd" Property="Background" Value="#A6FFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="SlimThumbHorizontal" TargetType="Thumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border x:Name="Bd" Height="3" VerticalAlignment="Bottom" Margin="0,0,0,1"
+                            CornerRadius="3" Background="#4DFFFFFF" />
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ScrollBar}}" Value="True">
+                            <Setter TargetName="Bd" Property="Height" Value="6" />
+                            <Setter TargetName="Bd" Property="Background" Value="#80FFFFFF" />
+                        </DataTrigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Bd" Property="Height" Value="6" />
+                            <Setter TargetName="Bd" Property="Background" Value="#A6FFFFFF" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -375,7 +409,7 @@
     <ControlTemplate x:Key="SlimVerticalScrollBar" TargetType="ScrollBar">
         <Grid Background="Transparent">
             <Track x:Name="PART_Track" IsDirectionReversed="True">
-                <Track.Thumb><Thumb Style="{StaticResource SlimThumb}" /></Track.Thumb>
+                <Track.Thumb><Thumb Style="{StaticResource SlimThumbVertical}" /></Track.Thumb>
                 <Track.IncreaseRepeatButton>
                     <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageDownCommand" />
                 </Track.IncreaseRepeatButton>
@@ -389,7 +423,7 @@
     <ControlTemplate x:Key="SlimHorizontalScrollBar" TargetType="ScrollBar">
         <Grid Background="Transparent">
             <Track x:Name="PART_Track">
-                <Track.Thumb><Thumb Style="{StaticResource SlimThumb}" /></Track.Thumb>
+                <Track.Thumb><Thumb Style="{StaticResource SlimThumbHorizontal}" /></Track.Thumb>
                 <Track.IncreaseRepeatButton>
                     <RepeatButton Style="{StaticResource SlimPager}" Command="ScrollBar.PageRightCommand" />
                 </Track.IncreaseRepeatButton>
@@ -404,6 +438,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Width" Value="8" />
         <Setter Property="Height" Value="Auto" />
+        <Setter Property="Opacity" Value="0.55" />
         <Setter Property="Template" Value="{StaticResource SlimVerticalScrollBar}" />
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
@@ -411,8 +446,101 @@
                 <Setter Property="Height" Value="8" />
                 <Setter Property="Template" Value="{StaticResource SlimHorizontalScrollBar}" />
             </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.55" Duration="0:0:0.4" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Dark tooltip (implicit). The system default is a light box, on which the
+         app's light text would be unreadable. -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="#FF141414" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1" Padding="10,7" MaxWidth="360">
+                        <ContentPresenter>
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Dark square checkbox (implicit): accent fill and a white tick when checked. -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal" Background="Transparent">
+                        <Border x:Name="Box" Width="16" Height="16" VerticalAlignment="Center"
+                                Background="{StaticResource HoverBrush}"
+                                BorderBrush="{StaticResource TextMutedBrush}" BorderThickness="1">
+                            <Path x:Name="Tick" Data="M2.5,7.5 L6,11 L12.5,3.5" Stroke="#FFFFFFFF"
+                                  StrokeThickness="2" Visibility="Collapsed" />
+                        </Border>
+                        <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentBrush}" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrightBrush}" />
+                            <Setter TargetName="Tick" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrightBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.35" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Error shake (spec: failures shake the element). For any element whose
+         RenderTransform is a TranslateTransform; begun from a DataTrigger on the
+         view model's Failed flag. Same curve as the error toast. -->
+    <Storyboard x:Key="ShakeStoryboard">
+        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="RenderTransform.X">
+            <LinearDoubleKeyFrame Value="-8" KeyTime="0:0:0.04" />
+            <LinearDoubleKeyFrame Value="8"  KeyTime="0:0:0.12" />
+            <LinearDoubleKeyFrame Value="-6" KeyTime="0:0:0.20" />
+            <LinearDoubleKeyFrame Value="6"  KeyTime="0:0:0.28" />
+            <LinearDoubleKeyFrame Value="0"  KeyTime="0:0:0.36" />
+        </DoubleAnimationUsingKeyFrames>
+    </Storyboard>
 
     <!-- Rounded progress bar with a moving highlight. -->
     <Style x:Key="RoundedProgress" TargetType="ProgressBar">

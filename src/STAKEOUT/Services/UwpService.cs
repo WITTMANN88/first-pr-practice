@@ -41,8 +41,14 @@ public sealed class UwpService : IUwpService
             return Array.Empty<UwpApp>();
         }
 
-        var apps = UwpListing.Parse(result.StdOut);
-        foreach (var app in apps) app.IconPath = ResolveIcon(app.InstallLocation);
+        // Parsing ~150 manifests and probing icon files is disk work: keep it off
+        // the UI thread (this method is awaited from the view model).
+        var apps = await Task.Run(() =>
+        {
+            var parsed = UwpListing.Parse(result.StdOut);
+            foreach (var app in parsed) app.IconPath = ResolveIcon(app.InstallLocation);
+            return parsed;
+        });
 
         Logger.Log("UWP list", "OK", $"{apps.Count} package(s)");
         return apps;
@@ -60,7 +66,8 @@ public sealed class UwpService : IUwpService
             return new UwpRemovalResult(false, 0);
         }
 
-        var freed = MeasureSize(app.InstallLocation);
+        // Walks every file of the package: off the UI thread.
+        var freed = await Task.Run(() => MeasureSize(app.InstallLocation));
 
         // Remove strictly by package full name to avoid wildcard mishaps.
         var script =

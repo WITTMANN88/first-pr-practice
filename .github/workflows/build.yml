@@ -49,13 +49,13 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Set up .NET 8 SDK
         id: dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -69,7 +69,7 @@ jobs:
           dotnet --version
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.NUGET_PACKAGES }}
           key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload test results and build logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results-and-build-logs
           path: |
@@ -123,13 +123,13 @@ jobs:
             flavor: Trimmed
             experimental: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Set up .NET 8 SDK
         id: dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 8.0.x
 
@@ -140,7 +140,7 @@ jobs:
           dotnet --version
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.NUGET_PACKAGES }}
           key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
@@ -186,7 +186,7 @@ jobs:
           "| flavor | size | sha256 |`n|---|---|---|`n| $env:NAME | $mb MB | ``$hash`` |" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Upload STAKEOUT.exe
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: STAKEOUT-${{ matrix.name }}
           path: |
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload publish logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: publish-logs-${{ matrix.name }}
           path: artifacts/logs/
@@ -213,13 +213,13 @@ jobs:
     permissions:
       contents: write   # create the release and upload its assets (this job only)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0   # full history and tags for the changelog
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: STAKEOUT-*
           path: artifacts/in
@@ -252,13 +252,13 @@ jobs:
     # Informational: an experimental trimmed failure must not turn the run red.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: STAKEOUT-*
           path: artifacts/in

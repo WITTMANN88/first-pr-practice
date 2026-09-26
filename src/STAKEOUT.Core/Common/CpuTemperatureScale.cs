@@ -7,7 +7,7 @@ namespace Stakeout.Core;
 /// </summary>
 public static class CpuTemperatureScale
 {
-    /// <summary>At or above this the bar turns red and the sparkline's reference line sits here.</summary>
+    /// <summary>Above this (spec: "при превышении 85 °C") the bar turns red; the sparkline's reference line sits here.</summary>
     public const double HotThresholdC = 85;
 
     /// <summary>Fixed vertical base of the sparkline; widened only if a sample falls outside.</summary>
@@ -22,5 +22,5 @@ public static class CpuTemperatureScale
 
     public static TimeSpan Window => PollInterval * HistoryLength;
 
-    public static bool IsHot(double? celsius) => celsius >= HotThresholdC;
+    public static bool IsHot(double? celsius) => celsius > HotThresholdC;
 }

@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Stakeout.Core;
 
@@ -118,5 +120,43 @@ public sealed class UwpCategoryToBrushConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is Services.UwpCategory cat && Map.TryGetValue(cat, out var b) ? b : Map[Services.UwpCategory.Other];
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
+/// <summary>
+/// UWP logo path → small, fully loaded, frozen bitmap. Decoded at 40 px (the
+/// table shows 20 px, doubled for high DPI) instead of the asset's full size,
+/// and read into memory at once (OnLoad) so no file handle is kept open in
+/// WindowsApps, where it could get in the way of Remove-AppxPackage.
+/// An unreadable or missing file yields no image (the letter tile shows).
+/// </summary>
+public sealed class IconPathToImageConverter : IValueConverter
+{
+    private const int DecodeSize = 40;
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is not string path || !System.IO.File.Exists(path)) return null;
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = new Uri(path, UriKind.Absolute);
+            image.DecodePixelWidth = DecodeSize;
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
+            image.EndInit();
+            image.Freeze();
+            return image;
+        }
+        catch (Exception ex) when (ex is IOException or NotSupportedException or UriFormatException
+                                   or ArgumentException or InvalidOperationException or UnauthorizedAccessException
+                                   or System.Runtime.InteropServices.COMException or FileFormatException)
+        {
+            Logger.Log("UWP icon", "WARNING", $"{System.IO.Path.GetFileName(path)}: {ex.Message}");
+            return null;
+        }
+    }
+
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }

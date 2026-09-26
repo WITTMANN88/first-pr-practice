@@ -23,6 +23,7 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         Closed += OnClosed;
+        StateChanged += OnStateChanged;
         PreviewKeyDown += OnPreviewKeyDown;
 
         // The view models are container singletons and outlive any window, so
@@ -149,6 +150,18 @@ public partial class MainWindow : Window
         e.Handled = true;
     }
 
+    /// <summary>
+    /// A maximized WindowChrome window is sized past the monitor edge by the
+    /// resize border, cutting off the caption buttons: pad it back in.
+    /// </summary>
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        var border = SystemParameters.WindowResizeBorderThickness;
+        Root.Margin = WindowState == WindowState.Maximized
+            ? new Thickness(border.Left + 1, border.Top + 1, border.Right + 1, border.Bottom + 1)
+            : new Thickness(0);
+    }
+
     // --- caption buttons ---
     private void OnMinimize(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
@@ -157,10 +170,12 @@ public partial class MainWindow : Window
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
 
-    // --- hidden "revert all": double-click only ---
+    // --- hidden "revert all": double-click only (ClickCount is reliable on button-down) ---
     private void OnRevertAllClick(object sender, MouseButtonEventArgs e)
     {
-        if (e.ClickCount == 2 && _vm.RevertAllCommand.CanExecute(null))
+        if (e.ClickCount != 2) return;
+        e.Handled = true;
+        if (_vm.RevertAllCommand.CanExecute(null))
             _vm.RevertAllCommand.Execute(null);
     }
 }

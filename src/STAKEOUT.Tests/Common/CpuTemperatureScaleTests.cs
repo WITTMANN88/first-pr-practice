@@ -20,9 +20,10 @@ public class CpuTemperatureScaleTests
     [Theory]
     [InlineData(null, false)]
     [InlineData(84.9, false)]
-    [InlineData(85.0, true)]
+    [InlineData(85.0, false)]   // "exceeds 85 °C" means strictly above
+    [InlineData(85.1, true)]
     [InlineData(97.0, true)]
-    public void IsHot_StartsAtTheThreshold(double? celsius, bool hot)
+    public void IsHot_IsStrictlyAboveTheThreshold(double? celsius, bool hot)
     {
         Assert.Equal(hot, CpuTemperatureScale.IsHot(celsius));
     }
