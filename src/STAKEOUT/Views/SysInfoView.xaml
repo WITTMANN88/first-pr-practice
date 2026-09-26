@@ -117,7 +117,7 @@
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.SysInfo_Cpu}" Style="{StaticResource Caption}" />
-                            <TextBlock Text="{Binding CpuName}" Style="{StaticResource H2}"
+                            <TextBlock Text="{Binding CpuName}" Style="{StaticResource CardValue}"
                                        TextWrapping="Wrap" Margin="0,4,0,12" />
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -196,7 +196,7 @@
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.SysInfo_Motherboard}" Style="{StaticResource Caption}" />
-                            <TextBlock Text="{Binding Motherboard}" Style="{StaticResource H2}"
+                            <TextBlock Text="{Binding Motherboard}" Style="{StaticResource CardValue}"
                                        TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>
@@ -205,7 +205,7 @@
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.SysInfo_Ram}" Style="{StaticResource Caption}" />
-                            <TextBlock Text="{Binding RamSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding RamSummary}" Style="{StaticResource CardValue}" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>
     
@@ -213,7 +213,7 @@
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.SysInfo_Disks}" Style="{StaticResource Caption}" />
-                            <TextBlock Text="{Binding DiskSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
+                            <TextBlock Text="{Binding DiskSummary}" Style="{StaticResource CardValue}" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>
     
@@ -221,7 +221,7 @@
                     <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{x:Static loc:Strings.SysInfo_Windows}" Style="{StaticResource Caption}" />
-                            <TextBlock Text="{Binding WindowsVersion}" Style="{StaticResource H2}"
+                            <TextBlock Text="{Binding WindowsVersion}" Style="{StaticResource CardValue}"
                                        TextWrapping="Wrap" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>

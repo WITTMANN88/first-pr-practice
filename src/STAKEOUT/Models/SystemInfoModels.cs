@@ -7,6 +7,9 @@ public sealed class GpuInfo
 {
     public string Name { get; set; } = "—";
     public string Kind { get; set; } = "";   // "Встроенная" / "Дискретная"
+
+    /// <summary>Screen readers name the GPU list rows by this, not by the type name.</summary>
+    public override string ToString() => Kind.Length == 0 ? Name : $"{Name}, {Kind}";
 }
 
 /// <summary>Snapshot of system information for the home page.</summary>

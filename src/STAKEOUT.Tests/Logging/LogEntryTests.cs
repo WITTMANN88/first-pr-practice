@@ -51,6 +51,16 @@ public class LogEntryTests
         Assert.Equal(expected, LogEntry.Parse($"[00:00:00] [X] [{status}]").Level);
     }
 
+    [Fact]
+    public void ToString_ReadsAsTheLine_ForScreenReaders()
+    {
+        // List items are announced by ToString; the default was the type name.
+        Assert.Equal("12:00:01 Tweak:mpo APPLIED OverlayTestMode = 5",
+            LogEntry.Parse("[12:00:01] [Tweak:mpo] [APPLIED] OverlayTestMode = 5").ToString());
+        Assert.Equal("12:00:01 RevertAll DONE", LogEntry.Parse("[12:00:01] [RevertAll] [DONE]").ToString());
+        Assert.Equal("free text", LogEntry.Parse("free text").ToString());
+    }
+
     [Theory]
     [InlineData("free text without structure")]
     [InlineData("[12:00] missing brackets")]

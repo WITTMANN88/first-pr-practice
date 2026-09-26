@@ -36,7 +36,9 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Items}">
                 <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                    <!-- Cards fill the row (no empty strip on the right): as many
+                         columns as fit at 316 px (300 card + 16 gap), widened equally. -->
+                    <ItemsPanelTemplate><c:UniformWrapPanel MinItemWidth="316" /></ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -54,7 +56,7 @@
                                     </Style.Triggers>
                                 </Style>
                             </Grid.Style>
-                            <Border Style="{StaticResource Card}" Width="300" Height="180">
+                            <Border Style="{StaticResource Card}" Height="180">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -64,15 +66,22 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- vector logo (DrawingImage from Themes/Logos.xaml, no files) -->
-                                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                    <!-- Grid, not a horizontal StackPanel: the name column gets the
+                                         card's remaining width, so long names trim only when they must. -->
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
                                         <Image Width="44" Height="44" Stretch="Uniform"
                                                Source="{Binding LogoKey, Converter={StaticResource ResourceKeyToImage}}" />
-                                        <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding DisplayName}" Style="{StaticResource H2}"
-                                                       TextTrimming="CharacterEllipsis" MaxWidth="200" />
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}" Style="{StaticResource CardValue}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding DisplayName}" />
                                             <TextBlock Text="{Binding MethodText}" Style="{StaticResource Caption}" />
                                         </StackPanel>
-                                    </StackPanel>
+                                    </Grid>
 
                                     <!-- morphing status text -->
                                     <TextBlock Grid.Row="1" Text="{Binding StageText}" Style="{StaticResource Caption}"

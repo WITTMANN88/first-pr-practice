@@ -135,11 +135,19 @@ public sealed class UwpService : IUwpService
         }
     }
 
-    /// <summary>Qualifier preference: 32 px on a dark row (unplated), then 32 px, then 200 % scale.</summary>
-    private static readonly string[] PreferredQualifiers =
-        { "targetsize-32_altform-unplated", "targetsize-32", "scale-200", "scale-100" };
+    /// <summary>Qualifier folders sit at most a couple of levels below the logo's folder.</summary>
+    private static readonly EnumerationOptions LogoSearch = new()
+    {
+        RecurseSubdirectories = true,
+        MaxRecursionDepth = 3,
+        IgnoreInaccessible = true,
+        AttributesToSkip = FileAttributes.ReparsePoint,
+    };
 
-    /// <summary>A manifest logo reference → an existing file, exact name first, then qualified variants.</summary>
+    /// <summary>
+    /// A manifest logo reference → an existing file: the exact name, a
+    /// qualified name, or the name inside a qualifier folder (<see cref="UwpLogoPicker"/>).
+    /// </summary>
     private static string? ResolveLogoFile(string installLocation, string reference)
     {
         var rel = reference.Replace('/', '\\');
@@ -155,14 +163,10 @@ public sealed class UwpService : IUwpService
         var exact = Path.Combine(dir, baseName + ext);
         if (File.Exists(exact)) return exact;
 
-        var candidates = Directory.EnumerateFiles(dir, baseName + ".*" + ext).ToList();
-        foreach (var qualifier in PreferredQualifiers)
-        {
-            var match = candidates.FirstOrDefault(f =>
-                Path.GetFileName(f).Contains("." + qualifier + ".", StringComparison.OrdinalIgnoreCase));
-            if (match != null) return match;
-        }
-        return candidates.FirstOrDefault();
+        var files = Directory.EnumerateFiles(dir, baseName + "*" + ext, LogoSearch)
+            .Select(f => Path.GetRelativePath(dir, f));
+        var pick = UwpLogoPicker.Pick(files, baseName, ext);
+        return pick == null ? null : Path.Combine(dir, pick);
     }
 
     /// <inheritdoc />

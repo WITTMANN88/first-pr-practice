@@ -31,6 +31,9 @@ public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
 
     public SoftwareItem Item { get; }
     public string DisplayName => Item.DisplayName;
+
+    /// <summary>Screen readers name the card by this, not by the type name.</summary>
+    public override string ToString() => DisplayName;
     /// <summary>Key of the vector logo DrawingImage in Themes/Logos.xaml.</summary>
     public string LogoKey => "Logo." + Item.Key;
     public string MethodText => Item.Method == InstallMethod.Winget

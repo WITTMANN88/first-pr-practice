@@ -32,6 +32,13 @@ public sealed partial class LogEntry
     private static readonly string[] SuccessStatuses =
         { "OK", "APPLIED", "REVERTED", "DONE", "SUCCESS", "RESTARTED" };
 
+    /// <summary>
+    /// The line as a screen reader announces it (the viewer's list items are
+    /// named by ToString): "time action status detail", empty parts skipped.
+    /// </summary>
+    public override string ToString()
+        => string.Join(" ", new[] { Time, Action, Status, Detail }.Where(p => p.Length > 0));
+
     public static LogEntry Parse(string line)
     {
         var m = LinePattern().Match(line);

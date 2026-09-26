@@ -30,6 +30,9 @@ public sealed class TweakItemViewModel : ViewModelBase
     }
 
     public string Title => _tweak.Title;
+
+    /// <summary>Screen readers name the row by this, not by the type name.</summary>
+    public override string ToString() => Title;
     public string Description => _tweak.Description;
     public bool IsDestructive => _tweak.IsDestructive;
     public bool RequiresRestart => _tweak.RequiresRestart;
@@ -151,6 +154,9 @@ public sealed class TweakGroup
 {
     public string Header { get; init; } = "";
     public ObservableCollection<TweakItemViewModel> Items { get; } = new();
+
+    /// <summary>Screen readers name the group by this, not by the type name.</summary>
+    public override string ToString() => Header;
 }
 
 /// <summary>The Tweaks page: grouped tweaks, explorer-restart pulse.</summary>

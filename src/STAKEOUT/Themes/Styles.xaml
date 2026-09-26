@@ -76,6 +76,15 @@
         <Setter Property="FontSize" Value="18" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
     </Style>
+    <!-- Values on cards (CPU and GPU models, build numbers, product names):
+         the body grotesque, because the heading fonts are all capitals and
+         small caps, which turn "i5-12450H" into "I5-12450H". -->
+    <Style x:Key="CardValue" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+    </Style>
     <Style x:Key="Body" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
         <Setter Property="FontSize" Value="13" />

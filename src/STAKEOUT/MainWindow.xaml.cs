@@ -1,10 +1,12 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Stakeout.Infrastructure;
+using Stakeout.Localization;
 using Stakeout.ViewModels;
 
 namespace Stakeout;
@@ -25,6 +27,7 @@ public partial class MainWindow : Window
 
         Loaded += OnLoaded;
         Closed += OnClosed;
+        StateChanged += OnStateChanged;
         PreviewKeyDown += OnPreviewKeyDown;
 
         // The view models are container singletons and outlive any window, so
@@ -149,6 +152,19 @@ public partial class MainWindow : Window
     {
         _vm.Logs.CloseCommand.Execute(null);
         e.Handled = true;
+    }
+
+    /// <summary>
+    /// While maximized the middle caption button restores: its glyph, tooltip
+    /// and accessible name say so (Windows' own caption buttons do the same).
+    /// </summary>
+    private void OnStateChanged(object? sender, EventArgs e)
+    {
+        var maximized = WindowState == WindowState.Maximized;
+        var label = maximized ? Strings.Caption_Restore : Strings.Caption_Maximize;
+        MaxBtn.Content = maximized ? "❐" : "▢";
+        MaxBtn.ToolTip = label;
+        AutomationProperties.SetName(MaxBtn, label);
     }
 
     // --- caption buttons ---

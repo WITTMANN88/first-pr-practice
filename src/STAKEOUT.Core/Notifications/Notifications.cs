@@ -17,6 +17,9 @@ public sealed class Notification
     public string Message { get; }
     public NotificationKind Kind { get; }
     public DateTime CreatedUtc { get; } = DateTime.UtcNow;
+
+    /// <summary>Screen readers announce a toast by this (its item in the toast list).</summary>
+    public override string ToString() => Message;
 }
 
 /// <summary>

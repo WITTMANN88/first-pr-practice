@@ -27,6 +27,9 @@ public sealed class UwpItemViewModel : ViewModelBase
 
     public UwpApp App { get; }
     public string DisplayName => App.DisplayName;
+
+    /// <summary>Screen readers name the row by this (name, badge, size), not by the type name.</summary>
+    public override string ToString() => $"{DisplayName}, {CategoryText}, {SizeText}";
     public string PackageFullName => App.PackageFullName;
     public string SizeText => App.SizeText;
     public bool IsCritical => App.IsCritical;

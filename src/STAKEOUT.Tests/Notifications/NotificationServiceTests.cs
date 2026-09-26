@@ -11,6 +11,13 @@ public class NotificationServiceTests
         => new(dispatcher ?? new InlineDispatcher(), TimeSpan.FromSeconds(5), maxVisible, _delay.Delay);
 
     [Fact]
+    public void Notification_ToString_IsTheMessage()
+    {
+        // The toast list announces items by ToString; the default was the type name.
+        Assert.Equal("Discord установлен", new Notification("Discord установлен", NotificationKind.Success).ToString());
+    }
+
+    [Fact]
     public void TypedHelpers_ProduceMatchingKinds()
     {
         using var svc = Create();

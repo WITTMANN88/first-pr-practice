@@ -62,6 +62,10 @@
     <value>Развернуть</value>
     <comment>Title bar button</comment>
   </data>
+  <data name="Caption_Restore" xml:space="preserve">
+    <value>Восстановить</value>
+    <comment>Title bar button while the window is maximized</comment>
+  </data>
   <data name="Nav_System" xml:space="preserve">
     <value>Система</value>
     <comment>Sidebar</comment>
