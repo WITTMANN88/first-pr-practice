@@ -40,7 +40,8 @@ env:
   DOTNET_NOLOGO: 'true'
   DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
-  NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages
+  # Forward slashes: valid on the Windows and the Linux (release) runners.
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
 
 jobs:
   test:
