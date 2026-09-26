@@ -3,6 +3,7 @@
 // short intro and the 5 channels worth visiting first. Safe to re-run.
 require('dotenv').config();
 const { Client, GatewayIntentBits, ChannelType } = require('discord.js');
+const { CHANNELS } = require('../config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -13,11 +14,11 @@ if (!TOKEN || !GUILD_ID) {
 }
 
 const WELCOME_CHANNELS = [
-  { name: 'rules', emoji: '📜', description: 'Прочитай правила сервера' },
-  { name: 'choose-your-roles', emoji: '🎮', description: 'Выбери роли — открой доступ к играм' },
-  { name: 'faq', emoji: '❓', description: 'Частые вопросы' },
-  { name: 'general', emoji: '💬', description: 'Общий чат — знакомься с коммьюнити' },
-  { name: 'open-a-ticket', emoji: '🎫', description: 'Нужна помощь? Открой тикет' },
+  { name: CHANNELS.RULES, emoji: '📜', description: 'Прочитай правила сервера' },
+  { name: CHANNELS.ROLES, emoji: '🎮', description: 'Выбери роли — открой доступ к играм' },
+  { name: CHANNELS.FAQ, emoji: '❓', description: 'Частые вопросы' },
+  { name: CHANNELS.GENERAL, emoji: '💬', description: 'Общий чат — знакомься с сообществом' },
+  { name: CHANNELS.TICKET, emoji: '🎫', description: 'Нужна помощь? Создай обращение' },
 ];
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });

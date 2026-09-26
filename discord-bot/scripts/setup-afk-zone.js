@@ -3,11 +3,12 @@
 // Discord's native AFK timeout (auto-moves idle voice users there).
 require('dotenv').config();
 const { Client, GatewayIntentBits, ChannelType } = require('discord.js');
+const { CATEGORIES, VOICE } = require('../config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
-const AFK_CATEGORY_NAME = '💤 AFK ZONE';
-const AFK_CHANNEL_NAME = '💤 AFK';
+const AFK_CATEGORY_NAME = CATEGORIES.AFK;
+const AFK_CHANNEL_NAME = VOICE.AFK;
 const AFK_TIMEOUT_SECONDS = 300; // 5 min — one of Discord's fixed allowed values
 
 if (!TOKEN || !GUILD_ID) {

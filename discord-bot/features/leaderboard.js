@@ -5,15 +5,16 @@ const { getTopUsers } = require('./xp');
 const { getTopBalances } = require('./economy');
 const { upsertPanel } = require('./messageRegistry');
 const COLORS = require('./colors');
+const { CATEGORIES, CHANNELS } = require('../config');
 
-const CATEGORY_NAME = '🎖️ RANKS & EVENTS';
-const CHANNEL_NAME = 'leaderboard';
+const CATEGORY_NAME = CATEGORIES.RANKS;
+const CHANNEL_NAME = CHANNELS.LEADERBOARD;
 const UPDATE_MS = 5 * 60_000;
 
 async function findOrCreateChannel(guild) {
   const category = guild.channels.cache.find((c) => c.type === ChannelType.GuildCategory && c.name === CATEGORY_NAME);
   if (!category) {
-    console.warn('RANKS & EVENTS category not found — skipping leaderboard');
+    console.warn('ranks category not found — skipping leaderboard');
     return null;
   }
   let channel = guild.channels.cache.find((c) => c.name === CHANNEL_NAME && c.parentId === category.id);
@@ -38,12 +39,12 @@ async function updateXpBoard(channel, guild) {
   const top = getTopUsers(10);
   const lines = top.length
     ? await Promise.all(
-        top.map(async (entry, i) => `**${i + 1}.** ${await nameFor(guild, entry.userId)} — ${entry.xp} XP (${entry.rank})`),
+        top.map(async (entry, i) => `**${i + 1}.** ${await nameFor(guild, entry.userId)} — ${entry.xp} опыта (${entry.rank})`),
       )
-    : ['_пока никто не набрал XP_'];
+    : ['_пока никто не набрал опыта_'];
 
   const embed = new EmbedBuilder()
-    .setTitle('🏆 Топ по XP')
+    .setTitle('🏆 Топ по опыту')
     .setDescription(lines.join('\n'))
     .setColor(COLORS.BRAND)
     .setTimestamp();

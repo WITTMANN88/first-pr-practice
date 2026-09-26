@@ -2,8 +2,9 @@
 // member/boost counts in their own name. Update interval respects
 // Discord's channel-rename rate limit (~2 per 10 min per channel).
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
+const { CATEGORIES } = require('../config');
 
-const CATEGORY_NAME = '📊 STAKEOUT';
+const CATEGORY_NAME = CATEGORIES.STATS;
 const UPDATE_MS = 10 * 60_000;
 
 async function findOrCreateCategory(guild) {

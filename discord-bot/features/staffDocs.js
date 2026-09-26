@@ -1,11 +1,11 @@
-// Re-asserts the STAFF ONLY category lock (exactly Admin/Moderator/
-// Helper, nobody else) and posts a command reference inside it.
+// Re-asserts the staff category lock (exactly the staff roles, nobody
+// else) and posts a command reference inside it.
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { STAFF_ROLES } = require('../config');
+const { STAFF_ROLES, CATEGORIES, CHANNELS } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
 const COLORS = require('./colors');
 
-const STAFF_CATEGORY_NAME = '🔐 STAFF ONLY';
+const STAFF_CATEGORY_NAME = CATEGORIES.STAFF;
 
 async function lockStaffOnlyCategory(guild) {
   const category = guild.channels.cache.find(
@@ -33,14 +33,14 @@ async function postCommandReference(guild) {
   );
   if (!category) return;
 
-  let channel = guild.channels.cache.find((c) => c.name === 'bot-commands' && c.parentId === category.id);
+  let channel = guild.channels.cache.find((c) => c.name === CHANNELS.BOT_COMMANDS && c.parentId === category.id);
   if (!channel) {
-    channel = await guild.channels.create({ name: 'bot-commands', type: ChannelType.GuildText, parent: category.id });
+    channel = await guild.channels.create({ name: CHANNELS.BOT_COMMANDS, type: ChannelType.GuildText, parent: category.id });
     console.log('+ channel: bot-commands');
   }
 
   const punishEmbed = new EmbedBuilder()
-    .setTitle('🚫 Наказания и блокировки — Admin / Moderator')
+    .setTitle('🚫 Наказания и блокировки — модераторы и выше')
     .setDescription(
       [
         '`!ban @user [причина]` — забанить навсегда.',
@@ -56,7 +56,7 @@ async function postCommandReference(guild) {
     .setColor(COLORS.BRAND);
 
   const cleanupEmbed = new EmbedBuilder()
-    .setTitle('🧹 Очистка и нарушения — Admin / Moderator')
+    .setTitle('🧹 Очистка и нарушения — модераторы и выше')
     .setDescription(
       [
         '`!clear <число>` — удалить N сообщений в текущем канале (1-100).',
@@ -66,11 +66,11 @@ async function postCommandReference(guild) {
     .setColor(COLORS.BRAND);
 
   const infoEmbed = new EmbedBuilder()
-    .setTitle('⚙️ Настройки и информация — Admin / Moderator / Helper')
+    .setTitle('⚙️ Настройки и информация — весь персонал')
     .setDescription(
       [
         '`!infractions @user` — история варнов участника.',
-        '`!slowmode <10s/5m/off>` — slowmode в текущем канале (макс. 6ч).',
+        '`!slowmode <10s/5m/off>` — медленный режим в текущем канале (макс. 6ч).',
         '`!user-info [@user]` — дата регистрации, дата входа, роли.',
         '`!server-info` — статистика сервера.',
         '`!role-info <название роли>` — цвет, число участников, права роли.',

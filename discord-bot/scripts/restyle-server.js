@@ -3,7 +3,7 @@
 // forum channel names. Safe to re-run.
 require('dotenv').config();
 const { Client, GatewayIntentBits, ChannelType } = require('discord.js');
-const { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES } = require('../config');
+const { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES, CATEGORIES } = require('../config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -17,17 +17,17 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // White -> dark bordeaux progression, matching the field-manual palette.
 const RANK_STYLE = [
-  { color: '#ffffff', emoji: '🔘' }, // Recruit
-  { color: '#e5dbdb', emoji: '⚪' }, // Private
-  { color: '#cbb6b6', emoji: '🔸' }, // Corporal
-  { color: '#b19292', emoji: '🔶' }, // Sergeant
-  { color: '#986d6d', emoji: '🎖️' }, // Lieutenant
-  { color: '#7e4949', emoji: '🎖️' }, // Captain
-  { color: '#642424', emoji: '🥈' }, // Major
-  { color: '#4a0000', emoji: '🥇' }, // Commander
+  { color: '#ffffff', emoji: '🔘' }, // Новичок
+  { color: '#e5dbdb', emoji: '⚪' }, // Сталкер
+  { color: '#cbb6b6', emoji: '🔸' }, // Ветеран
+  { color: '#b19292', emoji: '🔶' }, // Стрелок
+  { color: '#986d6d', emoji: '🎖️' }, // Охотник
+  { color: '#7e4949', emoji: '🎖️' }, // Гроза бандитов
+  { color: '#642424', emoji: '🥈' }, // Мастер Зоны
+  { color: '#4a0000', emoji: '🥇' }, // Легенда Зоны
 ];
 
-const STAFF_EMOJI = { Owner: '⭐', Admin: '👑', Moderator: '🛡️', Helper: '🔧' };
+const STAFF_EMOJI = { owner: '⭐', admin: '👑', moderator: '🛡️', helper: '🔧' };
 
 async function styleRole(guild, name, { color, emoji }) {
   const role = guild.roles.cache.find((r) => r.name === name);
@@ -54,11 +54,11 @@ async function reorderCategories(guild) {
     (a, b) => a.position - b.position,
   );
 
-  const moveNames = ['🎫 SUPPORT / ПОДДЕРЖКА', '🔐 STAFF ONLY', '🎫 Tickets'];
+  const moveNames = [CATEGORIES.SUPPORT, CATEGORIES.STAFF, CATEGORIES.TICKETS];
   const toMove = categories.filter((c) => moveNames.includes(c.name));
   const rest = categories.filter((c) => !moveNames.includes(c.name));
 
-  const communityIndex = rest.findIndex((c) => c.name === '💬 COMMUNITY');
+  const communityIndex = rest.findIndex((c) => c.name === CATEGORIES.COMMUNITY);
   const insertAt = communityIndex === -1 ? 0 : communityIndex + 1;
 
   const newOrder = [...rest.slice(0, insertAt), ...toMove, ...rest.slice(insertAt)];
@@ -89,7 +89,7 @@ client.once('clientReady', async () => {
 
     console.log('== styling staff roles ==');
     for (const r of STAFF_ROLES) {
-      await styleRole(guild, r.name, { color: r.color, emoji: STAFF_EMOJI[r.name] });
+      await styleRole(guild, r.name, { color: r.color, emoji: STAFF_EMOJI[r.key] });
     }
 
     console.log('== styling rank ladder ==');

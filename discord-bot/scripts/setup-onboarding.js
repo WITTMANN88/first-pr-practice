@@ -5,7 +5,7 @@
 // on the server, on top of the #choose-your-roles panel.
 require('dotenv').config();
 const { Client, GatewayIntentBits, GuildOnboardingPromptType, GuildOnboardingMode } = require('discord.js');
-const { GAMES, EXTRA_ROLES } = require('../config');
+const { GAMES, EXTRA_ROLES, CHANNELS } = require('../config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -68,7 +68,15 @@ client.once('clientReady', async () => {
       }),
     };
 
-    const defaultChannelNames = ['welcome', 'rules', 'announcements', 'choose-your-roles', 'faq', 'general', 'gaming-talk'];
+    const defaultChannelNames = [
+      CHANNELS.WELCOME,
+      CHANNELS.RULES,
+      CHANNELS.ANNOUNCEMENTS,
+      CHANNELS.ROLES,
+      CHANNELS.FAQ,
+      CHANNELS.GENERAL,
+      CHANNELS.GAMING_TALK,
+    ];
     const defaultChannels = defaultChannelNames
       .map((name) => guild.channels.cache.find((c) => c.name === name))
       .filter(Boolean);

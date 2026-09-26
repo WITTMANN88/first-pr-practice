@@ -3,7 +3,7 @@
 // Deliberately doesn't auto-kick/ban or touch server settings — it
 // surfaces suspicious activity in #alt-flags for a human to act on.
 const { EmbedBuilder } = require('discord.js');
-const { STAFF_ROLES } = require('../config');
+const { STAFF_ROLES, CHANNELS } = require('../config');
 const COLORS = require('./colors');
 
 const NEW_ACCOUNT_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -15,7 +15,7 @@ const recentJoins = [];
 let lastRaidAlertAt = 0;
 
 function alertChannel(guild) {
-  return guild.channels.cache.find((c) => c.name === 'alt-flags');
+  return guild.channels.cache.find((c) => c.name === CHANNELS.ALT_FLAGS);
 }
 
 function staffMention(guild) {

@@ -13,7 +13,8 @@ if (!TOKEN || !GUILD_ID) {
   process.exit(1);
 }
 
-const ownerRoleDef = STAFF_ROLES.find((r) => r.name === 'Owner');
+const ownerRoleDef = STAFF_ROLES.find((r) => r.key === 'owner');
+const adminRoleDef = STAFF_ROLES.find((r) => r.key === 'admin');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -23,7 +24,7 @@ client.once('clientReady', async () => {
     await guild.roles.fetch();
 
     console.log('== Owner role ==');
-    let ownerRole = guild.roles.cache.find((r) => r.name === 'Owner');
+    let ownerRole = guild.roles.cache.find((r) => r.name === ownerRoleDef.name);
     if (!ownerRole) {
       ownerRole = await guild.roles.create({
         name: ownerRoleDef.name,
@@ -36,7 +37,7 @@ client.once('clientReady', async () => {
       console.log('  already exists: Owner');
     }
 
-    const adminRole = guild.roles.cache.find((r) => r.name === 'Admin');
+    const adminRole = guild.roles.cache.find((r) => r.name === adminRoleDef.name);
     if (adminRole && ownerRole.position <= adminRole.position) {
       await ownerRole.setPosition(adminRole.position + 1);
       console.log('  repositioned Owner above Admin');

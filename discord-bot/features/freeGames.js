@@ -1,4 +1,4 @@
-// Posts new free-game giveaways (Steam/Epic/GOG/...) to #announcements.
+// Posts new free-game giveaways (Steam/Epic/GOG/...) to #объявления.
 // Uses GamerPower's free public API — no key needed. First run only
 // seeds the "seen" list (no posts) so startup doesn't flood the
 // channel with every giveaway currently live.
@@ -6,10 +6,13 @@ const fs = require('fs');
 const path = require('path');
 const { EmbedBuilder } = require('discord.js');
 const COLORS = require('./colors');
+const { CHANNELS } = require('../config');
+const { ensureRussian } = require('./translate');
 
 const DATA_PATH = path.join(__dirname, '..', 'data', 'free-games-seen.json');
 const API_URL = 'https://www.gamerpower.com/api/giveaways?platform=pc';
 const CHECK_MS = 30 * 60_000;
+const TYPE_RU = { Game: 'Игра', DLC: 'Дополнение', 'Early Access': 'Ранний доступ', Other: 'Другое' };
 
 let seen = new Set();
 let isFirstRun = true;
@@ -30,7 +33,7 @@ function save() {
 }
 
 async function checkFreeGames(guild) {
-  const channel = guild.channels.cache.find((c) => c.name === 'announcements');
+  const channel = guild.channels.cache.find((c) => c.name === CHANNELS.ANNOUNCEMENTS);
   if (!channel?.isTextBased()) return;
 
   let giveaways;
@@ -55,13 +58,13 @@ async function checkFreeGames(guild) {
   for (const g of fresh) {
     seen.add(String(g.id));
     const embed = new EmbedBuilder()
-      .setTitle(`🎁 ${g.title}`)
+      .setTitle(`🎁 ${(g.title || '').replace(/\s*Giveaway$/i, '')}`)
       .setURL(g.open_giveaway_url || g.gamerpower_url)
-      .setDescription((g.description || '').slice(0, 300))
+      .setDescription((await ensureRussian(g.description || '')).slice(0, 300))
       .addFields(
-        { name: 'Платформа', value: g.platforms || 'неизвестно', inline: true },
-        { name: 'Тип', value: g.type || 'game', inline: true },
-        { name: 'Обычная цена', value: g.worth || 'N/A', inline: true },
+        { name: 'Платформа', value: (g.platforms || 'неизвестно').replace('DRM-Free', 'без DRM'), inline: true },
+        { name: 'Тип', value: TYPE_RU[g.type] || g.type || 'Игра', inline: true },
+        { name: 'Обычная цена', value: g.worth && g.worth !== 'N/A' ? g.worth : 'нет данных', inline: true },
       )
       .setColor(COLORS.SUCCESS);
     if (g.image) embed.setImage(g.image);

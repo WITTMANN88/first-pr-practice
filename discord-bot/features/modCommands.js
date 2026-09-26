@@ -1,10 +1,11 @@
-// Punishment commands — Admin + Moderator only (Helper doesn't get
-// these). Text commands, no slash-command deploy needed.
+// Punishment commands — staff roles with canPunish only (Helper doesn't
+// get these). Text commands, no slash-command deploy needed.
 const { addWarn, clearInfractions } = require('./infractions');
 const tempbans = require('./tempbans');
+const { STAFF_ROLES, CHANNELS } = require('../config');
 
 const PREFIX = '!';
-const PUNISH_ROLE_NAMES = ['Owner', 'Admin', 'Moderator'];
+const PUNISH_ROLE_NAMES = STAFF_ROLES.filter((r) => r.canPunish).map((r) => r.name);
 const COMMANDS = ['ban', 'tempban', 'unban', 'kick', 'mute', 'tempmute', 'unmute', 'warn', 'clear-all-infractions', 'clear'];
 const DURATION_MULTIPLIERS = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
 const MAX_TIMEOUT_MS = 28 * DURATION_MULTIPLIERS.d; // Discord's own timeout ceiling
@@ -30,7 +31,7 @@ async function handleMessage(message) {
   if (!COMMANDS.includes(cmd)) return;
 
   if (!isPunishStaff(message.member)) {
-    return void message.reply('Эта команда только для Admin/Moderator.');
+    return void message.reply(`Эта команда только для: ${PUNISH_ROLE_NAMES.join(', ')}.`);
   }
 
   const target = message.mentions.members?.first();
@@ -125,7 +126,7 @@ async function handleMessage(message) {
       const reason = rest.slice(1).join(' ') || 'без причины';
       const count = addWarn(message.guild.id, target.id, { reason, moderatorTag: message.author.tag });
       await target.send(`⚠️ Тебе вынесено предупреждение на STAKEOUT (${count}-е). Причина: ${reason}`).catch(() => {});
-      const modLogs = message.guild.channels.cache.find((c) => c.name === 'mod-logs');
+      const modLogs = message.guild.channels.cache.find((c) => c.name === CHANNELS.MOD_LOGS);
       await modLogs
         ?.send(`⚠️ ${message.author.tag} выдал варн №${count} ${target.user.tag}: ${reason}`)
         .catch(() => {});

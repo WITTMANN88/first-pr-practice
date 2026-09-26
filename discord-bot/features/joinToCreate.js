@@ -1,11 +1,12 @@
-// Join-to-Create: joining the "➕ Join to Create" voice channel spawns a
+// Join-to-Create: joining the "➕ Создать канал" voice channel spawns a
 // fresh personal voice channel in the same category and moves the member
 // into it; the temp channel is deleted once it's empty again. Only
-// channels this module created are ever auto-deleted — Squad 1/2/Command
+// channels this module created are ever auto-deleted — Отряд 1/2/Штаб
 // and the trigger channel itself are never touched.
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
+const { VOICE } = require('../config');
 
-const TRIGGER_NAME = '➕ Join to Create';
+const TRIGGER_NAME = VOICE.JOIN_TO_CREATE;
 const createdChannels = new Set();
 
 async function handleVoiceStateUpdate(oldState, newState) {

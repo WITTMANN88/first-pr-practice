@@ -11,7 +11,7 @@ const {
   AutoModerationRuleKeywordPresetType,
   AutoModerationActionType,
 } = require('discord.js');
-const { STAFF_ROLES } = require('../config');
+const { STAFF_ROLES, CHANNELS } = require('../config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -20,6 +20,12 @@ if (!TOKEN || !GUILD_ID) {
   console.error('Missing DISCORD_TOKEN or GUILD_ID in .env');
   process.exit(1);
 }
+
+const RULE_NAMES = {
+  SLURS: 'STAKEOUT — Оскорбления и ненависть',
+  MENTIONS: 'STAKEOUT — Спам упоминаниями',
+  INVITES: 'STAKEOUT — Ссылки-приглашения',
+};
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -37,13 +43,13 @@ async function findOrCreateRule(guild, name, options) {
 client.once('clientReady', async () => {
   try {
     const guild = await client.guilds.fetch(GUILD_ID);
-    const modLogs = guild.channels.cache.find((c) => c.name === 'mod-logs');
+    const modLogs = guild.channels.cache.find((c) => c.name === CHANNELS.MOD_LOGS);
     const staffRoleIds = STAFF_ROLES.map((r) => guild.roles.cache.find((role) => role.name === r.name)?.id).filter(
       Boolean,
     );
-    const selfPromo = guild.channels.cache.find((c) => c.name === 'self-promo');
+    const selfPromo = guild.channels.cache.find((c) => c.name === CHANNELS.SELF_PROMO);
 
-    await findOrCreateRule(guild, 'STAKEOUT — Slurs & hate speech', {
+    await findOrCreateRule(guild, RULE_NAMES.SLURS, {
       eventType: AutoModerationRuleEventType.MessageSend,
       triggerType: AutoModerationRuleTriggerType.KeywordPreset,
       triggerMetadata: { presets: [AutoModerationRuleKeywordPresetType.Slurs] },
@@ -55,7 +61,7 @@ client.once('clientReady', async () => {
       enabled: true,
     });
 
-    await findOrCreateRule(guild, 'STAKEOUT — Mention spam', {
+    await findOrCreateRule(guild, RULE_NAMES.MENTIONS, {
       eventType: AutoModerationRuleEventType.MessageSend,
       triggerType: AutoModerationRuleTriggerType.MentionSpam,
       triggerMetadata: { mentionTotalLimit: 5 },
@@ -64,7 +70,7 @@ client.once('clientReady', async () => {
       enabled: true,
     });
 
-    await findOrCreateRule(guild, 'STAKEOUT — Invite links', {
+    await findOrCreateRule(guild, RULE_NAMES.INVITES, {
       eventType: AutoModerationRuleEventType.MessageSend,
       triggerType: AutoModerationRuleTriggerType.Keyword,
       triggerMetadata: {

@@ -1,4 +1,4 @@
-// Posts a Steam info card into a dedicated "-info" channel in each
+// Posts a Steam info card into a dedicated #инфо channel in each
 // game category — kept first in the category's channel order — plus a
 // separate trailer message. Steam's own trailer files aren't playable
 // inline in Discord (streaming-only manifests), but a plain YouTube
@@ -6,8 +6,9 @@
 // trailer message posts a hand-picked official YouTube trailer link
 // per game instead of a Steam thumbnail-and-click-through.
 const { ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
-const { GAMES } = require('../config');
+const { GAMES, CHANNELS } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
+const { ensureRussian } = require('./translate');
 const COLORS = require('./colors');
 
 const SCREENSHOT_COUNT = 4;
@@ -48,20 +49,22 @@ const YOUTUBE_TRAILERS = {
 };
 
 async function fetchAppDetails(appid) {
-  const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}&cc=us&l=en`, {
+  const res = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}&cc=us&l=russian`, {
     headers: { 'User-Agent': 'stakeout-bot' },
   });
   const json = await res.json();
-  const entry = json[String(appid)];
+  // Steam now keys the response by an internal id rather than the
+  // requested appid, so match on the steam_appid inside instead.
+  const entry = Object.values(json).find((e) => e?.data?.steam_appid === appid);
   if (!entry?.success) return null;
   return entry.data;
 }
 
-function buildInfoEmbeds(data, url) {
+function buildInfoEmbeds(data, url, description) {
   const main = new EmbedBuilder()
     .setTitle(data.name)
     .setURL(url)
-    .setDescription((data.short_description || '').slice(0, 500))
+    .setDescription((description || '').slice(0, 500))
     .setColor(COLORS.BRAND)
     .setImage(data.header_image)
     .addFields(
@@ -86,21 +89,21 @@ function buildTrailerEmbed(data, url) {
     .setColor(COLORS.BRAND);
 }
 
-async function findOrCreateInfoChannel(guild, gameKey, gameEmoji, gameName) {
+async function findOrCreateInfoChannel(guild, gameEmoji, gameName) {
   const category = guild.channels.cache.find(
     (c) => c.type === ChannelType.GuildCategory && c.name === `${gameEmoji} ${gameName}`,
   );
   if (!category) return null;
 
-  let channel = guild.channels.cache.find((c) => c.name === `${gameKey}-info` && c.parentId === category.id);
+  let channel = guild.channels.cache.find((c) => c.name === CHANNELS.GAME_INFO && c.parentId === category.id);
   if (!channel) {
     channel = await guild.channels.create({
-      name: `${gameKey}-info`,
+      name: CHANNELS.GAME_INFO,
       type: ChannelType.GuildText,
       parent: category.id,
       permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionFlagsBits.SendMessages] }],
     });
-    console.log(`  + channel: ${gameKey}-info`);
+    console.log(`  + info channel in ${gameName}`);
   }
 
   await moveToTopOfCategory(guild, category, channel);
@@ -121,7 +124,7 @@ async function postSteamInfo(guild) {
     const appids = STEAM_APPIDS[game.key];
     if (!appids) continue;
 
-    const channel = await findOrCreateInfoChannel(guild, game.key, game.emoji, game.name);
+    const channel = await findOrCreateInfoChannel(guild, game.emoji, game.name);
     if (!channel) {
       console.warn(`  ! category not found for ${game.name} — skipping Steam info`);
       continue;
@@ -136,8 +139,9 @@ async function postSteamInfo(guild) {
 
       const url = `https://store.steampowered.com/app/${data.steam_appid}/`;
 
-      await upsertPanel(channel, `steam-info-${appid}`, { embeds: buildInfoEmbeds(data, url) });
-      console.log(`  synced Steam info: ${data.name} -> #${channel.name}`);
+      const description = await ensureRussian(data.short_description);
+      await upsertPanel(channel, `steam-info-${appid}`, { embeds: buildInfoEmbeds(data, url, description) });
+      console.log(`  synced Steam info: ${data.name}`);
 
       const youtubeId = YOUTUBE_TRAILERS[appid];
       if (youtubeId) {
@@ -145,12 +149,12 @@ async function postSteamInfo(guild) {
           content: `🎬 Смотри трейлер ниже\nhttps://www.youtube.com/watch?v=${youtubeId}`,
           embeds: [],
         });
-        console.log(`  synced trailer (YouTube): ${data.name} -> #${channel.name}`);
+        console.log(`  synced trailer (YouTube): ${data.name}`);
       } else {
         const trailerEmbed = buildTrailerEmbed(data, url);
         if (trailerEmbed) {
           await upsertPanel(channel, `steam-trailer-${appid}`, { content: '', embeds: [trailerEmbed] });
-          console.log(`  synced trailer (Steam): ${data.name} -> #${channel.name}`);
+          console.log(`  synced trailer (Steam): ${data.name}`);
         }
       }
     }

@@ -4,9 +4,10 @@
 // history from before it started or restarts.
 const { EmbedBuilder } = require('discord.js');
 const COLORS = require('./colors');
+const { CHANNELS } = require('../config');
 
 function logChannel(guild) {
-  return guild.channels.cache.find((c) => c.name === 'mod-logs');
+  return guild.channels.cache.find((c) => c.name === CHANNELS.MOD_LOGS);
 }
 
 async function handleDelete(message) {

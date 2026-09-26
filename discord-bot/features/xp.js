@@ -1,9 +1,9 @@
 // XP system: earns from text messages (cooldown, to stop spam-farming)
 // and from time spent in voice (ticked every minute). Crossing a
-// threshold swaps the member's rank role and announces it in #general.
+// threshold swaps the member's rank role and announces it in #рейтинг.
 const fs = require('fs');
 const path = require('path');
-const { RANK_LADDER, RANK_THRESHOLDS } = require('../config');
+const { RANK_LADDER, RANK_THRESHOLDS, CHANNELS } = require('../config');
 const { isBooster, XP_MULTIPLIER } = require('./boosters');
 
 const DATA_PATH = path.join(__dirname, '..', 'data', 'xp.json');
@@ -47,7 +47,7 @@ async function swapRankRole(member, oldRankName, newRankName) {
   if (newRole && !member.roles.cache.has(newRole.id)) {
     await member.roles.add(newRole).catch(() => {});
   }
-  const leaderboard = guild.channels.cache.find((c) => c.name === 'leaderboard');
+  const leaderboard = guild.channels.cache.find((c) => c.name === CHANNELS.LEADERBOARD);
   if (leaderboard?.isTextBased()) {
     leaderboard.send(`🎖️ <@${member.id}> получает новое звание — **${newRankName}**!`).catch(() => {});
   }
@@ -84,7 +84,7 @@ function startVoiceTicker(client) {
   setInterval(() => {
     for (const guild of client.guilds.cache.values()) {
       for (const channel of guild.channels.cache.values()) {
-        if (!channel.isVoiceBased() || channel.name.toUpperCase().includes('AFK')) continue;
+        if (!channel.isVoiceBased() || channel.id === guild.afkChannelId) continue;
         for (const member of channel.members.values()) {
           if (member.user.bot) continue;
           grantXp(member, VOICE_XP_PER_TICK).catch(() => {});

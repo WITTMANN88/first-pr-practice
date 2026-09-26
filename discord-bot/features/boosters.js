@@ -1,7 +1,7 @@
 // Booster perks: auto-granted badge role + thank-you in #welcome, plus
 // two self-service perks — a custom name color (!color) and an XP
 // multiplier (read by features/xp.js via BOOSTER_ROLE_NAME).
-const ROLE_NAME = 'STAKEOUT FRIEND';
+const { BOOSTER_ROLE_NAME: ROLE_NAME, CHANNELS } = require('../config');
 const PREFIX = '!color';
 const HEX_RE = /^#?([0-9a-fA-F]{6})$/;
 const XP_MULTIPLIER = 1.5;
@@ -34,7 +34,7 @@ async function handleMemberUpdate(oldMember, newMember) {
   const role = await ensureBoosterRole(newMember.guild);
   await newMember.roles.add(role).catch(() => {});
 
-  const welcome = newMember.guild.channels.cache.find((c) => c.name === 'welcome');
+  const welcome = newMember.guild.channels.cache.find((c) => c.name === CHANNELS.WELCOME);
   if (welcome?.isTextBased()) {
     await welcome
       .send(
@@ -51,7 +51,7 @@ async function handleColorCommand(message) {
   if (message.content.length > PREFIX.length && message.content[PREFIX.length] !== ' ') return;
 
   if (!isBooster(message.member)) {
-    return void message.reply('Эта команда только для бустеров сервера (роль STAKEOUT FRIEND).');
+    return void message.reply(`Эта команда только для бустеров сервера (роль ${ROLE_NAME}).`);
   }
 
   const hexArg = message.content.slice(PREFIX.length).trim();

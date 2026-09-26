@@ -58,7 +58,7 @@ async function handleMessage(message) {
         return void message.reply('Формат: `!slowmode 10s`, `!slowmode 5m`, `!slowmode off` (макс. 6ч).');
       }
       await message.channel.setRateLimitPerUser(seconds);
-      message.reply(seconds === 0 ? '🐇 Slowmode выключен.' : `🐌 Slowmode: 1 сообщение в ${rest[0]}.`);
+      message.reply(seconds === 0 ? '🐇 Медленный режим выключен.' : `🐌 Медленный режим: 1 сообщение в ${rest[0]}.`);
       break;
     }
     case 'user-info': {

@@ -1,7 +1,7 @@
 // Posts a self-service role menu in #choose-your-roles and keeps a
 // member's access roles in sync with what they pick.
 const { EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, MessageFlags } = require('discord.js');
-const { GAMES, EXTRA_ROLES } = require('../config');
+const { GAMES, EXTRA_ROLES, CATEGORIES, CHANNELS } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
 const COLORS = require('./colors');
 
@@ -26,24 +26,21 @@ function extraSelectMenu() {
 }
 
 async function registerRolePanel(guild) {
-  const channel = guild.channels.cache.find((c) => c.name === 'choose-your-roles');
+  const channel = guild.channels.cache.find((c) => c.name === CHANNELS.ROLES);
   if (!channel) {
-    console.warn('choose-your-roles channel not found — skipping role panel');
+    console.warn('roles channel not found — skipping role panel');
     return;
   }
 
+  const politics = EXTRA_ROLES.find((r) => r.key === 'politics');
+  const otherGames = EXTRA_ROLES.find((r) => r.key === 'other-games');
   const embed = new EmbedBuilder()
-    .setTitle('Выбери роли / Choose your roles')
+    .setTitle('Выбери роли')
     .setDescription(
       'Каждая роль открывает свою категорию каналов — пока роль не взята, категории не видно вообще. ' +
         'Ничего страшного, если передумаешь: можно менять выбор в любой момент.\n\n' +
-        '**Игры** — открывает чат, LFG-форум и голосовые той игры.\n' +
-        '**Дополнительно** — Politics открывает SERIOUS TALK, Other Games — категорию для всего остального.\n\n' +
-        '— — —\n\n' +
-        "Each role unlocks its own category of channels — until you take the role, the category isn't visible at all. " +
-        'No worries if you change your mind: you can update your picks any time.\n\n' +
-        '**Games** — unlocks the chat, LFG forum and voice channels for that game.\n' +
-        '**Extra** — Politics unlocks SERIOUS TALK, Other Games unlocks the catch-all category for everything else.',
+        '**Игры** — открывает чат, форум поиска отряда и голосовые той игры.\n' +
+        `**Дополнительно** — ${politics.name} открывает ${CATEGORIES.SERIOUS}, ${otherGames.name} — категорию для всего остального.`,
     )
     .setColor(COLORS.BRAND);
 
@@ -54,7 +51,7 @@ async function registerRolePanel(guild) {
       new ActionRowBuilder().addComponents(extraSelectMenu()),
     ],
   });
-  console.log('Role panel synced in #choose-your-roles');
+  console.log('Role panel synced');
 }
 
 async function handleRoleSelect(interaction) {

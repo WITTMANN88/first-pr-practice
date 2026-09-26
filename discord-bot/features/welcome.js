@@ -1,14 +1,16 @@
-// Public greeting in #welcome. With Community mode + Membership
+// Public greeting in #добро-пожаловать. With Community mode + Membership
 // Screening on, a joining member is "pending" until they accept the
 // rules and can't see any channels yet — so we wait for the pending
 // flag to clear (guildMemberUpdate) instead of greeting on raw join.
+const { CHANNELS } = require('../config');
+
 async function postGreeting(member) {
   const guild = member.guild;
-  const channel = guild.channels.cache.find((c) => c.name === 'welcome');
+  const channel = guild.channels.cache.find((c) => c.name === CHANNELS.WELCOME);
   if (!channel?.isTextBased()) return;
 
-  const rules = guild.channels.cache.find((c) => c.name === 'rules');
-  const rolesChannel = guild.channels.cache.find((c) => c.name === 'choose-your-roles');
+  const rules = guild.channels.cache.find((c) => c.name === CHANNELS.RULES);
+  const rolesChannel = guild.channels.cache.find((c) => c.name === CHANNELS.ROLES);
 
   const parts = [`👋 <@${member.id}>, добро пожаловать в **STAKEOUT**!`];
   if (rules) parts.push(`Правила — в <#${rules.id}>.`);

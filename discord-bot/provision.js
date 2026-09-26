@@ -3,7 +3,17 @@
 // Safe to re-run: skips anything that already exists by name.
 require('dotenv').config();
 const { Client, GatewayIntentBits, ChannelType, PermissionFlagsBits } = require('discord.js');
-const { STAFF_ROLES, RANK_LADDER, GAMES, EXTRA_ROLES, LFG_TAGS, CONTENT_CREATOR_ROLE } = require('./config');
+const {
+  STAFF_ROLES,
+  RANK_LADDER,
+  GAMES,
+  CATEGORIES,
+  CHANNELS,
+  VOICE,
+  EXTRA_ROLES,
+  LFG_TAGS,
+  CONTENT_CREATOR_ROLE,
+} = require('./config');
 
 const TOKEN = process.env.DISCORD_TOKEN;
 const GUILD_ID = process.env.GUILD_ID;
@@ -88,40 +98,40 @@ async function main() {
     mentionable: false,
   });
 
-  console.log('== START HERE ==');
-  const startHere = await findOrCreateCategory(guild, '📋 START HERE');
-  await findOrCreateChannel(guild, 'welcome', ChannelType.GuildText, startHere);
-  await findOrCreateChannel(guild, 'rules', ChannelType.GuildText, startHere);
-  await findOrCreateChannel(guild, 'announcements', ChannelType.GuildText, startHere);
-  await findOrCreateChannel(guild, 'choose-your-roles', ChannelType.GuildText, startHere);
-  await findOrCreateChannel(guild, 'faq', ChannelType.GuildText, startHere);
+  console.log('== START ==');
+  const startHere = await findOrCreateCategory(guild, CATEGORIES.START);
+  await findOrCreateChannel(guild, CHANNELS.WELCOME, ChannelType.GuildText, startHere);
+  await findOrCreateChannel(guild, CHANNELS.RULES, ChannelType.GuildText, startHere);
+  await findOrCreateChannel(guild, CHANNELS.ANNOUNCEMENTS, ChannelType.GuildText, startHere);
+  await findOrCreateChannel(guild, CHANNELS.ROLES, ChannelType.GuildText, startHere);
+  await findOrCreateChannel(guild, CHANNELS.FAQ, ChannelType.GuildText, startHere);
 
   console.log('== COMMUNITY ==');
-  const community = await findOrCreateCategory(guild, '💬 COMMUNITY');
-  await findOrCreateChannel(guild, 'general', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'gaming-talk', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'clips-screenshots', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'memes', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'self-promo', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'content-creators', ChannelType.GuildText, community, {
+  const community = await findOrCreateCategory(guild, CATEGORIES.COMMUNITY);
+  await findOrCreateChannel(guild, CHANNELS.GENERAL, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.GAMING_TALK, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.CLIPS, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.MEMES, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.SELF_PROMO, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.CREATORS, ChannelType.GuildText, community, {
     permissionOverwrites: [
       { id: guild.roles.everyone.id, deny: [PermissionFlagsBits.SendMessages] },
       { id: contentCreatorRole.id, allow: [PermissionFlagsBits.SendMessages] },
       ...staffRoleIds.map((id) => ({ id, allow: [PermissionFlagsBits.SendMessages] })),
     ],
   });
-  await findOrCreateChannel(guild, 'music-commands', ChannelType.GuildText, community);
-  await findOrCreateChannel(guild, 'nsfw-uncensored', ChannelType.GuildText, community, { nsfw: true });
-  await findOrCreateChannel(guild, '🔊 Lounge', ChannelType.GuildVoice, community);
-  await findOrCreateChannel(guild, '🔊 Chill', ChannelType.GuildVoice, community);
+  await findOrCreateChannel(guild, CHANNELS.MUSIC, ChannelType.GuildText, community);
+  await findOrCreateChannel(guild, CHANNELS.NSFW, ChannelType.GuildText, community, { nsfw: true });
+  await findOrCreateChannel(guild, VOICE.LOUNGE, ChannelType.GuildVoice, community);
+  await findOrCreateChannel(guild, VOICE.CHILL, ChannelType.GuildVoice, community);
 
-  console.log('== SERIOUS TALK ==');
+  console.log('== SERIOUS ==');
   const serious = await findOrCreateCategory(
     guild,
-    '🌍 SERIOUS TALK / СЕРЬЁЗНЫЙ РАЗГОВОР',
+    CATEGORIES.SERIOUS,
     gatedOverwrites(guild, [politicsRole.id, ...staffRoleIds]),
   );
-  await findOrCreateChannel(guild, 'politics-and-irl', ChannelType.GuildText, serious);
+  await findOrCreateChannel(guild, CHANNELS.POLITICS, ChannelType.GuildText, serious);
 
   console.log('== game categories ==');
   for (const g of GAMES) {
@@ -131,47 +141,47 @@ async function main() {
       `${g.emoji} ${g.name}`,
       gatedOverwrites(guild, [role.id, ...staffRoleIds]),
     );
-    await findOrCreateChannel(guild, `${g.key}-chat`, ChannelType.GuildText, category);
-    await findOrCreateChannel(guild, `${g.key}-squad`, ChannelType.GuildForum, category, {
+    await findOrCreateChannel(guild, CHANNELS.GAME_CHAT, ChannelType.GuildText, category);
+    await findOrCreateChannel(guild, CHANNELS.GAME_SQUAD, ChannelType.GuildForum, category, {
       availableTags: LFG_TAGS.map((t) => ({ name: t })),
     });
-    await findOrCreateChannel(guild, 'Squad 1', ChannelType.GuildVoice, category);
-    await findOrCreateChannel(guild, 'Squad 2', ChannelType.GuildVoice, category);
-    await findOrCreateChannel(guild, 'Command', ChannelType.GuildVoice, category);
-    await findOrCreateChannel(guild, '➕ Join to Create', ChannelType.GuildVoice, category);
+    await findOrCreateChannel(guild, VOICE.SQUAD_1, ChannelType.GuildVoice, category);
+    await findOrCreateChannel(guild, VOICE.SQUAD_2, ChannelType.GuildVoice, category);
+    await findOrCreateChannel(guild, VOICE.COMMAND, ChannelType.GuildVoice, category);
+    await findOrCreateChannel(guild, VOICE.JOIN_TO_CREATE, ChannelType.GuildVoice, category);
   }
 
   console.log('== OTHER GAMES ==');
   const otherGames = await findOrCreateCategory(
     guild,
-    '🎲 OTHER GAMES',
+    CATEGORIES.OTHER_GAMES,
     gatedOverwrites(guild, [otherGamesRole.id, ...staffRoleIds]),
   );
-  await findOrCreateChannel(guild, 'other-games-chat', ChannelType.GuildText, otherGames);
-  await findOrCreateChannel(guild, 'other-games-squad', ChannelType.GuildForum, otherGames, {
+  await findOrCreateChannel(guild, CHANNELS.GAME_CHAT, ChannelType.GuildText, otherGames);
+  await findOrCreateChannel(guild, CHANNELS.GAME_SQUAD, ChannelType.GuildForum, otherGames, {
     availableTags: LFG_TAGS.map((t) => ({ name: t })),
   });
-  await findOrCreateChannel(guild, '🔊 Other Games', ChannelType.GuildVoice, otherGames);
-  await findOrCreateChannel(guild, '➕ Join to Create', ChannelType.GuildVoice, otherGames);
+  await findOrCreateChannel(guild, VOICE.OTHER_GAMES, ChannelType.GuildVoice, otherGames);
+  await findOrCreateChannel(guild, VOICE.JOIN_TO_CREATE, ChannelType.GuildVoice, otherGames);
 
   console.log('== RANKS & EVENTS ==');
-  const ranksEvents = await findOrCreateCategory(guild, '🎖️ RANKS & EVENTS');
-  await findOrCreateChannel(guild, 'Command Briefing', ChannelType.GuildStageVoice, ranksEvents);
+  const ranksEvents = await findOrCreateCategory(guild, CATEGORIES.RANKS);
+  await findOrCreateChannel(guild, VOICE.BRIEFING, ChannelType.GuildStageVoice, ranksEvents);
 
   console.log('== SUPPORT ==');
-  const support = await findOrCreateCategory(guild, '🎫 SUPPORT / ПОДДЕРЖКА');
-  await findOrCreateChannel(guild, 'open-a-ticket', ChannelType.GuildText, support);
+  const support = await findOrCreateCategory(guild, CATEGORIES.SUPPORT);
+  await findOrCreateChannel(guild, CHANNELS.TICKET, ChannelType.GuildText, support);
 
-  console.log('== STAFF ONLY ==');
-  const staffOnly = await findOrCreateCategory(guild, '🔐 STAFF ONLY', gatedOverwrites(guild, staffRoleIds));
-  await findOrCreateChannel(guild, 'mod-chat', ChannelType.GuildText, staffOnly);
-  await findOrCreateChannel(guild, 'mod-logs', ChannelType.GuildText, staffOnly);
-  await findOrCreateChannel(guild, 'ban-list', ChannelType.GuildText, staffOnly);
-  await findOrCreateChannel(guild, 'alt-flags', ChannelType.GuildText, staffOnly);
+  console.log('== STAFF ==');
+  const staffOnly = await findOrCreateCategory(guild, CATEGORIES.STAFF, gatedOverwrites(guild, staffRoleIds));
+  await findOrCreateChannel(guild, CHANNELS.MOD_CHAT, ChannelType.GuildText, staffOnly);
+  await findOrCreateChannel(guild, CHANNELS.MOD_LOGS, ChannelType.GuildText, staffOnly);
+  await findOrCreateChannel(guild, CHANNELS.BAN_LIST, ChannelType.GuildText, staffOnly);
+  await findOrCreateChannel(guild, CHANNELS.ALT_FLAGS, ChannelType.GuildText, staffOnly);
 
-  console.log('== AFK ZONE ==');
-  const afkZone = await findOrCreateCategory(guild, '💤 AFK ZONE');
-  const afkChannel = await findOrCreateChannel(guild, '💤 AFK', ChannelType.GuildVoice, afkZone);
+  console.log('== AFK ==');
+  const afkZone = await findOrCreateCategory(guild, CATEGORIES.AFK);
+  const afkChannel = await findOrCreateChannel(guild, VOICE.AFK, ChannelType.GuildVoice, afkZone);
   await guild.setAFKChannel(afkChannel);
   await guild.setAFKTimeout(300);
 

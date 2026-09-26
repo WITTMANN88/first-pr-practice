@@ -10,6 +10,7 @@ const { Player } = require('discord-player');
 const { DefaultExtractors } = require('@discord-player/extractor');
 const { upsertPanel } = require('./messageRegistry');
 const COLORS = require('./colors');
+const { CHANNELS } = require('../config');
 
 const PREFIX = '!';
 
@@ -44,7 +45,7 @@ function getPlayer(client) {
 }
 
 async function postMusicHelp(guild) {
-  const channel = guild.channels.cache.find((c) => c.name === 'music-commands');
+  const channel = guild.channels.cache.find((c) => c.name === CHANNELS.MUSIC);
   if (!channel) return;
 
   const embed = new EmbedBuilder()
@@ -68,7 +69,7 @@ async function postMusicHelp(guild) {
 
 async function handleMessage(message) {
   if (message.author.bot || !message.guild) return;
-  if (message.channel.name !== 'music-commands') return;
+  if (message.channel.name !== CHANNELS.MUSIC) return;
   if (!message.content.startsWith(PREFIX)) return;
 
   const [cmdRaw, ...rest] = message.content.slice(PREFIX.length).trim().split(/\s+/);

@@ -84,4 +84,21 @@ async function handleReactionAdd(reaction, user) {
   }
 }
 
-module.exports = { handleReactionAdd };
+// For third-party text the bot re-posts (Steam blurbs, giveaway
+// descriptions) that often comes only in English. Returns the original
+// on any failure so a flaky unofficial endpoint never blocks a post.
+async function ensureRussian(text) {
+  if (!text) return text;
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  const cyrillic = (text.match(/[А-Яа-яЁё]/g) || []).length;
+  if (cyrillic >= latin) return text;
+  try {
+    const result = await translate(text, { to: 'ru' });
+    return result.text || text;
+  } catch (err) {
+    console.warn('  ! auto-translate failed, posting original:', err.message);
+    return text;
+  }
+}
+
+module.exports = { handleReactionAdd, ensureRussian };

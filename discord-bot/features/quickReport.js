@@ -71,7 +71,7 @@ async function handleModalSubmit(interaction) {
 
   const safeName = interaction.user.username.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 20) || 'user';
   const channel = await guild.channels.create({
-    name: `report-${safeName}`,
+    name: `репорт-${safeName}`,
     type: ChannelType.GuildText,
     parent: category.id,
     permissionOverwrites: [

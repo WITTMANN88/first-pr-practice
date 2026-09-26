@@ -15,7 +15,8 @@
     "rename-categories": "node scripts/rename-categories-and-add-creator.js",
     "seed-panel-registry": "node scripts/seed-panel-registry.js",
     "add-owner-role": "node scripts/add-owner-role.js",
-    "setup-welcome-screen": "node scripts/setup-welcome-screen.js"
+    "setup-welcome-screen": "node scripts/setup-welcome-screen.js",
+    "translate-to-russian": "node scripts/translate-to-russian.js"
   },
   "dependencies": {
     "@discord-player/extractor": "^7.1.0",

@@ -3,7 +3,7 @@
 // a native game client running on someone's PC, not a server bot) —
 // this is the simple Gateway activity every bot can set.
 const { ActivityType } = require('discord.js');
-const { GAMES } = require('../config');
+const { GAMES, CHANNELS } = require('../config');
 
 const ROTATE_MS = 45_000;
 
@@ -12,9 +12,9 @@ function buildStatuses(guild) {
   return [
     { name: 'за STAKEOUT', type: ActivityType.Watching },
     { name: `за ${guild.memberCount} сталкерами`, type: ActivityType.Watching },
-    { name: '!play в #music-commands', type: ActivityType.Listening },
+    { name: `!play в #${CHANNELS.MUSIC}`, type: ActivityType.Listening },
     { name: randomGame.name, type: ActivityType.Playing },
-    { name: 'Zone', type: ActivityType.Competing },
+    { name: 'Зоне', type: ActivityType.Competing },
   ];
 }
 

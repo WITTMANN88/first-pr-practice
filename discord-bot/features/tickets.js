@@ -1,4 +1,4 @@
-// Ticket system: button panel in #open-a-ticket -> modal for details ->
+// Ticket system: button panel in #создать-обращение -> modal for details ->
 // private channel visible only to the opener and staff.
 const {
   EmbedBuilder,
@@ -12,11 +12,11 @@ const {
   PermissionFlagsBits,
   MessageFlags,
 } = require('discord.js');
-const { STAFF_ROLES } = require('../config');
+const { STAFF_ROLES, CATEGORIES: SERVER_CATEGORIES, CHANNELS } = require('../config');
 const { upsertPanel } = require('./messageRegistry');
 const COLORS = require('./colors');
 
-const TICKETS_CATEGORY_NAME = '🎫 Tickets';
+const TICKETS_CATEGORY_NAME = SERVER_CATEGORIES.TICKETS;
 
 const CATEGORIES = [
   { id: 'complaint', label: 'Жалоба', emoji: '⚠️', style: ButtonStyle.Danger },
@@ -34,13 +34,13 @@ function staffRoleIdsOf(guild) {
 }
 
 async function postTicketPanel(guild) {
-  const channel = guild.channels.cache.find((c) => c.name === 'open-a-ticket');
+  const channel = guild.channels.cache.find((c) => c.name === CHANNELS.TICKET);
   if (!channel) {
-    console.warn('open-a-ticket channel not found — skipping ticket panel');
+    console.warn('ticket channel not found — skipping ticket panel');
     return;
   }
   const embed = new EmbedBuilder()
-    .setTitle('Открыть тикет')
+    .setTitle('Создать обращение')
     .setDescription('Выбери категорию — откроется приватный канал, который видишь только ты и персонал.')
     .setColor(COLORS.BRAND);
 
@@ -51,14 +51,14 @@ async function postTicketPanel(guild) {
   );
 
   await upsertPanel(channel, 'ticket-panel', { embeds: [embed], components: [row] });
-  console.log('Ticket panel synced in #open-a-ticket');
+  console.log('Ticket panel synced');
 }
 
 async function handleTicketButton(interaction) {
   const categoryId = interaction.customId.replace('ticket-open-', '');
   const modal = new ModalBuilder()
     .setCustomId(`ticket-modal-${categoryId}`)
-    .setTitle(`Тикет: ${categoryLabel(categoryId)}`);
+    .setTitle(`Обращение: ${categoryLabel(categoryId)}`);
 
   const input = new TextInputBuilder()
     .setCustomId('description')
@@ -97,7 +97,7 @@ async function handleTicketModalSubmit(interaction) {
 
   const safeName = interaction.user.username.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 20) || 'user';
   const channel = await guild.channels.create({
-    name: `${categoryId}-${safeName}`,
+    name: `${categoryLabel(categoryId).toLowerCase()}-${safeName}`,
     type: ChannelType.GuildText,
     parent: category.id,
     permissionOverwrites: [
@@ -111,22 +111,22 @@ async function handleTicketModalSubmit(interaction) {
   });
 
   const embed = new EmbedBuilder()
-    .setTitle(`Тикет — ${categoryLabel(categoryId)}`)
+    .setTitle(`Обращение — ${categoryLabel(categoryId)}`)
     .setDescription(description)
     .addFields({ name: 'Открыл', value: `<@${interaction.user.id}>` })
     .setColor(COLORS.SUCCESS)
     .setTimestamp();
 
   const closeRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket-close').setLabel('Закрыть тикет').setStyle(ButtonStyle.Danger).setEmoji('🔒'),
+    new ButtonBuilder().setCustomId('ticket-close').setLabel('Закрыть обращение').setStyle(ButtonStyle.Danger).setEmoji('🔒'),
   );
 
   await channel.send({ content: `<@${interaction.user.id}>`, embeds: [embed], components: [closeRow] });
-  await interaction.editReply(`Тикет создан: ${channel}`);
+  await interaction.editReply(`Обращение создано: ${channel}`);
 }
 
 async function handleTicketClose(interaction) {
-  await interaction.reply('Тикет закрывается через 5 секунд...');
+  await interaction.reply('Обращение закроется через 5 секунд...');
   setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
 }
 
