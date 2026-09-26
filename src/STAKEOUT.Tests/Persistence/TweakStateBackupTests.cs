@@ -31,7 +31,7 @@ public sealed class TweakStateBackupTests : IDisposable
 
         var backup = Assert.Single(store.GetBackups());
         Assert.Equal(File.ReadAllText(StatePath), File.ReadAllText(backup));
-        Assert.StartsWith(BackupDir, backup);
+        Assert.StartsWith(BackupDir, backup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public sealed class TweakStateBackupTests : IDisposable
 
         var backups = store.GetBackups();
         Assert.Equal(3, backups.Count);
-        Assert.Equal(File.ReadAllText(StatePath), File.ReadAllText(backups[0]));
+        Assert.Equal(await File.ReadAllTextAsync(StatePath), await File.ReadAllTextAsync(backups[0]));
         Assert.Equal(40, IdsIn(backups[0]).Length);
     }
 

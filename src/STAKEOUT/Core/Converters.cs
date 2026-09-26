@@ -8,38 +8,40 @@ namespace Stakeout.Core;
 /// <summary>true → Visible, false → Collapsed.</summary>
 public sealed class BoolToVisibilityConverter : IValueConverter
 {
-    public object Convert(object? value, Type t, object? p, CultureInfo c)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is true ? Visibility.Visible : Visibility.Collapsed;
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is Visibility.Visible;
 }
 
 /// <summary>true → Collapsed, false → Visible (inverse of the above).</summary>
 public sealed class InverseBoolToVisibilityConverter : IValueConverter
 {
-    public object Convert(object? value, Type t, object? p, CultureInfo c)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is true ? Visibility.Collapsed : Visibility.Visible;
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is Visibility.Collapsed;
 }
 
 /// <summary>Non-empty string → Visible, else Collapsed.</summary>
 public sealed class StringToVisibilityConverter : IValueConverter
 {
-    public object Convert(object? value, Type t, object? p, CultureInfo c)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => string.IsNullOrWhiteSpace(value as string) ? Visibility.Collapsed : Visibility.Visible;
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => Binding.DoNothing;
 }
 
 /// <summary>CPU temperature bar colour: hot (>=85 °C) → bright red, else accent.</summary>
 public sealed class TempHotToBrushConverter : IValueConverter
 {
-    public object Convert(object? value, Type t, object? p, CultureInfo c)
-        => value is true
-            ? new SolidColorBrush(Color.FromRgb(0xC4, 0x1E, 0x1E))   // hot
-            : new SolidColorBrush(Color.FromRgb(0x9B, 0x1B, 0x1B));  // normal accent
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+    // Shared frozen brushes: the bar re-evaluates on every 3 s poll.
+    private static readonly Brush Hot = NotificationKindToBrushConverter.Frozen(0xC4, 0x1E, 0x1E);
+    private static readonly Brush Normal = NotificationKindToBrushConverter.Frozen(0x9B, 0x1B, 0x1B);
+
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true ? Hot : Normal;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
 /// <summary>
@@ -48,9 +50,9 @@ public sealed class TempHotToBrushConverter : IValueConverter
 /// </summary>
 public sealed class ResourceKeyToImageConverter : IValueConverter
 {
-    public object? Convert(object? value, Type t, object? p, CultureInfo c)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is string key ? Application.Current?.TryFindResource(key) as ImageSource : null;
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
 /// <summary>Log status colour: error → red, success → green, info → secondary text.</summary>
@@ -61,13 +63,13 @@ public sealed class LogLevelToBrushConverter : IValueConverter
     private static readonly Brush SuccessBrush = Freeze(new SolidColorBrush(Color.FromRgb(0x5C, 0xB8, 0x5C)));
     private static readonly Brush InfoBrush = Freeze(new SolidColorBrush(Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF)));
 
-    public object Convert(object? value, Type t, object? p, CultureInfo c) => value switch
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
         Models.LogLevel.Error => ErrorBrush,
         Models.LogLevel.Success => SuccessBrush,
         _ => InfoBrush,
     };
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 
     private static Brush Freeze(Brush b) { b.Freeze(); return b; }
 }
@@ -80,14 +82,14 @@ public sealed class NotificationKindToBrushConverter : IValueConverter
     private static readonly Brush Error = Frozen(0xC4, 0x1E, 0x1E);
     private static readonly Brush Info = Frozen(0x3A, 0x3A, 0x3A);
 
-    public object Convert(object? value, Type t, object? p, CultureInfo c) => value switch
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
         NotificationKind.Success => Success,
         NotificationKind.Warning => Warning,
         NotificationKind.Error => Error,
         _ => Info,
     };
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 
     internal static Brush Frozen(byte r, byte g, byte b)
     {
@@ -114,7 +116,7 @@ public sealed class UwpCategoryToBrushConverter : IValueConverter
         [Services.UwpCategory.System] = NotificationKindToBrushConverter.Frozen(0x5C, 0x7C, 0xA8),
     };
 
-    public object Convert(object? value, Type t, object? p, CultureInfo c)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is Services.UwpCategory cat && Map.TryGetValue(cat, out var b) ? b : Map[Services.UwpCategory.Other];
-    public object ConvertBack(object? value, Type t, object? p, CultureInfo c) => Binding.DoNothing;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => Binding.DoNothing;
 }

@@ -60,7 +60,7 @@ public sealed class RegistryRollback
 
             Logger.Log("Rollback", "PARTIAL", $@"write failed at {op.SubKey}\{op.Name}; undoing this apply");
             RestoreRange(state, start);
-            state.Saved.RemoveRange(start, state.Saved.Count - start);
+            for (var i = state.Saved.Count - 1; i >= start; i--) state.Saved.RemoveAt(i);
             return false;
         }
         return true;

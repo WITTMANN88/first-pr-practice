@@ -24,15 +24,17 @@ public sealed class SystemInfoService : IDisposable
     /// <summary>Gather a full snapshot. Safe to call repeatedly.</summary>
     public Task<SystemInfoModel> GatherAsync() => Task.Run(() =>
     {
-        var model = new SystemInfoModel();
-        model.CpuName = GetCpuName();
-        model.CpuTemperatureC = GetCpuTemperature();
-        model.Motherboard = GetMotherboard();
-        model.Gpus = GetGpus();
-        model.RamSummary = GetRam();
-        model.DiskSummary = GetDisks();
-        model.WindowsVersion = GetWindowsVersion();
-        return model;
+        // Initializers run in order: same sequence of queries as before.
+        return new SystemInfoModel
+        {
+            CpuName = GetCpuName(),
+            CpuTemperatureC = GetCpuTemperature(),
+            Motherboard = GetMotherboard(),
+            Gpus = GetGpus(),
+            RamSummary = GetRam(),
+            DiskSummary = GetDisks(),
+            WindowsVersion = GetWindowsVersion(),
+        };
     });
 
     /// <summary>Re-read only the CPU temperature (cheap; used for live polling).</summary>
@@ -45,7 +47,7 @@ public sealed class SystemInfoService : IDisposable
         // Registry is the fastest, most reliable name source.
         var name = RegistryHelper.ReadString(RegHive.LocalMachine,
             @"HARDWARE\DESCRIPTION\System\CentralProcessor\0", "ProcessorNameString");
-        if (!string.IsNullOrWhiteSpace(name)) return name!.Trim();
+        if (!string.IsNullOrWhiteSpace(name)) return name.Trim();
 
         return WmiFirst("Win32_Processor", "Name") ?? "—";
     }
@@ -77,9 +79,13 @@ public sealed class SystemInfoService : IDisposable
                             continue;
                         if (sensor.Name.Contains("Package", StringComparison.OrdinalIgnoreCase) ||
                             sensor.Name.Contains("Tctl", StringComparison.OrdinalIgnoreCase))
+                        {
                             package = v;
+                        }
                         else
+                        {
                             coreTemps.Add(v);
+                        }
                     }
                     if (package.HasValue) return Math.Round(package.Value, 1);
                     if (coreTemps.Count > 0) return Math.Round(coreTemps.Average(), 1);
@@ -93,7 +99,7 @@ public sealed class SystemInfoService : IDisposable
         return null;
     }
 
-    private Computer OpenComputer()
+    private static Computer OpenComputer()
     {
         var c = new Computer
         {
@@ -117,7 +123,7 @@ public sealed class SystemInfoService : IDisposable
 
         var biosBoard = RegistryHelper.ReadString(RegHive.LocalMachine,
             @"HARDWARE\DESCRIPTION\System\BIOS", "BaseBoardProduct");
-        return string.IsNullOrWhiteSpace(biosBoard) ? "—" : biosBoard!.Trim();
+        return string.IsNullOrWhiteSpace(biosBoard) ? "—" : biosBoard.Trim();
     }
 
     // --- GPUs --------------------------------------------------------------
@@ -129,12 +135,13 @@ public sealed class SystemInfoService : IDisposable
         {
             using var searcher = MakeSearcher(
                 "SELECT Name, AdapterCompatibility FROM Win32_VideoController");
-            foreach (ManagementObject mo in searcher.Get())
+            Wmi.ForEach(searcher, mo =>
             {
                 var name = mo["Name"]?.ToString();
-                if (string.IsNullOrWhiteSpace(name)) continue;
-                list.Add(new GpuInfo { Name = name!.Trim(), Kind = ClassifyGpu(name!) });
-            }
+                if (!string.IsNullOrWhiteSpace(name))
+                    list.Add(new GpuInfo { Name = name.Trim(), Kind = ClassifyGpu(name) });
+                return true;
+            });
         }
         catch (Exception ex)
         {
@@ -147,12 +154,13 @@ public sealed class SystemInfoService : IDisposable
     /// <summary>Heuristic: Intel/AMD APU graphics are integrated, the rest discrete.</summary>
     private static string ClassifyGpu(string name)
     {
-        var n = name.ToLowerInvariant();
-        if (n.Contains("intel") && (n.Contains("uhd") || n.Contains("hd graphics") || n.Contains("iris")))
+        bool Has(string part) => name.Contains(part, StringComparison.OrdinalIgnoreCase);
+
+        if (Has("intel") && (Has("uhd") || Has("hd graphics") || Has("iris")))
             return Strings.SysInfo_GpuIntegrated;
-        if (n.Contains("radeon") && (n.Contains("vega") || n.Contains("graphics")) && !n.Contains("rx"))
+        if (Has("radeon") && (Has("vega") || Has("graphics")) && !Has("rx"))
             return Strings.SysInfo_GpuIntegrated;
-        if (n.Contains("microsoft") || n.Contains("basic display")) return Strings.SysInfo_GpuBasic;
+        if (Has("microsoft") || Has("basic display")) return Strings.SysInfo_GpuBasic;
         return Strings.SysInfo_GpuDiscrete;
     }
 
@@ -167,17 +175,20 @@ public sealed class SystemInfoService : IDisposable
             using (var cs = MakeSearcher(
                 "SELECT TotalPhysicalMemory FROM Win32_ComputerSystem"))
             {
-                foreach (ManagementObject mo in cs.Get())
-                    totalBytes = Convert.ToUInt64(mo["TotalPhysicalMemory"] ?? 0UL);
+                Wmi.ForEach(cs, mo =>
+                {
+                    totalBytes = Convert.ToUInt64(mo["TotalPhysicalMemory"] ?? 0UL, CultureInfo.InvariantCulture);
+                    return true;
+                });
             }
             using (var pm = MakeSearcher(
                 "SELECT SMBIOSMemoryType, MemoryType FROM Win32_PhysicalMemory"))
             {
-                foreach (ManagementObject mo in pm.Get())
+                Wmi.ForEach(pm, mo =>
                 {
                     type = MemoryTypeName(mo["SMBIOSMemoryType"], mo["MemoryType"]);
-                    if (!string.IsNullOrEmpty(type)) break;
-                }
+                    return string.IsNullOrEmpty(type); // stop at the first module that reports a type
+                });
             }
             var gb = totalBytes / 1024d / 1024d / 1024d;
             var size = string.Format(CultureInfo.CurrentCulture, Strings.Unit_Gigabytes, Math.Round(gb));
@@ -193,9 +204,7 @@ public sealed class SystemInfoService : IDisposable
     private static string MemoryTypeName(object? smbios, object? legacy)
     {
         // SMBIOSMemoryType is the reliable modern field.
-        var code = 0;
-        if (smbios != null) int.TryParse(smbios.ToString(), out code);
-        var name = code switch
+        var name = ParseCode(smbios) switch
         {
             20 => "DDR",
             21 => "DDR2",
@@ -206,10 +215,14 @@ public sealed class SystemInfoService : IDisposable
         };
         if (!string.IsNullOrEmpty(name)) return name;
 
-        var lcode = 0;
-        if (legacy != null) int.TryParse(legacy.ToString(), out lcode);
-        return lcode switch { 20 => "DDR", 21 => "DDR2", 24 => "DDR3", _ => "" };
+        return ParseCode(legacy) switch { 20 => "DDR", 21 => "DDR2", 24 => "DDR3", _ => "" };
     }
+
+    /// <summary>WMI numeric property → int; 0 when absent or not a number.</summary>
+    private static int ParseCode(object? value)
+        => value != null && int.TryParse(value.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var code)
+            ? code
+            : 0;
 
     // --- Disks -------------------------------------------------------------
 
@@ -220,8 +233,11 @@ public sealed class SystemInfoService : IDisposable
             ulong total = 0;
             using var searcher = MakeSearcher(
                 "SELECT Size FROM Win32_DiskDrive");
-            foreach (ManagementObject mo in searcher.Get())
-                total += Convert.ToUInt64(mo["Size"] ?? 0UL);
+            Wmi.ForEach(searcher, mo =>
+            {
+                total += Convert.ToUInt64(mo["Size"] ?? 0UL, CultureInfo.InvariantCulture);
+                return true;
+            });
 
             var tb = total / 1024d / 1024d / 1024d / 1024d;
             return tb >= 1
@@ -251,7 +267,7 @@ public sealed class SystemInfoService : IDisposable
         // Windows 11 keeps ProductName = "Windows 10 ..." in the registry, so fix
         // the label based on the build number (>= 22000 is Windows 11).
         if (int.TryParse(build, out var b) && b >= 22000)
-            product = product.Replace("Windows 10", "Windows 11");
+            product = product.Replace("Windows 10", "Windows 11", StringComparison.Ordinal);
 
         var buildFull = string.IsNullOrEmpty(ubr) ? build : $"{build}.{ubr}";
         var displayPart = string.IsNullOrWhiteSpace(display) ? "" : $" {display}";
@@ -272,13 +288,7 @@ public sealed class SystemInfoService : IDisposable
     /// </summary>
     private static ManagementObjectSearcher MakeSearcher(string query)
     {
-        var options = new EnumerationOptions
-        {
-            Timeout = WmiTimeout,
-            ReturnImmediately = true, // semisynchronous: enables the timeout
-            Rewindable = false,
-        };
-        return new ManagementObjectSearcher(new ObjectQuery(query)) { Options = options };
+        return new ManagementObjectSearcher(new ObjectQuery(query)) { Options = Wmi.Options(WmiTimeout) };
     }
 
     private static string? WmiFirst(string wmiClass, string property)
@@ -286,11 +296,14 @@ public sealed class SystemInfoService : IDisposable
         try
         {
             using var searcher = MakeSearcher($"SELECT {property} FROM {wmiClass}");
-            foreach (ManagementObject mo in searcher.Get())
+            string? found = null;
+            Wmi.ForEach(searcher, mo =>
             {
                 var v = mo[property]?.ToString();
-                if (!string.IsNullOrWhiteSpace(v)) return v.Trim();
-            }
+                if (!string.IsNullOrWhiteSpace(v)) found = v.Trim();
+                return found is null;
+            });
+            if (found != null) return found;
         }
         catch (Exception ex)
         {

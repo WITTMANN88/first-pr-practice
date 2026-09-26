@@ -16,7 +16,7 @@ public sealed class SystemInfoModel
 
     public string Motherboard { get; set; } = "—";
 
-    public List<GpuInfo> Gpus { get; set; } = new();
+    public IReadOnlyList<GpuInfo> Gpus { get; init; } = Array.Empty<GpuInfo>();
 
     public string RamSummary { get; set; } = "—";   // e.g. "32 ГБ DDR4"
     public string DiskSummary { get; set; } = "—";   // e.g. "Всего: 1.9 ТБ"

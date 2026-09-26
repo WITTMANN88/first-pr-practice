@@ -33,7 +33,7 @@ public static class ServiceRegistration
         services.AddSingleton<YandexBlockService>();
         services.AddSingleton<TweakService>();
         services.AddSingleton<SystemInfoService>();
-        services.AddSingleton<UwpService>();
+        services.AddSingleton<IUwpService, UwpService>();
         services.AddSingleton<DownloadService>();
         services.AddSingleton<SoftwareInstallService>();
 

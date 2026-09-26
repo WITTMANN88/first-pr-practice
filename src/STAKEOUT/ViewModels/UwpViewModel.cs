@@ -58,12 +58,12 @@ public sealed class UwpItemViewModel : ViewModelBase
 /// <summary>The UWP removal page.</summary>
 public sealed class UwpViewModel : ViewModelBase
 {
-    private readonly UwpService _service;
+    private readonly IUwpService _service;
     private readonly INotificationService _notify;
     private bool _isLoading;
     private double _freedMb;
 
-    public UwpViewModel(UwpService service, INotificationService notify)
+    public UwpViewModel(IUwpService service, INotificationService notify)
     {
         _service = service;
         _notify = notify;
@@ -93,7 +93,7 @@ public sealed class UwpViewModel : ViewModelBase
             Apps.Clear();
             // Guard the PowerShell enumeration so a hung host releases the UI.
             var list = await TimeoutGuard.Await(
-                _service.ListAsync(), TimeSpan.FromSeconds(90), new(), "Uwp.List");
+                _service.ListAsync(), TimeSpan.FromSeconds(90), Array.Empty<UwpApp>(), "Uwp.List");
             ShowApps(list);
             _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Found, Apps.Count));
         }

@@ -11,6 +11,9 @@ namespace Stakeout.Tests.Persistence;
 /// </summary>
 public sealed class RollbackEndToEndTests : IDisposable
 {
+    private const RegHive HKLM = RegHive.LocalMachine;
+    private const RegHive HKCU = RegHive.CurrentUser;
+
     private readonly TempDir _dir = new();
 
     public void Dispose() => _dir.Dispose();
@@ -18,8 +21,6 @@ public sealed class RollbackEndToEndTests : IDisposable
     [Fact]
     public void ApplyPersistRestartRevert_RestoresRegistryExactly()
     {
-        const RegHive HKLM = RegHive.LocalMachine;
-        const RegHive HKCU = RegHive.CurrentUser;
         var path = _dir.File("tweak-state.json");
 
         var registry = new FakeRegistry();

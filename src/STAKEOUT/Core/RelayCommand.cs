@@ -7,6 +7,7 @@ public sealed class RelayCommand : ICommand
 {
     private readonly Action<object?> _execute;
     private readonly Func<object?, bool>? _canExecute;
+    private EventHandler? _canExecuteChanged;
 
     public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
     {
@@ -21,13 +22,28 @@ public sealed class RelayCommand : ICommand
 
     public void Execute(object? parameter) => _execute(parameter);
 
+    // Subscribers get both: WPF's global requery (on focus/input changes, held
+    // weakly by CommandManager) and this command's own notification.
     public event EventHandler? CanExecuteChanged
     {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
+        add
+        {
+            _canExecuteChanged += value;
+            CommandManager.RequerySuggested += value;
+        }
+        remove
+        {
+            _canExecuteChanged -= value;
+            CommandManager.RequerySuggested -= value;
+        }
     }
 
-    public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
+    /// <summary>
+    /// Re-query this command now. Unlike CommandManager.InvalidateRequerySuggested
+    /// (which re-evaluates every command in the app on a later dispatcher pass),
+    /// this is synchronous and scoped to one command. Call on the UI thread.
+    /// </summary>
+    public void NotifyCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
 /// <summary>
@@ -40,6 +56,7 @@ public sealed class AsyncRelayCommand : ICommand
     private readonly Func<object?, Task> _execute;
     private readonly Func<object?, bool>? _canExecute;
     private bool _isRunning;
+    private EventHandler? _canExecuteChanged;
 
     public AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute = null)
     {
@@ -57,7 +74,7 @@ public sealed class AsyncRelayCommand : ICommand
     {
         if (!CanExecute(parameter)) return;
         _isRunning = true;
-        RaiseCanExecuteChanged();
+        NotifyCanExecuteChanged();
         try
         {
             await _execute(parameter);
@@ -69,15 +86,30 @@ public sealed class AsyncRelayCommand : ICommand
         finally
         {
             _isRunning = false;
-            RaiseCanExecuteChanged();
+            NotifyCanExecuteChanged();
         }
     }
 
+    // Subscribers get both: WPF's global requery (on focus/input changes, held
+    // weakly by CommandManager) and this command's own notification.
     public event EventHandler? CanExecuteChanged
     {
-        add => CommandManager.RequerySuggested += value;
-        remove => CommandManager.RequerySuggested -= value;
+        add
+        {
+            _canExecuteChanged += value;
+            CommandManager.RequerySuggested += value;
+        }
+        remove
+        {
+            _canExecuteChanged -= value;
+            CommandManager.RequerySuggested -= value;
+        }
     }
 
-    public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
+    /// <summary>
+    /// Re-query this command now. Unlike CommandManager.InvalidateRequerySuggested
+    /// (which re-evaluates every command in the app on a later dispatcher pass),
+    /// this is synchronous and scoped to one command. Call on the UI thread.
+    /// </summary>
+    public void NotifyCanExecuteChanged() => _canExecuteChanged?.Invoke(this, EventArgs.Empty);
 }

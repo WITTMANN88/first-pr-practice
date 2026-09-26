@@ -14,7 +14,7 @@ public static class UwpListing
     /// user), categorised and sorted by category (junk first, system last), then
     /// by display name. Malformed lines are skipped.
     /// </summary>
-    public static List<UwpApp> Parse(string? stdout)
+    public static IReadOnlyList<UwpApp> Parse(string? stdout)
     {
         var apps = new List<UwpApp>();
         if (string.IsNullOrWhiteSpace(stdout)) return apps;

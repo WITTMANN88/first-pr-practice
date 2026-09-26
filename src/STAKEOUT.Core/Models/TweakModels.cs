@@ -37,9 +37,10 @@ public sealed class TweakState
 {
     public bool Applied { get; set; }
     public DateTime? AppliedUtc { get; set; }
-    public List<SavedValue> Saved { get; set; } = new();
+    // Collections are init-only: callers add to them, never swap them out.
+    public IList<SavedValue> Saved { get; init; } = new List<SavedValue>();
     /// <summary>Free-form notes for command tweaks (e.g. prior powercfg scheme).</summary>
-    public Dictionary<string, string> Notes { get; set; } = new();
+    public IDictionary<string, string> Notes { get; init; } = new Dictionary<string, string>();
 
     public TweakState Clone() => new()
     {

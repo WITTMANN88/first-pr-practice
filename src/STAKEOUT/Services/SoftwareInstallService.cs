@@ -20,6 +20,8 @@ public sealed class SoftwareInstallService
     public SoftwareInstallService(DownloadService download) => _download = download;
 
     /// <summary>Catalog of installable programs shown on the software page.</summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S1075:URIs should not be hardcoded",
+        Justification = "The catalog is data: each entry pins one vendor release URL, reviewed with the code.")]
     public IReadOnlyList<SoftwareItem> Catalog { get; } = new List<SoftwareItem>
     {
         new() { Key = "chrome",   DisplayName = "Google Chrome", Method = InstallMethod.Winget, WingetId = "Google.Chrome" },
@@ -29,10 +31,10 @@ public sealed class SoftwareInstallService
         // Direct downloads.
         new() { Key = "islc",     DisplayName = "ISLC (Intelligent Standby List Cleaner)",
                 Method = InstallMethod.DirectDownload, FileName = "ISLC_v1.0.4.7_setup.exe",
-                DownloadUrl = "https://download.wagnardsoft.com/ISLC/ISLC%20v1.0.4.7_setup.exe" },
+                DownloadUrl = new Uri("https://download.wagnardsoft.com/ISLC/ISLC%20v1.0.4.7_setup.exe") },
         new() { Key = "maku",     DisplayName = "MakuTweaker",
                 Method = InstallMethod.DirectDownload, FileName = "MakuTweaker.5.7.3.Setup.exe",
-                DownloadUrl = "https://github.com/MarkAdderly/MakuTweaker/releases/download/release57/MakuTweaker.5.7.3.Setup.exe" },
+                DownloadUrl = new Uri("https://github.com/MarkAdderly/MakuTweaker/releases/download/release57/MakuTweaker.5.7.3.Setup.exe") },
     };
 
     /// <summary>
@@ -65,7 +67,15 @@ public sealed class SoftwareInstallService
         // --interactive shows the installer window so the user can choose the path.
         var args = $"install --id {item.WingetId} -e --interactive " +
                    "--accept-package-agreements --accept-source-agreements";
-        var result = await ProcessRunner.RunAsync("winget.exe", args, ct);
+        if (SystemTools.Winget is not { } winget)
+        {
+            Logger.Log("Winget install", "ERROR", "winget.exe not found (App Installer missing)");
+            stage.Report(InstallStage.Failed);
+            return false;
+        }
+        // Interactive installers wait for the user: allow far longer than the
+        // 2-minute console default, which would kill the installer mid-dialog.
+        var result = await ProcessRunner.RunAsync(winget, args, timeoutMs: 30 * 60_000, ct: ct);
 
         var ok = result.Success;
         stage.Report(ok ? InstallStage.Done : InstallStage.Failed);

@@ -8,7 +8,7 @@ using Stakeout.Services;
 namespace Stakeout.ViewModels;
 
 /// <summary>One software card with its own progress and morphing status text.</summary>
-public sealed class SoftwareItemViewModel : ViewModelBase
+public sealed class SoftwareItemViewModel : ViewModelBase, IDisposable
 {
     private readonly SoftwareInstallService _service;
     private readonly INotificationService _notify;
@@ -62,6 +62,14 @@ public sealed class SoftwareItemViewModel : ViewModelBase
     private static string F(string format, params object[] args)
         => string.Format(CultureInfo.CurrentCulture, format, args);
 
+    /// <summary>At exit: cancel an install still in progress. Safe while InstallAsync is
+    /// awaiting: the source is cancelled first, and a second Dispose is a no-op.</summary>
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+
     /// <summary>Freeze the card mid-install. Design-time entry point (Design/DesignData).</summary>
     internal void ShowProgress(InstallStage stage, double progress)
     {
@@ -77,7 +85,7 @@ public sealed class SoftwareItemViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsIndeterminate));
         Progress = 0;
         _cts = new CancellationTokenSource();
-        CancelCommand.RaiseCanExecuteChanged();
+        CancelCommand.NotifyCanExecuteChanged();
         var stageProgress = new Progress<InstallStage>(s => Stage = s);
         var barProgress = new Progress<double>(p => Progress = p);
         try
@@ -93,13 +101,13 @@ public sealed class SoftwareItemViewModel : ViewModelBase
             _cts = null;
             Busy = false;
             OnPropertyChanged(nameof(IsIndeterminate));
-            CancelCommand.RaiseCanExecuteChanged();
+            CancelCommand.NotifyCanExecuteChanged();
         }
     }
 }
 
 /// <summary>The software page: cards built from the install catalog.</summary>
-public sealed class SoftwareViewModel : ViewModelBase
+public sealed class SoftwareViewModel : ViewModelBase, IDisposable
 {
     public SoftwareViewModel(SoftwareInstallService service, INotificationService notify)
     {
@@ -108,4 +116,10 @@ public sealed class SoftwareViewModel : ViewModelBase
     }
 
     public ObservableCollection<SoftwareItemViewModel> Items { get; }
+
+    /// <summary>Called by the DI container at exit.</summary>
+    public void Dispose()
+    {
+        foreach (var item in Items) item.Dispose();
+    }
 }

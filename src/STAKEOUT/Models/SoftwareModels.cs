@@ -15,12 +15,12 @@ public sealed class SoftwareItem
     /// <summary>winget package id, e.g. "Google.Chrome".</summary>
     public string? WingetId { get; set; }
 
-    /// <summary>Direct installer URL (for ISLC / MakuTweaker).</summary>
-    public string? DownloadUrl { get; set; }
+    /// <summary>Direct installer URL (for ISLC / MakuTweaker). HTTPS only.</summary>
+    public Uri? DownloadUrl { get; set; }
     public string? FileName { get; set; }
 
     /// <summary>True when a direct URL still needs to be configured by the user.</summary>
     public bool NeedsUrlConfig =>
         Method == InstallMethod.DirectDownload &&
-        (string.IsNullOrWhiteSpace(DownloadUrl) || DownloadUrl!.Contains("REPLACE_WITH"));
+        (DownloadUrl is null || DownloadUrl.OriginalString.Contains("REPLACE_WITH", StringComparison.Ordinal));
 }

@@ -1,0 +1,30 @@
+<Project>
+  <!-- Shared by every project under src/. Static analysis is part of the build:
+       any compiler, .NET analyzer, Sonar or code-style warning fails it.
+       Rule choices and the few deliberate exceptions live in /.editorconfig. -->
+  <PropertyGroup>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>All</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Needed for the compiler to report unused usings (IDE0005) during build;
+         missing XML docs are not enforced (CS1591 off: this is not a public library). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Pinned instead of the SDK's built-in copy, so the rule set only changes on
+         a deliberate version bump. Version 10.0.401 loads on the 8.0.4xx SDK compiler. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.401">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.34.0.3385">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

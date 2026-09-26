@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Stakeout.Core;
 
 namespace Stakeout.Services;
 
@@ -91,10 +92,17 @@ public static class UwpCatalog
         "NcsiUwpApp",
     };
 
+    /// <summary>
+    /// Upper bound per match. Package names are short and the globs are simple, so
+    /// this never triggers in practice; it guarantees a pathological input cannot
+    /// stall the UI thread (ReDoS).
+    /// </summary>
+    private static readonly TimeSpan MatchTimeout = TimeSpan.FromMilliseconds(250);
+
     /// <summary>Windows ships several system apps named by a bare GUID (File Explorer, file picker…).</summary>
     private static readonly Regex GuidName = new(
         "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled, MatchTimeout);
 
     // Compiled once. Order of SpecificRules preserved.
     private static readonly (UwpCategory Category, Regex[] Matchers)[] CompiledRules =
@@ -113,17 +121,31 @@ public static class UwpCatalog
         if (IsCritical(name)) return UwpCategory.System;
 
         foreach (var (category, matchers) in CompiledRules)
-            if (matchers.Any(m => m.IsMatch(name))) return category;
+            if (matchers.Any(m => Matches(m, name))) return category;
 
-        if (CompiledSystem.Any(m => m.IsMatch(name)) || GuidName.IsMatch(name)) return UwpCategory.System;
+        if (CompiledSystem.Any(m => Matches(m, name)) || Matches(GuidName, name)) return UwpCategory.System;
 
         return name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
             ? UwpCategory.Other
             : UwpCategory.ThirdParty;
     }
 
+    /// <summary>A timed-out match counts as "no match", keeping Categorize total.</summary>
+    private static bool Matches(Regex regex, string name)
+    {
+        try
+        {
+            return regex.IsMatch(name);
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            Logger.Log("UwpCatalog", "TIMEOUT", $"pattern '{regex}' on '{name}'");
+            return false;
+        }
+    }
+
     /// <summary>Translate a "*"-only glob into an anchored, case-insensitive regex.</summary>
     private static Regex Glob(string pattern)
-        => new("^" + Regex.Escape(pattern).Replace(@"\*", ".*") + "$",
-               RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        => new("^" + Regex.Escape(pattern).Replace(@"\*", ".*", StringComparison.Ordinal) + "$",
+               RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled, MatchTimeout);
 }

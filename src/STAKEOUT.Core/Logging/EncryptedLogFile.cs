@@ -66,5 +66,5 @@ public sealed class EncryptedLogFile
     }
 
     private static string Flatten(string s)
-        => s.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
+        => s.Replace("\r\n", " ", StringComparison.Ordinal).Replace('\r', ' ').Replace('\n', ' ');
 }

@@ -33,18 +33,21 @@ public class XamlLintTests
 
     private static string Read(string relative) => File.ReadAllText(Path.Combine(AppDir, relative));
 
+    private static bool IsBuildOutput(string path) =>
+        path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal) ||
+        path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
     private static IEnumerable<string> SourceFiles() =>
         new[] { AppDir, Path.Combine(AppDir, "..", "STAKEOUT.Core") }
             .SelectMany(d => Directory.GetFiles(d, "*.cs", SearchOption.AllDirectories))
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") &&
-                        !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"));
+            .Where(f => !IsBuildOutput(f));
 
     [Theory]
     [MemberData(nameof(Screens))]
     public void EveryScreen_HasDesignTimeData(string file)
     {
         var xaml = Read(file);
-        Assert.Contains("mc:Ignorable=\"d\"", xaml);
+        Assert.Contains("mc:Ignorable=\"d\"", xaml, StringComparison.Ordinal);
         Assert.Matches(@"d:DataContext=""\{x:Static design:DesignData\.\w+\}""", xaml);
     }
 
@@ -57,8 +60,10 @@ public class XamlLintTests
         Assert.NotEmpty(declared);
 
         foreach (var file in ScreenFiles())
+        {
             foreach (Match m in Regex.Matches(Read(file), @"DesignData\.(\w+)"))
                 Assert.True(declared.Contains(m.Groups[1].Value), $"{file}: DesignData.{m.Groups[1].Value} does not exist");
+        }
     }
 
     /// <summary>
@@ -77,23 +82,28 @@ public class XamlLintTests
 
         var problems = new List<string>();
         var xamlFiles = Directory.GetFiles(AppDir, "*.xaml", SearchOption.AllDirectories)
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") &&
-                        !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"));
+            .Where(f => !IsBuildOutput(f));
         foreach (var file in xamlFiles)
         {
             foreach (Match m in Regex.Matches(File.ReadAllText(file), @"\{Binding\b([^{}]*)\}"))
             {
                 var parts = m.Groups[1].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
                 // Paths relative to an element or another source name framework properties: out of scope.
-                if (parts.Any(p => p.StartsWith("ElementName=") || p.StartsWith("RelativeSource=") || p.StartsWith("Source=")))
+                if (parts.Any(p => p.StartsWith("ElementName=", StringComparison.Ordinal) ||
+                                   p.StartsWith("RelativeSource=", StringComparison.Ordinal) ||
+                                   p.StartsWith("Source=", StringComparison.Ordinal)))
+                {
                     continue;
-                var path = parts.FirstOrDefault(p => !p.Contains('=')) ??
-                           parts.FirstOrDefault(p => p.StartsWith("Path="))?["Path=".Length..];
+                }
+                var path = parts.FirstOrDefault(p => !p.Contains('=', StringComparison.Ordinal)) ??
+                           parts.FirstOrDefault(p => p.StartsWith("Path=", StringComparison.Ordinal))?["Path=".Length..];
                 if (string.IsNullOrEmpty(path) || path == ".") continue;
 
                 foreach (var segment in path.Split('.'))
+                {
                     if (!properties.Contains(Regex.Replace(segment, @"\[.*\]$", "")))
                         problems.Add($"{Path.GetFileName(file)}: {{Binding {path}}} — no property named '{segment}'");
+                }
             }
         }
         Assert.Empty(problems);

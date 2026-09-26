@@ -1,21 +1,29 @@
-# Build, test and publish STAKEOUT on Windows.
+# Build, test, publish and release STAKEOUT.
 #
-#   test     restore → build (Release) → unit tests. Always uploads the test
-#            results and the MSBuild logs, so a red run can be diagnosed.
-#   publish  runs only when `test` is green; one job per flavor, each uploading
-#            STAKEOUT.exe + its SHA-256 and the publish logs:
-#              standard  self-contained single file (supported configuration)
-#              lite      framework-dependent, needs the .NET 8 Desktop Runtime
-#              trimmed   EXPERIMENTAL forced trimming; allowed to fail
+#   test             restore → build (Release, analyzers as errors) → unit tests.
+#                    Always uploads test results and MSBuild logs.
+#   publish          only when `test` is green; one job per flavor, each uploading
+#                    STAKEOUT.exe + its SHA-256 and the publish logs:
+#                      standard  self-contained single file (supported configuration)
+#                      lite      framework-dependent, needs the .NET 8 Desktop Runtime
+#                      trimmed   EXPERIMENTAL forced trimming; allowed to fail
+#                    On a version tag the exe is stamped with that version.
+#   release          only for a pushed tag vMAJOR.MINOR.PATCH[-prerelease]:
+#                    creates the GitHub Release with a changelog built from the
+#                    commits since the previous version tag and attaches all three
+#                    builds + SHA-256 files (.github/scripts/prepare-release.sh).
+#   release-preview  every other run: the same packaging and notes as a dry run,
+#                    shown in the run summary, so a tag push holds no surprises.
 #
-# Security: read-only token, checkout credentials not persisted, no secrets
-# used. MSBuild binary logs record only the environment variables the build
-# reads, and this workflow sets none that are sensitive.
+# Security: read-only token everywhere except the release job (contents: write);
+# checkout credentials not persisted; no secrets; the tag is validated before use
+# and passed through environment variables, never interpolated into scripts.
 name: build
 
 on:
   push:
     branches: ['**']
+    tags: ['v*.*.*']
     paths-ignore: ['**.md']
   pull_request:
     paths-ignore: ['**.md']
@@ -137,17 +145,32 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      # Tag builds carry the tag's version (file/assembly/product version).
+      - name: Version from tag
+        id: version
+        if: github.ref_type == 'tag'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ($env:TAG -notmatch '^v(\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?)$') {
+            throw "Tag '$env:TAG' is not vMAJOR.MINOR.PATCH[-prerelease]"
+          }
+          "value=$($Matches[1])" >> $env:GITHUB_OUTPUT
+
       # An empty StakeoutFlavor selects the standard build (see STAKEOUT.csproj).
       - name: Publish
         env:
           FLAVOR: ${{ matrix.flavor }}
           NAME: ${{ matrix.name }}
-        run: >
-          dotnet publish src/STAKEOUT/STAKEOUT.csproj -c Release
-          "-p:StakeoutFlavor=$env:FLAVOR"
-          -o "artifacts/publish/$env:NAME"
-          "-bl:artifacts/logs/publish-$env:NAME.binlog"
-          "-flp:logfile=artifacts/logs/publish-$env:NAME.log;verbosity=normal"
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          $props = @("-p:StakeoutFlavor=$env:FLAVOR")
+          if ($env:VERSION) { $props += "-p:Version=$env:VERSION" }
+          dotnet publish src/STAKEOUT/STAKEOUT.csproj -c Release @props `
+            -o "artifacts/publish/$env:NAME" `
+            "-bl:artifacts/logs/publish-$env:NAME.binlog" `
+            "-flp:logfile=artifacts/logs/publish-$env:NAME.log;verbosity=normal"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Checksum
         env:
@@ -156,7 +179,8 @@ jobs:
           $exe = "artifacts/publish/$env:NAME/STAKEOUT.exe"
           if (-not (Test-Path $exe)) { throw "STAKEOUT.exe was not produced" }
           $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash *STAKEOUT.exe" | Set-Content "artifacts/publish/$env:NAME/STAKEOUT.exe.sha256" -Encoding ascii
+          # sha256sum format with an LF line end, so `sha256sum -c` accepts it anywhere.
+          [IO.File]::WriteAllText("$PWD/artifacts/publish/$env:NAME/STAKEOUT.exe.sha256", "$hash *STAKEOUT.exe`n")
           $mb = [math]::Round((Get-Item $exe).Length / 1MB, 1)
           "| flavor | size | sha256 |`n|---|---|---|`n| $env:NAME | $mb MB | ``$hash`` |" >> $env:GITHUB_STEP_SUMMARY
 
@@ -178,3 +202,74 @@ jobs:
           path: artifacts/logs/
           retention-days: 14
           if-no-files-found: warn
+
+  release:
+    name: Release
+    needs: publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write   # create the release and upload its assets (this job only)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history and tags for the changelog
+          persist-credentials: false
+
+      - name: Download the three builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: STAKEOUT-*
+          path: artifacts/in
+
+      - name: Package assets and write release notes
+        env:
+          TAG: ${{ github.ref_name }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: .github/scripts/prepare-release.sh "$TAG" "$TAG" artifacts/in artifacts/release "$REPO_URL"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          flags=(--verify-tag)
+          if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "$TAG" artifacts/release/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "STAKEOUT $TAG" \
+            --notes-file artifacts/release-notes.md \
+            "${flags[@]}"
+
+  release-preview:
+    name: Release preview (dry run)
+    needs: publish
+    if: github.ref_type != 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Informational: an experimental trimmed failure must not turn the run red.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download the three builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: STAKEOUT-*
+          path: artifacts/in
+
+      - name: Package assets and write release notes (not published)
+        env:
+          PREVIEW_TAG: v0.0.0-preview.${{ github.run_number }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          .github/scripts/prepare-release.sh "$PREVIEW_TAG" HEAD artifacts/in artifacts/release "$REPO_URL"
+          {
+            echo "> Dry run: this is what a release from this commit would contain. Nothing was published."
+            echo
+            cat artifacts/release-notes.md
+          } >> "$GITHUB_STEP_SUMMARY"

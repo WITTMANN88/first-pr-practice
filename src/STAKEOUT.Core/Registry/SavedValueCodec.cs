@@ -67,7 +67,9 @@ public static class SavedValueCodec
         if (sv.ValueBase64 is null) return false;
         if (!Enum.TryParse<RegValueKind>(sv.Kind, ignoreCase: false, out var kind) ||
             !Enum.IsDefined(kind) || kind == RegValueKind.Unknown)
+        {
             return false;
+        }
 
         try
         {

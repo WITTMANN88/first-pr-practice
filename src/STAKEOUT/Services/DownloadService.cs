@@ -9,14 +9,18 @@ namespace Stakeout.Services;
 /// so the UI progress bar can animate. Streams to disk (no full buffering) and
 /// supports cancellation.
 /// </summary>
-public sealed class DownloadService
+public sealed class DownloadService : IDisposable
 {
-    private static readonly HttpClient Http = new(new HttpClientHandler
+    // One client for the service's lifetime (a DI singleton), so connections are
+    // pooled; disposed with the container at exit. Certificate revocation is
+    // checked: this client fetches installers that are then run elevated.
+    private readonly HttpClient _http = new(new HttpClientHandler
     {
-        AutomaticDecompression = System.Net.DecompressionMethods.All
+        AutomaticDecompression = System.Net.DecompressionMethods.All,
+        CheckCertificateRevocationList = true,
     })
     {
-        Timeout = TimeSpan.FromMinutes(30)
+        Timeout = TimeSpan.FromMinutes(30),
     };
 
     /// <summary>Absolute path of the current user's Downloads folder.</summary>
@@ -36,14 +40,21 @@ public sealed class DownloadService
     /// Download <paramref name="url"/> into Downloads as <paramref name="fileName"/>.
     /// Returns the saved path, or null on failure.
     /// </summary>
-    public async Task<string?> DownloadAsync(string url, string fileName,
+    public async Task<string?> DownloadAsync(Uri url, string fileName,
         IProgress<double> progress, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(url);
+        // Installers are executed afterwards: refuse anything but HTTPS.
+        if (url.Scheme != Uri.UriSchemeHttps)
+        {
+            Logger.Log("Download", "BLOCKED", $"{fileName}: non-HTTPS URL refused");
+            return null;
+        }
         var dest = Path.Combine(DownloadsFolder, fileName);
         try
         {
             Logger.Log("Download", "START", fileName);
-            using var response = await Http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+            using var response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
             response.EnsureSuccessStatusCode();
 
             var total = response.Content.Headers.ContentLength ?? -1L;
@@ -78,6 +89,8 @@ public sealed class DownloadService
             return null;
         }
     }
+
+    public void Dispose() => _http.Dispose();
 
     private static void TryDelete(string path)
     {

@@ -7,6 +7,16 @@ namespace Stakeout.Services;
 /// <summary>Outcome of removing one package.</summary>
 public readonly record struct UwpRemovalResult(bool Success, long FreedBytes);
 
+/// <summary>UWP package listing and removal (the view model's dependency; faked at design time).</summary>
+public interface IUwpService
+{
+    /// <summary>Enumerate all installed packages for all users.</summary>
+    Task<IReadOnlyList<UwpApp>> ListAsync();
+
+    /// <summary>Remove one package for all users; protected packages are refused.</summary>
+    Task<UwpRemovalResult> RemoveAsync(UwpApp app);
+}
+
 /// <summary>
 /// Lists and removes UWP (Appx) packages via PowerShell (Get-AppxPackage /
 /// Remove-AppxPackage) for all user accounts. Parsing, categorisation and the
@@ -14,10 +24,10 @@ public readonly record struct UwpRemovalResult(bool Success, long FreedBytes);
 /// this class only runs the scripts and touches the file system.
 /// Protected packages are never auto-selected and are rejected by the remover.
 /// </summary>
-public sealed class UwpService
+public sealed class UwpService : IUwpService
 {
-    /// <summary>Enumerate all installed packages for all users.</summary>
-    public async Task<List<UwpApp>> ListAsync()
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<UwpApp>> ListAsync()
     {
         // Emit a stable pipe-delimited line per package.
         const string script =
@@ -28,7 +38,7 @@ public sealed class UwpService
         if (!result.Success && string.IsNullOrWhiteSpace(result.StdOut))
         {
             Logger.Log("UWP list", "ERROR", result.StdErr);
-            return new List<UwpApp>();
+            return Array.Empty<UwpApp>();
         }
 
         var apps = UwpListing.Parse(result.StdOut);
@@ -143,6 +153,6 @@ public sealed class UwpService
         }
     }
 
-
-    private static string Escape(string s) => s.Replace("'", "''");
+    /// <summary>Escape for a single-quoted PowerShell string literal.</summary>
+    private static string Escape(string s) => s.Replace("'", "''", StringComparison.Ordinal);
 }

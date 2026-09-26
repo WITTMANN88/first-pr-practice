@@ -28,8 +28,12 @@ public static class ProcessRunner
     /// </summary>
     public static async Task<ProcessResult> RunAsync(
         string fileName, string arguments,
-        CancellationToken ct = default, int timeoutMs = DefaultTimeoutMs)
+        int timeoutMs = DefaultTimeoutMs, CancellationToken ct = default)
     {
+        // Security invariant: elevated tools run from an absolute path only (see SystemTools).
+        if (!Path.IsPathFullyQualified(fileName))
+            throw new ArgumentException($"'{fileName}' must be an absolute path.", nameof(fileName));
+
         var psi = new ProcessStartInfo
         {
             FileName = fileName,
@@ -41,7 +45,7 @@ public static class ProcessRunner
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
-        return await RunInternalAsync(psi, ct, timeoutMs);
+        return await RunInternalAsync(psi, timeoutMs, ct);
     }
 
     /// <summary>
@@ -50,6 +54,8 @@ public static class ProcessRunner
     /// </summary>
     public static void LaunchVisible(string fileName, string arguments = "")
     {
+        if (!Path.IsPathFullyQualified(fileName))
+            throw new ArgumentException($"'{fileName}' must be an absolute path.", nameof(fileName));
         try
         {
             var psi = new ProcessStartInfo
@@ -59,7 +65,8 @@ public static class ProcessRunner
                 UseShellExecute = true,   // let the shell show the installer UI
                 CreateNoWindow = false,
             };
-            Process.Start(psi);
+            // Dispose releases our handle only; the launched program keeps running.
+            using var process = Process.Start(psi);
             Logger.Log("LaunchVisible", "OK", Path.GetFileName(fileName));
         }
         catch (Exception ex)
@@ -69,7 +76,7 @@ public static class ProcessRunner
     }
 
     private static async Task<ProcessResult> RunInternalAsync(
-        ProcessStartInfo psi, CancellationToken ct, int timeoutMs)
+        ProcessStartInfo psi, int timeoutMs, CancellationToken ct)
     {
         try
         {
@@ -127,8 +134,12 @@ public static class ProcessRunner
         // Win32 error 5 == ERROR_ACCESS_DENIED.
         if (ex is System.ComponentModel.Win32Exception { NativeErrorCode: 5 }
             || ex is UnauthorizedAccessException)
+        {
             Logger.Log(name, "ACCESS_DENIED", ex.Message);
+        }
         else
+        {
             Logger.LogError(name, ex);
+        }
     }
 }

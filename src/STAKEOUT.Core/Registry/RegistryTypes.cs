@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Stakeout.Services;
 
 // Core-owned mirrors of Microsoft.Win32.RegistryHive / RegistryValueKind.
@@ -8,6 +10,8 @@ namespace Stakeout.Services;
 // tweak-state.json. A unit test pins the parity.
 
 /// <summary>Registry root key. Same names and values as Microsoft.Win32.RegistryHive.</summary>
+[SuppressMessage("Design", "CA1008:Enums should have zero value",
+    Justification = "Values are the Win32 HKEY constants; a fake zero hive would not exist in the OS.")]
 public enum RegHive
 {
     ClassesRoot = int.MinValue,
@@ -23,6 +27,8 @@ public enum RegValueKind
 {
     None = -1,
     Unknown = 0,
+    [SuppressMessage("Naming", "CA1720:Identifier contains type name",
+        Justification = "Mirrors RegistryValueKind.String; the name is persisted in tweak-state.json.")]
     String = 1,
     ExpandString = 2,
     Binary = 3,

@@ -15,7 +15,7 @@ public static class TimeoutGuard
     {
         try
         {
-            return await task.WaitAsync(timeout);
+            return await task.WaitAsync(timeout).ConfigureAwait(false);
         }
         catch (TimeoutException)
         {

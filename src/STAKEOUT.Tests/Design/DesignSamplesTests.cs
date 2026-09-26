@@ -26,7 +26,7 @@ public class DesignSamplesTests
         Assert.Contains(apps, a => a.IsCritical);
         Assert.Contains(apps, a => !a.IsCritical && a.Category == UwpCategory.Bloatware);
         Assert.All(apps, a => Assert.True(a.SizeBytes > 0, a.Name));
-        Assert.All(apps, a => Assert.StartsWith(a.Name + "_", a.PackageFullName));
+        Assert.All(apps, a => Assert.StartsWith(a.Name + "_", a.PackageFullName, StringComparison.Ordinal));
         Assert.Equal(apps.Count, apps.Select(a => a.Name).Distinct().Count());
     }
 

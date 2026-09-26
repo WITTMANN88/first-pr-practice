@@ -18,17 +18,31 @@ public static class SystemActions
         {
             foreach (var p in Process.GetProcessesByName("explorer"))
             {
-                try { p.Kill(); } catch { /* ignore individual failures */ }
+                // Each Process wraps an OS handle: release it deterministically.
+                using (p)
+                {
+                    try { p.Kill(); } catch { /* ignore individual failures */ }
+                }
             }
             await Task.Delay(800);
-            // If the shell did not come back on its own, start it.
-            if (Process.GetProcessesByName("explorer").Length == 0)
-                Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true });
+            // If the shell did not come back on its own, start it (absolute path:
+            // never let a planted explorer.exe in the working directory win).
+            if (!IsExplorerRunning())
+            {
+                using var shell = Process.Start(new ProcessStartInfo(SystemTools.Explorer) { UseShellExecute = true });
+            }
             Logger.Log("Explorer", "RESTARTED");
         }
         catch (Exception ex)
         {
             Logger.LogError("RestartExplorer", ex);
         }
+    }
+
+    private static bool IsExplorerRunning()
+    {
+        var running = Process.GetProcessesByName("explorer");
+        foreach (var p in running) p.Dispose();
+        return running.Length > 0;
     }
 }

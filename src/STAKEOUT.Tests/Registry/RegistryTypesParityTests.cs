@@ -1,3 +1,4 @@
+using System.Globalization;
 using Stakeout.Services;
 
 namespace Stakeout.Tests.Registry;
@@ -23,8 +24,8 @@ public class RegistryTypesParityTests
         where TOurs : struct, Enum
         where TWin32 : struct, Enum
     {
-        var ours = Enum.GetValues<TOurs>().ToDictionary(v => v.ToString(), v => Convert.ToInt64(v));
-        var win32 = Enum.GetValues<TWin32>().ToDictionary(v => v.ToString(), v => Convert.ToInt64(v));
+        var ours = Enum.GetValues<TOurs>().ToDictionary(v => v.ToString(), v => Convert.ToInt64(v, CultureInfo.InvariantCulture));
+        var win32 = Enum.GetValues<TWin32>().ToDictionary(v => v.ToString(), v => Convert.ToInt64(v, CultureInfo.InvariantCulture));
         Assert.Equal(win32.OrderBy(kv => kv.Key), ours.OrderBy(kv => kv.Key));
     }
 }

@@ -82,10 +82,12 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <!-- [time]  action  STATUS  detail — status coloured by level -->
+                                <!-- [time]  action  STATUS  detail — status coloured by level.
+                                 LogEntry is immutable: OneTime (re-evaluated when a
+                                 recycled row gets a new item, never tracked). -->
                                 <TextBlock FontFamily="Consolas, Courier New" FontSize="12"
                                            TextWrapping="Wrap" Margin="0,1,8,1"
-                                           Foreground="{StaticResource TextSecondaryBrush}"><Run Text="{Binding Time, Mode=OneWay}" Foreground="{StaticResource TextMutedBrush}" /><Run Text="  " /><Run Text="{Binding Action, Mode=OneWay}" Foreground="{StaticResource TextPrimaryBrush}" /><Run Text="  " /><Run Text="{Binding Status, Mode=OneWay}" FontWeight="SemiBold" Foreground="{Binding Level, Mode=OneWay, Converter={StaticResource LogLevelToBrush}}" /><Run Text="  " /><Run Text="{Binding Detail, Mode=OneWay}" /></TextBlock>
+                                           Foreground="{StaticResource TextSecondaryBrush}"><Run Text="{Binding Time, Mode=OneTime}" Foreground="{StaticResource TextMutedBrush}" /><Run Text="  " /><Run Text="{Binding Action, Mode=OneTime}" Foreground="{StaticResource TextPrimaryBrush}" /><Run Text="  " /><Run Text="{Binding Status, Mode=OneTime}" FontWeight="SemiBold" Foreground="{Binding Level, Mode=OneTime, Converter={StaticResource LogLevelToBrush}}" /><Run Text="  " /><Run Text="{Binding Detail, Mode=OneTime}" /></TextBlock>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

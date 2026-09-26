@@ -20,6 +20,7 @@ public sealed class NotificationService : INotificationService, INotificationFee
     private readonly Func<TimeSpan, CancellationToken, Task> _delay;
     private readonly ObservableCollection<Notification> _items = new();
     private readonly CancellationTokenSource _shutdown = new();
+    private int _disposed;
 
     public NotificationService(IUiDispatcher dispatcher)
         : this(dispatcher, DefaultLifetime, DefaultMaxVisible, Task.Delay) { }
@@ -29,7 +30,7 @@ public sealed class NotificationService : INotificationService, INotificationFee
     {
         _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         _delay = delay ?? throw new ArgumentNullException(nameof(delay));
-        if (maxVisible < 1) throw new ArgumentOutOfRangeException(nameof(maxVisible));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxVisible, 1);
         Lifetime = lifetime;
         MaxVisible = maxVisible;
         Active = new ReadOnlyObservableCollection<Notification>(_items);
@@ -65,9 +66,19 @@ public sealed class NotificationService : INotificationService, INotificationFee
 
     private async Task ExpireAsync(Notification n)
     {
+        CancellationToken token;
         try
         {
-            await _delay(Lifetime, _shutdown.Token).ConfigureAwait(false);
+            token = _shutdown.Token;
+        }
+        catch (ObjectDisposedException)
+        {
+            return; // shown after shutdown: nothing left to expire
+        }
+
+        try
+        {
+            await _delay(Lifetime, token).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -77,8 +88,13 @@ public sealed class NotificationService : INotificationService, INotificationFee
     }
 
     /// <summary>
-    /// Cancel pending expirations on shutdown. The token source is deliberately
-    /// not disposed (it owns no timer), so a late Show() cannot throw.
+    /// Cancel pending expirations on shutdown. Idempotent; a late Show() still
+    /// displays and logs its toast but schedules no expiry.
     /// </summary>
-    public void Dispose() => _shutdown.Cancel();
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+        _shutdown.Cancel();
+        _shutdown.Dispose();
+    }
 }

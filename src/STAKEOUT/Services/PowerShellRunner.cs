@@ -18,13 +18,13 @@ public static class PowerShellRunner
     /// blocking the caller forever.
     /// </summary>
     public static Task<ProcessResult> RunScriptAsync(
-        string script, CancellationToken ct = default, int timeoutMs = ProcessRunner.DefaultTimeoutMs)
+        string script, int timeoutMs = ProcessRunner.DefaultTimeoutMs, CancellationToken ct = default)
     {
         // -EncodedCommand expects UTF-16LE Base64.
         var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
         var args = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand {encoded}";
         Logger.Log("PowerShell", "RUN", Truncate(script));
-        return ProcessRunner.RunAsync("powershell.exe", args, ct, timeoutMs);
+        return ProcessRunner.RunAsync(SystemTools.PowerShell, args, timeoutMs, ct);
     }
 
     private static string Truncate(string s)

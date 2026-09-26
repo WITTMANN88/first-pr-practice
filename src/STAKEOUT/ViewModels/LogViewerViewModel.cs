@@ -98,7 +98,7 @@ public sealed class LogViewerViewModel : ViewModelBase
         finally
         {
             IsLoading = false;
-            CopyCommand.RaiseCanExecuteChanged();
+            CopyCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -112,7 +112,7 @@ public sealed class LogViewerViewModel : ViewModelBase
         OnPropertyChanged(nameof(LogPath));
         Show(lines, ParseTail(lines));
         IsOpen = open;
-        CopyCommand.RaiseCanExecuteChanged();
+        CopyCommand.NotifyCanExecuteChanged();
     }
 
     private static List<LogEntry> ParseTail(IReadOnlyList<string> lines)

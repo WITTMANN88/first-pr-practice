@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using Stakeout.Localization;
 using Stakeout.Tests.TestSupport;
@@ -96,8 +95,10 @@ public class ResourceParityTests
     {
         var translated = Load(CultureInfo.GetCultureInfo(culture));
         foreach (var (key, value) in Neutral)
+        {
             Assert.True(Placeholders(value).SetEquals(Placeholders(translated[key])),
                 $"placeholders differ for '{key}': '{value}' vs '{translated[key]}'");
+        }
     }
 
     [Fact]
@@ -177,10 +178,10 @@ public class LocalizationManagerResolveTests
 }
 
 /// <summary>Apply() changes process-wide defaults, so it runs isolated from parallel tests.</summary>
-[CollectionDefinition(nameof(ProcessCultureCollection), DisableParallelization = true)]
-public class ProcessCultureCollection { }
+[CollectionDefinition(nameof(ProcessCultureGroup), DisableParallelization = true)]
+public class ProcessCultureGroup { }
 
-[Collection(nameof(ProcessCultureCollection))]
+[Collection(nameof(ProcessCultureGroup))]
 public class LocalizationManagerApplyTests
 {
     [Fact]

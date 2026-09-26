@@ -22,7 +22,7 @@ public class LogCipherTests
     public void DeriveKey_MatchesIndependentKnownAnswer()
     {
         // Pins every KDF parameter: changing any would make existing logs unreadable.
-        Assert.Equal(KnownKeyHex, Convert.ToHexString(LogCipher.DeriveKey("TEST-PC")).ToLowerInvariant());
+        Assert.Equal(KnownKeyHex, Convert.ToHexString(LogCipher.DeriveKey("TEST-PC")), ignoreCase: true);
     }
 
     [Fact]
@@ -74,8 +74,8 @@ public class LogCipherTests
     public void Encrypt_DoesNotContainPlaintext()
     {
         var encrypted = Cipher.Encrypt("ACCESS_DENIED secret-path");
-        Assert.DoesNotContain("ACCESS_DENIED", encrypted);
-        Assert.DoesNotContain("ACCESS_DENIED", Encoding.UTF8.GetString(Convert.FromBase64String(encrypted)));
+        Assert.DoesNotContain("ACCESS_DENIED", encrypted, StringComparison.Ordinal);
+        Assert.DoesNotContain("ACCESS_DENIED", Encoding.UTF8.GetString(Convert.FromBase64String(encrypted)), StringComparison.Ordinal);
     }
 
     [Theory]

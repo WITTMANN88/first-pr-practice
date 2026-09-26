@@ -133,7 +133,7 @@
                                       StrokeDashArray="4 3" />
                                 <TextBlock Canvas.Left="{x:Static vm:SysInfoViewModel.TempLimitLabelLeft}"
                                            Canvas.Top="{Binding TempLimitLabelTop}"
-                                           Text="{Binding TempLimitText}" FontSize="10"
+                                           Text="{x:Static vm:SysInfoViewModel.TempLimitText}" FontSize="10"
                                            Foreground="{StaticResource TextSecondaryBrush}" />
                                 <Polyline Points="{Binding TempHistoryPoints}"
                                           Stroke="{StaticResource ChartLineBrush}" StrokeThickness="2"
@@ -157,7 +157,9 @@
                     </StackPanel>
                 </Border>
 
-                <!-- GPUs (integrated + discrete as separate rows) -->
+                <!-- GPUs (integrated + discrete as separate rows). GpuInfo is an
+                     immutable, non-INotifyPropertyChanged snapshot: OneTime bindings
+                     skip WPF's per-binding property-descriptor change tracking. -->
                 <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
                     <StackPanel>
                         <TextBlock Text="{x:Static loc:Strings.SysInfo_Gpus}" Style="{StaticResource Caption}" Margin="0,0,0,6" />
@@ -169,9 +171,9 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                        <TextBlock Grid.Column="0" Text="{Binding Name, Mode=OneTime}"
                                                    Style="{StaticResource Body}" TextWrapping="Wrap" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Kind}"
+                                        <TextBlock Grid.Column="1" Text="{Binding Kind, Mode=OneTime}"
                                                    Style="{StaticResource Caption}" Margin="10,0,0,0" />
                                     </Grid>
                                 </DataTemplate>

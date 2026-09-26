@@ -14,7 +14,7 @@ namespace Stakeout.ViewModels;
 /// Home page: system information with a shimmer state, a live temperature bar
 /// and a ~2 minute temperature sparkline.
 /// </summary>
-public sealed class SysInfoViewModel : ViewModelBase
+public sealed class SysInfoViewModel : ViewModelBase, IDisposable
 {
     /// <summary>Sparkline plot area (device-independent px). Fits the 360 px CPU card
     /// with room on the right for the reference-line label.</summary>
@@ -45,9 +45,22 @@ public sealed class SysInfoViewModel : ViewModelBase
 
         // Live temperature: re-poll only the (cheap) CPU temperature every 3 s so
         // the bar tracks reality without re-running the heavy WMI queries.
+        // The Dispatcher roots a running timer, so a plain "Tick += handler" would
+        // root this view model for the life of the process. The weak handler does
+        // not; if the view model is ever collected, the next tick stops the timer
+        // instead of polling the sensor for a dead object.
         _tempTimer = new DispatcherTimer { Interval = CpuTemperatureScale.PollInterval };
-        _tempTimer.Tick += async (_, _) => await PollTemperatureAsync();
+        _tempTimer.Tick += WeakHandler.Create(this, static (vm, _, _) => vm.OnTempTimerTick(), StopTimer);
     }
+
+    private static void StopTimer(object? sender, EventHandler handler)
+    {
+        if (sender is not DispatcherTimer timer) return;
+        timer.Stop();
+        timer.Tick -= handler;
+    }
+
+    private void OnTempTimerTick() => _ = PollTemperatureAsync();
 
     public AsyncRelayCommand RefreshCommand { get; }
     public ObservableCollection<GpuInfo> Gpus { get; } = new();
@@ -81,7 +94,8 @@ public sealed class SysInfoViewModel : ViewModelBase
     public double TempLimitY => _tempLimitY;
     /// <summary>Top of the reference-line label, vertically centred on the line.</summary>
     public double TempLimitLabelTop => _tempLimitY - 7;
-    public string TempLimitText => F(Strings.SysInfo_TempLimit, CpuTemperatureScale.HotThresholdC);
+    /// <summary>Culture is fixed at startup, so this is a constant for the session (bound via x:Static).</summary>
+    public static string TempLimitText => F(Strings.SysInfo_TempLimit, CpuTemperatureScale.HotThresholdC);
     /// <summary>Top-left of the 12 px end-point marker (centred on the newest sample).</summary>
     public double TempNowLeft => _tempNow.X - 6;
     public double TempNowTop => _tempNow.Y - 6;
@@ -164,6 +178,11 @@ public sealed class SysInfoViewModel : ViewModelBase
             if (t is double v && double.IsNaN(v)) return;
             RecordTemperature(t);
         }
+        catch (Exception ex)
+        {
+            // Fire-and-forget from the timer: never let a failure go unobserved.
+            Logger.LogError("SysInfo.Temp", ex);
+        }
         finally
         {
             _tempPollBusy = false;
@@ -172,6 +191,9 @@ public sealed class SysInfoViewModel : ViewModelBase
 
     /// <summary>Stop live polling (called when the app shuts down).</summary>
     public void StopLivePolling() => _tempTimer.Stop();
+
+    /// <summary>Called by the DI container at exit (the view model is a singleton).</summary>
+    public void Dispose() => StopLivePolling();
 
     private void RaiseTempChanged()
     {

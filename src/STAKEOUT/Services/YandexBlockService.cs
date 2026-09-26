@@ -51,7 +51,6 @@ public sealed class YandexBlockService : ITweak
     public bool RequiresRestart => false;
     public bool RequiresExplorerRestart => false;
     public bool IsApplied => _store.IsApplied(Id);
-    public IReadOnlyList<string> BlockedProcesses => Processes;
 
     public Task<bool> ApplyAsync() => Task.Run(() =>
     {

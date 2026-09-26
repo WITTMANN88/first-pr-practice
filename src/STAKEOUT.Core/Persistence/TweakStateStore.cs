@@ -10,7 +10,7 @@ namespace Stakeout.Services;
 public sealed class TweakStateDocument
 {
     public int Version { get; set; } = TweakStateStore.CurrentVersion;
-    public Dictionary<string, TweakState> Tweaks { get; set; } = new();
+    public IDictionary<string, TweakState> Tweaks { get; init; } = new Dictionary<string, TweakState>();
 }
 
 /// <summary>
@@ -202,9 +202,11 @@ public sealed class TweakStateStore
         var doc = JsonSerializer.Deserialize(json, TweakStateJsonContext.Default.TweakStateDocument)
                   ?? throw new JsonException($"{source}: document is null.");
         if (doc.Version > CurrentVersion)
+        {
             Logger.Log("TweakStateStore", "WARNING",
                 $"{Path.GetFileName(source)} has version {doc.Version} (> {CurrentVersion}); reading best-effort");
-        return new Dictionary<string, TweakState>(doc.Tweaks ?? new());
+        }
+        return doc.Tweaks is null ? new() : new Dictionary<string, TweakState>(doc.Tweaks);
     }
 
     private void Quarantine(Exception reason)
@@ -293,8 +295,8 @@ public sealed class TweakStateStore
 
     private long NewestBackupTicks()
     {
-        var newest = GetBackups().FirstOrDefault();
-        return newest != null && TryParseStamp(newest, out var ticks) ? ticks : 0;
+        var backups = GetBackups();
+        return backups.Count > 0 && TryParseStamp(backups[0], out var ticks) ? ticks : 0;
     }
 
     /// <summary>Parse "tweak-state.{stamp}Z.json"; rejects files that merely match the glob.</summary>
@@ -303,11 +305,17 @@ public sealed class TweakStateStore
         ticks = 0;
         var name = Path.GetFileName(path);
         if (!name.StartsWith(BackupPrefix, StringComparison.Ordinal) ||
-            !name.EndsWith("Z.json", StringComparison.Ordinal)) return false;
+            !name.EndsWith("Z.json", StringComparison.Ordinal))
+        {
+            return false;
+        }
 
         var stamp = name[BackupPrefix.Length..^"Z.json".Length];
         if (!DateTime.TryParseExact(stamp, BackupStampFormat, CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var dt)) return false;
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var dt))
+        {
+            return false;
+        }
         ticks = dt.Ticks;
         return true;
     }

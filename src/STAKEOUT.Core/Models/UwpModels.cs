@@ -26,7 +26,7 @@ public sealed class UwpApp
     /// <summary>Build an entry from an Appx identity name; category and protection derived from it.</summary>
     public static UwpApp FromIdentity(string name, string packageFullName, string installLocation)
     {
-        var dot = name.IndexOf('.');
+        var dot = name.IndexOf('.', StringComparison.Ordinal);
         return new UwpApp
         {
             Name = name,

@@ -29,6 +29,19 @@ public sealed class TweakService
     private const RegHive HKLM = RegHive.LocalMachine;
     private const RegHive HKCU = RegHive.CurrentUser;
 
+    /// <summary>Xbox helper services disabled by the GameDVR tweak (Start=4).</summary>
+    private static readonly string[] XboxServices = { "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc" };
+
+    /// <summary>USB "Device Parameters" flags that, when set to 0, keep a device powered.</summary>
+    private static readonly string[] UsbPowerFlags =
+    {
+        "EnhancedPowerManagementEnabled",
+        "AllowIdleIrpInD3",
+        "DeviceSelectiveSuspended",
+        "SelectiveSuspendEnabled",
+        "SelectiveSuspendOn",
+    };
+
     private readonly TweakStateStore _store;
     private readonly RegistryRollback _rollback;
     private readonly YandexBlockService _yandex;
@@ -85,7 +98,7 @@ public sealed class TweakService
                 ok &= _rollback.CaptureAndSet(s, HKLM,
                     @"SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 0, RegValueKind.DWord);
                 // Stop the live service now (best-effort; failure does not fail the tweak).
-                await ProcessRunner.RunAsync("sc.exe", "stop DiagTrack");
+                await ProcessRunner.RunAsync(SystemTools.Sc, "stop DiagTrack");
                 return ok;
             },
             revert: RestoreAllAsync),
@@ -124,8 +137,8 @@ public sealed class TweakService
 
         // Hibernation off via the hidden powercfg command.
         Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System),
-            apply: async _ => (await ProcessRunner.RunAsync("powercfg.exe", "-h off")).Success,
-            revert: async _ => (await ProcessRunner.RunAsync("powercfg.exe", "-h on")).Success),
+            apply: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h off")).Success,
+            revert: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h on")).Success),
 
         // Windows animations + transparency off.
         Reg(new TweakInfo("animations", Strings.Tweak_Animations_Title, Strings.Tweak_Animations_Desc, TweakCategory.Interface,
@@ -190,7 +203,7 @@ public sealed class TweakService
                 ok &= _rollback.CaptureAndSet(s, HKLM, @"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, RegValueKind.DWord);
                 ok &= _rollback.CaptureAndSet(s, HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegValueKind.DWord);
                 // Disable Xbox helper services (Start=4). Reverting restores prior Start.
-                foreach (var svc in new[] { "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc" })
+                foreach (var svc in XboxServices)
                     ok &= _rollback.CaptureAndSet(s, HKLM, $@"SYSTEM\CurrentControlSet\Services\{svc}", "Start", 4, RegValueKind.DWord);
                 return ok;
             }),
@@ -237,16 +250,12 @@ public sealed class TweakService
                 @"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption", connectOptions);
             scope.Connect();
             var query = new ObjectQuery("SELECT * FROM Win32_EncryptableVolume");
-            var enumOptions = new EnumerationOptions
-            {
-                Timeout = TimeSpan.FromSeconds(15), ReturnImmediately = true, Rewindable = false,
-            };
-            using var searcher = new ManagementObjectSearcher(scope, query, enumOptions);
-            using var results = searcher.Get();
+            using var searcher = new ManagementObjectSearcher(scope, query, Wmi.Options(TimeSpan.FromSeconds(15)));
 
             var any = false;
-            foreach (ManagementObject vol in results)
+            Wmi.ForEach(searcher, item =>
             {
+                if (item is not ManagementObject vol) return true;
                 any = true;
                 if (decrypt)
                 {
@@ -261,7 +270,8 @@ public sealed class TweakService
                     vol.InvokeMethod("Encrypt", null);
                     Logger.Log("BitLocker", "ENCRYPT", vol["DriveLetter"]?.ToString() ?? "?");
                 }
-            }
+                return true;
+            });
             return any;
         }
         catch (UnauthorizedAccessException ex)
@@ -288,17 +298,17 @@ public sealed class TweakService
     private static async Task<bool> ApplyPowerPlan(TweakState s)
     {
         // Pre-check: remember the currently active scheme so revert can restore it.
-        var current = await ProcessRunner.RunAsync("powercfg.exe", "/getactivescheme");
+        var current = await ProcessRunner.RunAsync(SystemTools.PowerCfg, "/getactivescheme");
         var prevGuid = ExtractGuid(current.StdOut);
         if (prevGuid != null) s.Notes["prevScheme"] = prevGuid;
 
         // Duplicate the Ultimate Performance scheme (a second copy is harmless)
         // and activate it.
-        var dup = await ProcessRunner.RunAsync("powercfg.exe", $"-duplicatescheme {UltimateGuid}");
+        var dup = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"-duplicatescheme {UltimateGuid}");
         var newGuid = ExtractGuid(dup.StdOut) ?? UltimateGuid;
         s.Notes["appliedScheme"] = newGuid;
 
-        var set = await ProcessRunner.RunAsync("powercfg.exe", $"/setactive {newGuid}");
+        var set = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"/setactive {newGuid}");
         return set.Success;
     }
 
@@ -306,18 +316,28 @@ public sealed class TweakService
     {
         if (s.Notes.TryGetValue("prevScheme", out var prev) && !string.IsNullOrWhiteSpace(prev))
         {
-            var set = await ProcessRunner.RunAsync("powercfg.exe", $"/setactive {prev}");
+            var set = await ProcessRunner.RunAsync(SystemTools.PowerCfg, $"/setactive {prev}");
             return set.Success;
         }
         return true; // nothing captured, nothing to restore
     }
 
+    /// <summary>powercfg prints "Power Scheme GUID: xxxxxxxx-xxxx-... (Name)".</summary>
+    private static readonly Regex GuidPattern = new(
+        "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}",
+        RegexOptions.CultureInvariant, TimeSpan.FromSeconds(1));
+
     private static string? ExtractGuid(string text)
     {
-        // powercfg prints "Power Scheme GUID: xxxxxxxx-xxxx-... (Name)".
-        var m = Regex.Match(text,
-            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
-        return m.Success ? m.Value : null;
+        try
+        {
+            var m = GuidPattern.Match(text);
+            return m.Success ? m.Value : null;
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return null;
+        }
     }
 
     // --- RawMouseThrottleDuration (guarded) --------------------------------
@@ -362,15 +382,6 @@ public sealed class TweakService
     private Task<bool> ApplyUsbPower(TweakState s) => Task.Run(() =>
     {
         const string root = @"SYSTEM\CurrentControlSet\Enum\USB";
-        // Flags that, when set to 0, keep a USB device powered.
-        string[] flags =
-        {
-            "EnhancedPowerManagementEnabled",
-            "AllowIdleIrpInD3",
-            "DeviceSelectiveSuspended",
-            "SelectiveSuspendEnabled",
-            "SelectiveSuspendOn",
-        };
 
         var touched = 0;
         foreach (var device in RegistryHelper.SubKeyNames(HKLM, root))
@@ -378,9 +389,8 @@ public sealed class TweakService
             foreach (var instance in RegistryHelper.SubKeyNames(HKLM, $@"{root}\{device}"))
             {
                 var paramPath = $@"{root}\{device}\{instance}\Device Parameters";
-                foreach (var flag in flags)
-                    if (_rollback.SetIfExists(s, HKLM, paramPath, flag, 0, RegValueKind.DWord))
-                        touched++;
+                foreach (var flag in UsbPowerFlags)
+                    touched += _rollback.SetIfExists(s, HKLM, paramPath, flag, 0, RegValueKind.DWord) ? 1 : 0;
             }
         }
 

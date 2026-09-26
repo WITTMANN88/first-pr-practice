@@ -31,9 +31,9 @@ public sealed class EncryptedLogFileTests : IDisposable
         log.Append("[10:00:00] [UAC (Контроль учётных записей)] [ACCESS_DENIED] HKLM\\SOFTWARE\\Secret");
 
         var onDisk = File.ReadAllText(log.Path, Encoding.UTF8);
-        Assert.DoesNotContain("ACCESS_DENIED", onDisk);
-        Assert.DoesNotContain("UAC", onDisk);
-        Assert.DoesNotContain("SOFTWARE", onDisk);
+        Assert.DoesNotContain("ACCESS_DENIED", onDisk, StringComparison.Ordinal);
+        Assert.DoesNotContain("UAC", onDisk, StringComparison.Ordinal);
+        Assert.DoesNotContain("SOFTWARE", onDisk, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public sealed class EncryptedLogFileTests : IDisposable
     [Fact]
     public void FormatLine_ProducesSpecFormat()
     {
-        var t = new DateTime(2026, 9, 26, 7, 5, 9);
+        var t = new DateTime(2026, 9, 26, 7, 5, 9, DateTimeKind.Local);
         Assert.Equal("[07:05:09] [Hibernation] [APPLIED] powercfg -h off",
             EncryptedLogFile.FormatLine(t, "Hibernation", "APPLIED", "powercfg -h off"));
         Assert.Equal("[07:05:09] [RevertAll] [DONE]", EncryptedLogFile.FormatLine(t, "RevertAll", "DONE", null));
@@ -104,7 +104,7 @@ public sealed class EncryptedLogFileTests : IDisposable
     public void FormattedLine_RoundTripsThroughLogEntryParser()
     {
         var log = NewLog();
-        log.Append(EncryptedLogFile.FormatLine(new DateTime(2026, 1, 1, 23, 59, 58),
+        log.Append(EncryptedLogFile.FormatLine(new DateTime(2026, 1, 1, 23, 59, 58, DateTimeKind.Local),
             @"Registry.SetValue SOFTWARE\Policies\X", "ACCESS_DENIED", "Requested registry access is not allowed."));
 
         var entry = LogEntry.Parse(log.ReadAll().Single());

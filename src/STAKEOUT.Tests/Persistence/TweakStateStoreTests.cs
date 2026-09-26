@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Stakeout.Models;
 using Stakeout.Services;
@@ -160,7 +161,7 @@ public sealed class TweakStateStoreTests : IDisposable
         await Task.WhenAll(Enumerable.Range(0, 64).Select(i => Task.Run(() =>
         {
             var s = SampleState();
-            s.Notes["i"] = i.ToString();
+            s.Notes["i"] = i.ToString(CultureInfo.InvariantCulture);
             Assert.True(store.MarkApplied($"tweak-{i}", s));
         })));
 

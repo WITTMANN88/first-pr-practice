@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace Stakeout.Services;
@@ -21,10 +22,10 @@ public static class RegistryValueCodec
         ArgumentNullException.ThrowIfNull(value);
         return kind switch
         {
-            RegValueKind.DWord => BitConverter.GetBytes(unchecked((int)Convert.ToInt64(value))),
-            RegValueKind.QWord => BitConverter.GetBytes(Convert.ToInt64(value)),
+            RegValueKind.DWord => BitConverter.GetBytes(unchecked((int)Convert.ToInt64(value, CultureInfo.InvariantCulture))),
+            RegValueKind.QWord => BitConverter.GetBytes(Convert.ToInt64(value, CultureInfo.InvariantCulture)),
             RegValueKind.String or RegValueKind.ExpandString
-                => Encoding.UTF8.GetBytes(Convert.ToString(value) ?? string.Empty),
+                => Encoding.UTF8.GetBytes(Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty),
             RegValueKind.MultiString => EncodeMulti((string[])value),
             RegValueKind.Binary or RegValueKind.None => (byte[])((byte[])value).Clone(),
             _ => throw new NotSupportedException($"Registry value kind '{kind}' cannot be encoded."),

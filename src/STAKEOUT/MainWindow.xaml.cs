@@ -22,10 +22,21 @@ public partial class MainWindow : Window
         DataContext = _vm;
 
         Loaded += OnLoaded;
-        Closed += (_, _) => _vm.Shutdown();
+        Closed += OnClosed;
         PreviewKeyDown += OnPreviewKeyDown;
-        _vm.PropertyChanged += OnVmPropertyChanged;
-        _vm.Logs.PropertyChanged += OnLogsPropertyChanged;
+
+        // The view models are container singletons and outlive any window, so
+        // subscribe weakly: they must never keep a closed window (and its visual
+        // tree) alive. Filtered by property name, so unrelated changes cost nothing.
+        PropertyChangedEventManager.AddHandler(_vm, OnVmPropertyChanged, nameof(MainViewModel.IsSidebarCollapsed));
+        PropertyChangedEventManager.AddHandler(_vm.Logs, OnLogsPropertyChanged, nameof(LogViewerViewModel.IsOpen));
+    }
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        PropertyChangedEventManager.RemoveHandler(_vm, OnVmPropertyChanged, nameof(MainViewModel.IsSidebarCollapsed));
+        PropertyChangedEventManager.RemoveHandler(_vm.Logs, OnLogsPropertyChanged, nameof(LogViewerViewModel.IsOpen));
+        _vm.Shutdown();
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -56,11 +67,8 @@ public partial class MainWindow : Window
         ShellScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scale.Clone());
     }
 
-    private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(MainViewModel.IsSidebarCollapsed))
-            AnimateSidebar(_vm.IsSidebarCollapsed);
-    }
+    private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        => AnimateSidebar(_vm.IsSidebarCollapsed);
 
     /// <summary>Collapse/expand the sidebar to icons over 300 ms (cubic ease).</summary>
     private void AnimateSidebar(bool collapsed)
@@ -76,10 +84,7 @@ public partial class MainWindow : Window
     // --- log viewer modal ---
 
     private void OnLogsPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(LogViewerViewModel.IsOpen))
-            AnimateLogOverlay(_vm.Logs.IsOpen);
-    }
+        => AnimateLogOverlay(_vm.Logs.IsOpen);
 
     /// <summary>
     /// Open: backdrop fades in (180 ms) while the panel scales 0.96→1 and rises

@@ -13,7 +13,7 @@ public class NotificationServiceTests
     [Fact]
     public void TypedHelpers_ProduceMatchingKinds()
     {
-        var svc = Create();
+        using var svc = Create();
         INotificationService n = svc;
 
         n.Success("ok");
@@ -30,7 +30,7 @@ public class NotificationServiceTests
     [Fact]
     public async Task Notification_ExpiresAfterLifetime()
     {
-        var svc = Create();
+        using var svc = Create();
         svc.Success("done");
         Assert.Single(svc.Active);
 
@@ -41,7 +41,7 @@ public class NotificationServiceTests
     [Fact]
     public void Stack_IsCapped_OldestDroppedFirst()
     {
-        var svc = Create(maxVisible: 3);
+        using var svc = Create(maxVisible: 3);
         for (var i = 1; i <= 5; i++) svc.Info($"n{i}");
 
         Assert.Equal(new[] { "n3", "n4", "n5" }, svc.Active.Select(x => x.Message));
@@ -50,7 +50,7 @@ public class NotificationServiceTests
     [Fact]
     public void Dismiss_RemovesOnlyThatNotification()
     {
-        var svc = Create();
+        using var svc = Create();
         svc.Info("a");
         svc.Info("b");
         var a = svc.Active[0];
@@ -63,7 +63,7 @@ public class NotificationServiceTests
     [Fact]
     public void Dismiss_UnknownId_IsNoOp()
     {
-        var svc = Create();
+        using var svc = Create();
         svc.Info("a");
         svc.Dismiss(Guid.NewGuid());
         Assert.Single(svc.Active);
@@ -73,7 +73,7 @@ public class NotificationServiceTests
     public async Task Show_FromBackgroundThreads_OnlyMutatesOnTheDispatcher()
     {
         var ui = new QueueDispatcher();
-        var svc = Create(ui, maxVisible: 100);
+        using var svc = Create(ui, maxVisible: 100);
 
         await Task.WhenAll(Enumerable.Range(0, 20).Select(i => Task.Run(() => svc.Info($"bg{i}"))));
 
@@ -109,6 +109,7 @@ public class NotificationServiceTests
     [Fact]
     public void DefaultLifetime_IsFiveSeconds()
     {
-        Assert.Equal(TimeSpan.FromSeconds(5), new NotificationService(new InlineDispatcher()).Lifetime);
+        using var svc = new NotificationService(new InlineDispatcher());
+        Assert.Equal(TimeSpan.FromSeconds(5), svc.Lifetime);
     }
 }

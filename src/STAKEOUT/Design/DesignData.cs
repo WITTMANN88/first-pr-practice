@@ -26,12 +26,12 @@ public static class DesignData
     // One graph shared by all properties, so the shell and its pages agree.
     private static readonly Lazy<Graph> Instance = new(() => new Graph());
 
-    public static MainViewModel Main => Instance.Value.Main;
-    public static SysInfoViewModel SysInfo => Instance.Value.Main.SysInfo;
-    public static TweaksViewModel Tweaks => Instance.Value.Main.Tweaks;
-    public static UwpViewModel Uwp => Instance.Value.Main.Uwp;
-    public static SoftwareViewModel Software => Instance.Value.Main.Software;
-    public static LogViewerViewModel Logs => Instance.Value.Main.Logs;
+    public static MainViewModel Main => Instance.Value.Shell;
+    public static SysInfoViewModel SysInfo => Instance.Value.Shell.SysInfo;
+    public static TweaksViewModel Tweaks => Instance.Value.Shell.Tweaks;
+    public static UwpViewModel Uwp => Instance.Value.Shell.Uwp;
+    public static SoftwareViewModel Software => Instance.Value.Shell.Software;
+    public static LogViewerViewModel Logs => Instance.Value.Shell.Logs;
 
     private sealed class Graph
     {
@@ -67,9 +67,9 @@ public static class DesignData
 
             var logs = new LogViewerViewModel(notifications);
             logs.ShowLines(DesignSamples.LogLines(),
-                @"C:\Users\user\AppData\Local\Temp\STAKEOUT\stakeout-20260926.log", open: true);
+                System.IO.Path.Combine(System.IO.Path.GetTempPath(), "STAKEOUT", "stakeout-20260926.log"), open: true);
 
-            Main = new MainViewModel(sysInfo, tweaks, uwp, software, logs, tweakService, notifications, notifications);
+            Shell = new MainViewModel(sysInfo, tweaks, uwp, software, logs, tweakService, notifications, notifications);
 
             // One toast of each visible kind, using the real message formats.
             notifications.Success(F(Strings.Software_Started, "7-Zip"));
@@ -77,7 +77,7 @@ public static class DesignData
             notifications.Error(F(Strings.Uwp_RemoveFailed, "XboxGameCallableUI"));
         }
 
-        public MainViewModel Main { get; }
+        public MainViewModel Shell { get; }
 
         private static void FillSysInfo(SysInfoViewModel vm)
         {
@@ -90,7 +90,7 @@ public static class DesignData
                 CpuName = "12th Gen Intel(R) Core(TM) i7-12700H",
                 CpuTemperatureC = temps[^1],
                 Motherboard = "Micro-Star International Co., Ltd. MS-17L2",
-                Gpus =
+                Gpus = new[]
                 {
                     new GpuInfo { Name = "NVIDIA GeForce RTX 3060 Laptop GPU", Kind = Strings.SysInfo_GpuDiscrete },
                     new GpuInfo { Name = "Intel(R) Iris(R) Xe Graphics", Kind = Strings.SysInfo_GpuIntegrated },
@@ -100,10 +100,10 @@ public static class DesignData
                 WindowsVersion = F(Strings.SysInfo_WindowsBuild, "Windows 10 Pro 22H2", "19045.4894"),
             });
         }
-    }
 
-    private static string F(string format, params object[] args)
-        => string.Format(CultureInfo.CurrentCulture, format, args);
+        private static string F(string format, params object[] args)
+            => string.Format(CultureInfo.CurrentCulture, format, args);
+    }
 
     /// <summary>Runs posted work immediately (the designer is single-threaded).</summary>
     private sealed class InlineDispatcher : IUiDispatcher
