@@ -94,7 +94,7 @@ jobs:
 
       - name: Upload test results and build logs
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-and-build-logs
           path: |
@@ -186,7 +186,7 @@ jobs:
           "| flavor | size | sha256 |`n|---|---|---|`n| $env:NAME | $mb MB | ``$hash`` |" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Upload STAKEOUT.exe
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: STAKEOUT-${{ matrix.name }}
           path: |
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload publish logs
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: publish-logs-${{ matrix.name }}
           path: artifacts/logs/
@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: STAKEOUT-*
           path: artifacts/in
@@ -258,7 +258,7 @@ jobs:
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: STAKEOUT-*
           path: artifacts/in
