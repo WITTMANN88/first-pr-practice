@@ -28,14 +28,18 @@ public sealed class SoftwareInstallService
         new() { Key = "7zip",     DisplayName = "7-Zip",         Method = InstallMethod.Winget, WingetId = "7zip.7zip" },
         new() { Key = "discord",  DisplayName = "Discord",       Method = InstallMethod.Winget, WingetId = "Discord.Discord" },
         new() { Key = "steam",    DisplayName = "Steam",         Method = InstallMethod.Winget, WingetId = "Valve.Steam" },
-        // Direct downloads, each pinned to a reference SHA-256 (supply-chain check).
-        // TODO: UPDATE_HASH after the first manual download of each file
-        // (PowerShell: Get-FileHash <file> -Algorithm SHA256). Until then these
-        // installs are refused: without a reference nothing can be verified.
+        // Direct downloads, each pinned to a reference SHA-256 as a supply-chain check.
+        // A download that does not match is deleted and never run.
+        //
+        // ISLC 1.0.4.7 is a 1 204 024 byte installer fetched on 2026-09-26, with an
+        // Authenticode signature by Wagnardsoft issued by Sectigo Public Code Signing CA R36.
         new() { Key = "islc",     DisplayName = "ISLC (Intelligent Standby List Cleaner)",
                 Method = InstallMethod.DirectDownload, FileName = "ISLC_v1.0.4.7_setup.exe",
                 DownloadUrl = new Uri("https://download.wagnardsoft.com/ISLC/ISLC%20v1.0.4.7_setup.exe"),
-                Sha256 = "TODO: UPDATE_HASH" },
+                Sha256 = "A5690E917BFB4B1336CCA7428A48EB1944411C97D72895158FCAD57D23B9E30C" },
+        // TODO: UPDATE_HASH for MakuTweaker after a manual download of this exact file.
+        // Check its signature with Get-AuthenticodeSignature, then take the value from
+        // Get-FileHash with the SHA256 algorithm. Until then this install is refused.
         new() { Key = "maku",     DisplayName = "MakuTweaker",
                 Method = InstallMethod.DirectDownload, FileName = "MakuTweaker.5.7.3.Setup.exe",
                 DownloadUrl = new Uri("https://github.com/MarkAdderly/MakuTweaker/releases/download/release57/MakuTweaker.5.7.3.Setup.exe"),
