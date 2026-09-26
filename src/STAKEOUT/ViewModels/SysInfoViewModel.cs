@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using Stakeout.Core;
 using Stakeout.Localization;
 using Stakeout.Models;
+using Stakeout.Mvvm;
 using Stakeout.Services;
 
 namespace Stakeout.ViewModels;

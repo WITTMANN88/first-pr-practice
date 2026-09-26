@@ -4,8 +4,9 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Stakeout.Core;
 
-namespace Stakeout.Core;
+namespace Stakeout.Converters;
 
 /// <summary>true → Visible, false → Collapsed.</summary>
 public sealed class BoolToVisibilityConverter : IValueConverter

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Stakeout.Core;
+namespace Stakeout.Mvvm;
 
 /// <summary>Minimal INotifyPropertyChanged base for all view models.</summary>
 public abstract class ViewModelBase : INotifyPropertyChanged

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using Stakeout.Core;
 using Stakeout.Localization;
+using Stakeout.Mvvm;
 using Stakeout.Services;
 
 namespace Stakeout.ViewModels;

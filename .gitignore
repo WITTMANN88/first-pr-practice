@@ -2,12 +2,32 @@
 bin/
 obj/
 *.user
+*.suo
+*.DotSettings.user
 
-# Rider / VS
+# Rider / VS / VS Code
 .idea/
 .vs/
+.vscode/
 
-# Published binaries
+# Published binaries and packages
 publish/
+artifacts/
 *.exe
 *.pdb
+*.nupkg
+
+# Test and build diagnostics
+TestResults/
+*.trx
+*.coverage
+*.binlog
+*.log
+
+# Interrupted installer downloads (DownloadService writes <name>.partial)
+*.partial
+
+# OS clutter
+Thumbs.db
+Desktop.ini
+.DS_Store

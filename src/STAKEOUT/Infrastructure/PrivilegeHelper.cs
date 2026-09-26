@@ -1,6 +1,6 @@
 using System.Security.Principal;
 
-namespace Stakeout.Core;
+namespace Stakeout.Infrastructure;
 
 /// <summary>Elevation checks. The manifest forces elevation, but we verify.</summary>
 public static class PrivilegeHelper

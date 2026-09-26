@@ -416,7 +416,9 @@ git push origin v1.0.0
 src/
   Directory.Build.props            анализаторы, warnings as errors
   STAKEOUT.sln
-  STAKEOUT/                        WPF: Views, ViewModels, Services, Infrastructure, Design, Themes
+  STAKEOUT/                        WPF: Views, ViewModels, Mvvm, Converters, Controls, Services,
+                                   Infrastructure, Models, Design, Themes, Assets, Trimming;
+                                   prepare-assets.ps1 (шрифты в Assets/Fonts с проверкой SHA-256)
   STAKEOUT.Core/                   ядро: Logging, Registry, Persistence, Uwp, Notifications, Localization, Windowing, Common
   STAKEOUT.Tests/                  xUnit
 ```

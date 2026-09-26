@@ -4,6 +4,7 @@ using System.Windows;
 using Stakeout.Core;
 using Stakeout.Localization;
 using Stakeout.Models;
+using Stakeout.Mvvm;
 
 namespace Stakeout.ViewModels;
 

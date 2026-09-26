@@ -1,6 +1,7 @@
 using System.Windows.Input;
+using Stakeout.Core;
 
-namespace Stakeout.Core;
+namespace Stakeout.Mvvm;
 
 /// <summary>Standard synchronous ICommand implementation for MVVM bindings.</summary>
 public sealed class RelayCommand : ICommand
