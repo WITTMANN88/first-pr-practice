@@ -9,13 +9,13 @@
     <value>STAKEOUT не удалось запустить. Подробности записаны в зашифрованный лог.
 
 {0}</value>
-    <comment>{0} = exception message</comment>
+    <comment>{0} = exception types and messages, outermost first</comment>
   </data>
   <data name="App_UnhandledError" xml:space="preserve">
     <value>Произошла ошибка. Подробности записаны в зашифрованный лог.
 
 {0}</value>
-    <comment>{0} = exception message</comment>
+    <comment>{0} = exception types and messages, outermost first</comment>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>н/д</value>
@@ -160,6 +160,14 @@
     <value>Датчик температуры недоступен</value>
     <comment>Shown instead of the sparkline</comment>
   </data>
+  <data name="SysInfo_TempNoDriver" xml:space="preserve">
+    <value>Нет драйвера PawnIO — температура недоступна</value>
+    <comment>Shown instead of the sparkline when the sensor driver is missing</comment>
+  </data>
+  <data name="SysInfo_TempNoDriverHint" xml:space="preserve">
+    <value>Температуру процессора LibreHardwareMonitor читает через драйвер PawnIO, а он не установлен. Установите PawnIO (pawnio.eu) и перезапустите STAKEOUT.</value>
+    <comment>Tooltip / screen reader text when the sensor driver is missing</comment>
+  </data>
   <data name="Tweaks_Title" xml:space="preserve">
     <value>ТВИКИ</value>
     <comment>Page header, upper case</comment>
@@ -170,6 +178,26 @@
   <data name="Tweaks_RebootBadge" xml:space="preserve">
     <value>перезагрузка</value>
     <comment>Badge: needs a restart</comment>
+  </data>
+  <data name="Tweaks_HelpChanges" xml:space="preserve">
+    <value>Что меняется:</value>
+    <comment>Tooltip heading above the registry values / commands</comment>
+  </data>
+  <data name="Tweaks_HelpRestart" xml:space="preserve">
+    <value>Вступает в силу после перезагрузки.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_HelpExplorer" xml:space="preserve">
+    <value>Видно после перезапуска проводника.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_HelpRevert" xml:space="preserve">
+    <value>Выключите переключатель, чтобы отменить: прежнее состояние восстановится.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_DetailsExistingOnly" xml:space="preserve">
+    <value>(только значения, которые уже есть)</value>
+    <comment>Tooltip: USB flags are changed only where present</comment>
   </data>
   <data name="Tweaks_ConfirmDestructive" xml:space="preserve">
     <value>«{0}» — потенциально опасное действие.

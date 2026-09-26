@@ -13,13 +13,14 @@
     <conv:ResourceKeyToImageConverter x:Key="ResourceKeyToImage" />
     <conv:LogLevelToBrushConverter x:Key="LogLevelToBrush" />
     <conv:IconPathToImageConverter x:Key="IconPathToImage" />
+    <conv:EnumEqualsConverter x:Key="EnumEquals" />
 
     <!-- ============================================================
          STAKEOUT theme.
          Palette: pure black background, sharp 0px corners, rich dark-red
          accent. Text is white at 87% (primary) and 60% (secondary).
-         Heading font is a Lovecraftian serif (Cinzel) with graceful
-         fallback; body text uses the system grotesque for readability.
+         Heading font is a Lovecraftian serif (Cinzel; Cyrillic in Cormorant SC)
+         with graceful fallback; body text uses the system grotesque for readability.
          ============================================================ -->
 
     <!-- Colors -->
@@ -48,14 +49,19 @@
     <SolidColorBrush x:Key="ChartLineBrush" Color="#99FFFFFF" />
     <SolidColorBrush x:Key="ChartReferenceBrush" Color="#66FFFFFF" />
 
-    <!-- Heading font embedded as a <Resource> (see STAKEOUT.csproj and
+    <!-- Heading fonts embedded as <Resource> (see STAKEOUT.csproj and
          prepare-assets.ps1). Verified against the WPF 8 runtime: the family list
          tokenizer treats ",," as an escaped comma, so this string yields an
          unresolvable "pack://application:," token (skipped) plus
          "/Assets/Fonts/#Cinzel", which is resolved against this dictionary's
-         pack BaseUri to the embedded font. Constantia / Georgia are the
-         fallbacks if the font was not embedded. -->
-    <FontFamily x:Key="HeadingFont">pack://application:,,,/Assets/Fonts/#Cinzel, Constantia, Georgia</FontFamily>
+         pack BaseUri to the embedded font; "/Assets/Fonts/#Cormorant SC" is
+         resolved the same way.
+         WPF falls back through the list per character: Cinzel has no Cyrillic
+         (0 of the 66 А-я/Ёё glyphs), so Russian text is set in Cormorant SC
+         (all 66, Regular and Bold), a classical small-caps serif of the same
+         inscriptional kind. Constantia / Georgia are the fallbacks if the
+         fonts were not embedded. -->
+    <FontFamily x:Key="HeadingFont">pack://application:,,,/Assets/Fonts/#Cinzel, /Assets/Fonts/#Cormorant SC, Constantia, Georgia</FontFamily>
     <FontFamily x:Key="BodyFont">Segoe UI, Arial, sans-serif</FontFamily>
 
     <!-- Typography -->

@@ -57,9 +57,9 @@
         </DrawingBrush>
     </Window.Resources>
 
-    <!-- Root. Its margin is set in code while maximized: a WindowChrome window
-         then extends past the screen edge by the resize border. -->
-    <Grid x:Name="Root">
+    <!-- Root. Maximized size is held to the monitor work area in code
+         (Infrastructure/MaximizedWindowHook), so no edge padding is needed. -->
+    <Grid>
         <!-- Background pattern overlay -->
         <Rectangle Fill="{StaticResource CthulhuPattern}" IsHitTestVisible="False" />
 
@@ -107,10 +107,15 @@
                             Width="36" Height="36" Content="≡" FontSize="18"
                             ToolTip="{x:Static loc:Strings.Nav_Menu}" AutomationProperties.Name="{x:Static loc:Strings.Nav_Menu}" />
 
-                    <!-- nav -->
+                    <!-- nav: each button is checked from, and checks, MainViewModel.Selected,
+                         so mouse, keyboard and UI Automation all switch the page.
+                         Named for screen readers; tooltips only while collapsed to icons. -->
                     <StackPanel Grid.Row="1" Margin="0,10,0,0">
-                        <RadioButton GroupName="Nav" Style="{StaticResource NavButton}" IsChecked="True"
-                                     Command="{Binding NavigateCommand}" CommandParameter="SysInfo">
+                        <RadioButton GroupName="Nav" Style="{StaticResource NavButton}"
+                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=SysInfo}"
+                                     AutomationProperties.Name="{x:Static loc:Strings.Nav_System}"
+                                     ToolTip="{x:Static loc:Strings.Nav_System}"
+                                     ToolTipService.IsEnabled="{Binding IsSidebarCollapsed}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M2,3 H18 V13 H2 Z M7,17 H13 M10,13 V17" />
@@ -119,7 +124,10 @@
                             </StackPanel>
                         </RadioButton>
                         <RadioButton GroupName="Nav" Style="{StaticResource NavButton}"
-                                     Command="{Binding NavigateCommand}" CommandParameter="Tweaks">
+                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=Tweaks}"
+                                     AutomationProperties.Name="{x:Static loc:Strings.Nav_Tweaks}"
+                                     ToolTip="{x:Static loc:Strings.Nav_Tweaks}"
+                                     ToolTipService.IsEnabled="{Binding IsSidebarCollapsed}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M3,5 H17 M3,10 H17 M3,15 H17 M7,5 A1.6,1.6 0 1 0 7,5.01 M13,10 A1.6,1.6 0 1 0 13,10.01 M9,15 A1.6,1.6 0 1 0 9,15.01" />
@@ -128,7 +136,10 @@
                             </StackPanel>
                         </RadioButton>
                         <RadioButton GroupName="Nav" Style="{StaticResource NavButton}"
-                                     Command="{Binding NavigateCommand}" CommandParameter="Uwp">
+                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=Uwp}"
+                                     AutomationProperties.Name="{x:Static loc:Strings.Nav_Apps}"
+                                     ToolTip="{x:Static loc:Strings.Nav_Apps}"
+                                     ToolTipService.IsEnabled="{Binding IsSidebarCollapsed}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M3,3 H8 V8 H3 Z M12,3 H17 V8 H12 Z M3,12 H8 V17 H3 Z M12,12 H17 V17 H12 Z" />
@@ -137,7 +148,10 @@
                             </StackPanel>
                         </RadioButton>
                         <RadioButton GroupName="Nav" Style="{StaticResource NavButton}"
-                                     Command="{Binding NavigateCommand}" CommandParameter="Software">
+                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=Software}"
+                                     AutomationProperties.Name="{x:Static loc:Strings.Nav_Install}"
+                                     ToolTip="{x:Static loc:Strings.Nav_Install}"
+                                     ToolTipService.IsEnabled="{Binding IsSidebarCollapsed}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6" Data="M10,2 V12 M6,9 L10,13 L14,9 M3,16 H17" />
@@ -150,7 +164,8 @@
                     <!-- bottom block: log viewer, then the hidden "revert all" -->
                     <StackPanel Grid.Row="2">
                         <Button Style="{StaticResource SideActionButton}" Command="{Binding Logs.OpenCommand}"
-                                ToolTip="{x:Static loc:Strings.Nav_LogsTooltip}">
+                                ToolTip="{x:Static loc:Strings.Nav_LogsTooltip}"
+                                AutomationProperties.Name="{x:Static loc:Strings.Nav_Logs}">
                             <StackPanel Orientation="Horizontal">
                                 <Path Width="20" Height="20" Stretch="Uniform" Stroke="{StaticResource TextPrimaryBrush}"
                                       StrokeThickness="1.6"

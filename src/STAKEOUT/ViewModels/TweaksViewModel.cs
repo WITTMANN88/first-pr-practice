@@ -34,6 +34,23 @@ public sealed class TweakItemViewModel : ViewModelBase
     public bool RequiresRestart => _tweak.RequiresRestart;
     public bool RequiresExplorerRestart => _tweak.RequiresExplorerRestart;
 
+    /// <summary>
+    /// The [?] tooltip: what exactly changes (the description is already on the
+    /// row), when it takes effect and how to undo it.
+    /// </summary>
+    public string HelpText
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrWhiteSpace(_tweak.Details)) parts.Add(Strings.Tweaks_HelpChanges + "\n" + _tweak.Details);
+            if (RequiresRestart) parts.Add(Strings.Tweaks_HelpRestart);
+            if (RequiresExplorerRestart) parts.Add(Strings.Tweaks_HelpExplorer);
+            parts.Add(Strings.Tweaks_HelpRevert);
+            return string.Join("\n\n", parts);
+        }
+    }
+
     public bool Busy
     {
         get => _busy;

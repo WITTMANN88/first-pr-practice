@@ -1,3 +1,5 @@
+using Stakeout.Core;
+
 namespace Stakeout.Models;
 
 /// <summary>One GPU row (integrated or discrete shown separately).</summary>
@@ -13,6 +15,8 @@ public sealed class SystemInfoModel
     public string CpuName { get; set; } = "—";
     /// <summary>Package/core temperature in °C. Null when no sensor is available.</summary>
     public double? CpuTemperatureC { get; set; }
+    /// <summary>Why <see cref="CpuTemperatureC"/> is null.</summary>
+    public CpuTemperatureGap CpuTemperatureGap { get; set; }
 
     public string Motherboard { get; set; } = "—";
 

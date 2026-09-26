@@ -42,171 +42,191 @@
              mirror the real layout (caption bar, value bar, detail bar), each bar
              carrying a running highlight. All bars start together when the panel
              becomes visible, so the sweep stays in sync; they stop when hidden. -->
-        <WrapPanel Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
-            <!-- CPU (with temperature bar and sparkline) -->
-            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="80" Height="10" HorizontalAlignment="Left" />
-                    <c:SkeletonBlock Width="250" Height="18" HorizontalAlignment="Left" Margin="0,8,0,14" />
-                    <c:SkeletonBlock Height="10" />
-                    <c:SkeletonBlock Width="140" Height="10" HorizontalAlignment="Left" Margin="0,18,0,0" />
-                    <c:SkeletonBlock Width="276" Height="48" HorizontalAlignment="Left" Margin="0,12,0,8" />
-                    <c:SkeletonBlock Width="150" Height="10" HorizontalAlignment="Left" />
-                </StackPanel>
-            </Border>
-            <!-- Motherboard -->
-            <Border Style="{StaticResource Card}" Width="260" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="130" Height="10" HorizontalAlignment="Left" />
-                    <c:SkeletonBlock Width="190" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </StackPanel>
-            </Border>
-            <!-- GPUs -->
-            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" Margin="0,0,0,10" />
-                    <c:SkeletonBlock Width="280" Height="13" HorizontalAlignment="Left" Margin="0,0,0,8" />
-                    <c:SkeletonBlock Width="230" Height="13" HorizontalAlignment="Left" />
-                </StackPanel>
-            </Border>
-            <!-- RAM -->
-            <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="120" Height="10" HorizontalAlignment="Left" />
-                    <c:SkeletonBlock Width="110" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </StackPanel>
-            </Border>
-            <!-- Disks -->
-            <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" />
-                    <c:SkeletonBlock Width="140" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </StackPanel>
-            </Border>
-            <!-- Windows -->
-            <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                <StackPanel>
-                    <c:SkeletonBlock Width="70" Height="10" HorizontalAlignment="Left" />
-                    <c:SkeletonBlock Width="300" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </StackPanel>
-            </Border>
-        </WrapPanel>
+        <Grid Grid.Row="1" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" MinWidth="376" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                <!-- CPU (with temperature bar and sparkline) -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="80" Height="10" HorizontalAlignment="Left" />
+                        <c:SkeletonBlock Width="250" Height="18" HorizontalAlignment="Left" Margin="0,8,0,14" />
+                        <c:SkeletonBlock Height="10" />
+                        <c:SkeletonBlock Width="140" Height="10" HorizontalAlignment="Left" Margin="0,18,0,0" />
+                        <c:SkeletonBlock Width="276" Height="48" HorizontalAlignment="Left" Margin="0,12,0,8" />
+                        <c:SkeletonBlock Width="150" Height="10" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+                <!-- GPUs -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" Margin="0,0,0,10" />
+                        <c:SkeletonBlock Width="280" Height="13" HorizontalAlignment="Left" Margin="0,0,0,8" />
+                        <c:SkeletonBlock Width="230" Height="13" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <!-- Motherboard -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="130" Height="10" HorizontalAlignment="Left" />
+                        <c:SkeletonBlock Width="190" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+                <!-- RAM -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="120" Height="10" HorizontalAlignment="Left" />
+                        <c:SkeletonBlock Width="110" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+                <!-- Disks -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="90" Height="10" HorizontalAlignment="Left" />
+                        <c:SkeletonBlock Width="140" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+                <!-- Windows -->
+                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                    <StackPanel>
+                        <c:SkeletonBlock Width="70" Height="10" HorizontalAlignment="Left" />
+                        <c:SkeletonBlock Width="190" Height="18" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
 
-        <!-- Real content. -->
+        <!-- Real content. Two columns instead of a wrap panel of fixed-width
+             cards (which left ragged rows): the tall CPU card and the GPUs on
+             the left, the four short cards on the right, so both columns end at
+             about the same height. Cards stretch to their column; the left one
+             never gets narrower than the temperature chart needs. -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                       Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}">
-            <WrapPanel>
-                <!-- CPU card with temperature bar -->
-                <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Cpu}" Style="{StaticResource Caption}" />
-                        <TextBlock Text="{Binding CpuName}" Style="{StaticResource H2}"
-                                   TextWrapping="Wrap" Margin="0,4,0,12" />
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <ProgressBar Grid.Column="0" Style="{StaticResource RoundedProgress}"
-                                         Minimum="0" Maximum="100" Value="{Binding CpuTempValue, Mode=OneWay}"
-                                         Foreground="{Binding TempIsHot, Converter={StaticResource TempHotToBrush}}"
-                                         VerticalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="{Binding CpuTempText}"
-                                       Style="{StaticResource Body}" Margin="12,0,0,0" />
-                        </Grid>
-
-                        <!-- Temperature history sparkline (~2 min, one point per poll).
-                             Grey line, accent end-point marker ringed in the card colour,
-                             dashed overheat line labelled with its value (not colour alone);
-                             min/max as text below; tooltip + screen-reader summary. -->
-                        <StackPanel Margin="0,16,0,0" Background="Transparent"
-                                    ToolTip="{Binding TempSummary}"
-                                    AutomationProperties.Name="{Binding TempSummary}">
-                            <TextBlock Text="{x:Static loc:Strings.SysInfo_TempHistory}" Style="{StaticResource Caption}" />
-                            <Canvas Width="{x:Static vm:SysInfoViewModel.TempPlotWidth}"
-                                    Height="{x:Static vm:SysInfoViewModel.TempPlotHeight}"
-                                    HorizontalAlignment="Left" Margin="0,12,0,8"
-                                    Visibility="{Binding HasTempHistory, Converter={StaticResource BoolToVis}}">
-                                <Line X1="0" X2="{x:Static vm:SysInfoViewModel.TempPlotWidth}"
-                                      Y1="{Binding TempLimitY}" Y2="{Binding TempLimitY}"
-                                      Stroke="{StaticResource ChartReferenceBrush}" StrokeThickness="1"
-                                      StrokeDashArray="4 3" />
-                                <TextBlock Canvas.Left="{x:Static vm:SysInfoViewModel.TempLimitLabelLeft}"
-                                           Canvas.Top="{Binding TempLimitLabelTop}"
-                                           Text="{x:Static vm:SysInfoViewModel.TempLimitText}" FontSize="10"
-                                           Foreground="{StaticResource TextSecondaryBrush}" />
-                                <Polyline Points="{Binding TempHistoryPoints}"
-                                          Stroke="{StaticResource ChartLineBrush}" StrokeThickness="2"
-                                          StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-                                <Ellipse Width="12" Height="12"
-                                         Canvas.Left="{Binding TempNowLeft}" Canvas.Top="{Binding TempNowTop}"
-                                         Fill="{StaticResource AccentBrightBrush}"
-                                         Stroke="{StaticResource SurfaceBrush}" StrokeThickness="2" />
-                            </Canvas>
-                            <TextBlock Text="{Binding TempRangeText}" Style="{StaticResource Caption}" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" MinWidth="376" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                    <!-- CPU card with temperature bar -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Cpu}" Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding CpuName}" Style="{StaticResource H2}"
+                                       TextWrapping="Wrap" Margin="0,4,0,12" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ProgressBar Grid.Column="0" Style="{StaticResource RoundedProgress}"
+                                             Minimum="0" Maximum="100" Value="{Binding CpuTempValue, Mode=OneWay}"
+                                             Foreground="{Binding TempIsHot, Converter={StaticResource TempHotToBrush}}"
+                                             VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{Binding CpuTempText}"
+                                           Style="{StaticResource Body}" Margin="12,0,0,0" />
+                            </Grid>
+    
+                            <!-- Temperature history sparkline (~2 min, one point per poll).
+                                 Grey line, accent end-point marker ringed in the card colour,
+                                 dashed overheat line labelled with its value (not colour alone);
+                                 min/max as text below; tooltip + screen-reader summary. -->
+                            <StackPanel Margin="0,16,0,0" Background="Transparent"
+                                        ToolTip="{Binding TempSummary}"
+                                        AutomationProperties.Name="{Binding TempSummary}">
+                                <TextBlock Text="{x:Static loc:Strings.SysInfo_TempHistory}" Style="{StaticResource Caption}" />
+                                <Canvas Width="{x:Static vm:SysInfoViewModel.TempPlotWidth}"
+                                        Height="{x:Static vm:SysInfoViewModel.TempPlotHeight}"
+                                        HorizontalAlignment="Left" Margin="0,12,0,8"
+                                        Visibility="{Binding HasTempHistory, Converter={StaticResource BoolToVis}}">
+                                    <Line X1="0" X2="{x:Static vm:SysInfoViewModel.TempPlotWidth}"
+                                          Y1="{Binding TempLimitY}" Y2="{Binding TempLimitY}"
+                                          Stroke="{StaticResource ChartReferenceBrush}" StrokeThickness="1"
+                                          StrokeDashArray="4 3" />
+                                    <TextBlock Canvas.Left="{x:Static vm:SysInfoViewModel.TempLimitLabelLeft}"
+                                               Canvas.Top="{Binding TempLimitLabelTop}"
+                                               Text="{x:Static vm:SysInfoViewModel.TempLimitText}" FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <Polyline Points="{Binding TempHistoryPoints}"
+                                              Stroke="{StaticResource ChartLineBrush}" StrokeThickness="2"
+                                              StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                                    <Ellipse Width="12" Height="12"
+                                             Canvas.Left="{Binding TempNowLeft}" Canvas.Top="{Binding TempNowTop}"
+                                             Fill="{StaticResource AccentBrightBrush}"
+                                             Stroke="{StaticResource SurfaceBrush}" StrokeThickness="2" />
+                                </Canvas>
+                                <TextBlock Text="{Binding TempRangeText}" Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
-                </Border>
-
-                <!-- Motherboard -->
-                <Border Style="{StaticResource Card}" Width="260" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Motherboard}" Style="{StaticResource Caption}" />
-                        <TextBlock Text="{Binding Motherboard}" Style="{StaticResource H2}"
-                                   TextWrapping="Wrap" Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- GPUs (integrated + discrete as separate rows). GpuInfo is an
-                     immutable, non-INotifyPropertyChanged snapshot: OneTime bindings
-                     skip WPF's per-binding property-descriptor change tracking. -->
-                <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Gpus}" Style="{StaticResource Caption}" Margin="0,0,0,6" />
-                        <ItemsControl ItemsSource="{Binding Gpus}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Name, Mode=OneTime}"
-                                                   Style="{StaticResource Body}" TextWrapping="Wrap" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Kind, Mode=OneTime}"
-                                                   Style="{StaticResource Caption}" Margin="10,0,0,0" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-
-                <!-- RAM -->
-                <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Ram}" Style="{StaticResource Caption}" />
-                        <TextBlock Text="{Binding RamSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Disks -->
-                <Border Style="{StaticResource Card}" Width="220" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Disks}" Style="{StaticResource Caption}" />
-                        <TextBlock Text="{Binding DiskSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Windows build -->
-                <Border Style="{StaticResource Card}" Width="360" Margin="0,0,16,16">
-                    <StackPanel>
-                        <TextBlock Text="{x:Static loc:Strings.SysInfo_Windows}" Style="{StaticResource Caption}" />
-                        <TextBlock Text="{Binding WindowsVersion}" Style="{StaticResource H2}"
-                                   TextWrapping="Wrap" Margin="0,4,0,0" />
-                    </StackPanel>
-                </Border>
-            </WrapPanel>
+                    </Border>
+    
+                    <!-- GPUs (integrated + discrete as separate rows). GpuInfo is an
+                         immutable, non-INotifyPropertyChanged snapshot: OneTime bindings
+                         skip WPF's per-binding property-descriptor change tracking. -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Gpus}" Style="{StaticResource Caption}" Margin="0,0,0,6" />
+                            <ItemsControl ItemsSource="{Binding Gpus}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Name, Mode=OneTime}"
+                                                       Style="{StaticResource Body}" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Kind, Mode=OneTime}"
+                                                       Style="{StaticResource Caption}" Margin="10,0,0,0" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+    
+                    <!-- Motherboard -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Motherboard}" Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding Motherboard}" Style="{StaticResource H2}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+    
+                    <!-- RAM -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Ram}" Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding RamSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+    
+                    <!-- Disks -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Disks}" Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding DiskSummary}" Style="{StaticResource H2}" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+    
+                    <!-- Windows build -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="{x:Static loc:Strings.SysInfo_Windows}" Style="{StaticResource Caption}" />
+                            <TextBlock Text="{Binding WindowsVersion}" Style="{StaticResource H2}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </UserControl>

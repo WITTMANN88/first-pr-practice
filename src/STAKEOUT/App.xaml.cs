@@ -36,11 +36,11 @@ public partial class App : Application
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
         {
-            if (args.ExceptionObject is Exception ex) Logger.LogError("AppDomain", ex);
+            if (args.ExceptionObject is Exception ex) Logger.LogFatal("AppDomain", ex);
         };
         TaskScheduler.UnobservedTaskException += (_, args) =>
         {
-            Logger.LogError("UnobservedTask", args.Exception);
+            Logger.LogFatal("UnobservedTask", args.Exception);
             args.SetObserved();
         };
 
@@ -55,8 +55,8 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            Logger.LogError("Startup", ex);
-            MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Strings.App_StartupFailed, ex.Message),
+            Logger.LogFatal("Startup", ex);
+            MessageBox.Show(string.Format(CultureInfo.CurrentCulture, Strings.App_StartupFailed, Logger.Describe(ex)),
                 "STAKEOUT", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
@@ -64,8 +64,8 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        Logger.LogError("Dispatcher", e.Exception);
-        var message = string.Format(CultureInfo.CurrentCulture, Strings.App_UnhandledError, e.Exception.Message);
+        Logger.LogFatal("Dispatcher", e.Exception);
+        var message = string.Format(CultureInfo.CurrentCulture, Strings.App_UnhandledError, Logger.Describe(e.Exception));
 
         // Prefer a non-blocking toast; fall back to a MessageBox if the UI
         // infrastructure is not up yet.

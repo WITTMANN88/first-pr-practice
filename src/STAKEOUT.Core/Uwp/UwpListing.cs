@@ -33,9 +33,31 @@ public static class UwpListing
             apps.Add(UwpApp.FromIdentity(name, full, location));
         }
 
+        Disambiguate(apps);
         return apps
             .OrderBy(a => a.Category)
             .ThenBy(a => a.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    /// <summary>
+    /// Packages that share an identity name (frameworks installed for x64 and
+    /// x86, or in two versions side by side) would show as identical rows: append
+    /// what tells them apart, "(x86)" or "(x64, 8000.616.304.0)".
+    /// </summary>
+    private static void Disambiguate(List<UwpApp> apps)
+    {
+        foreach (var group in apps.GroupBy(a => a.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+        {
+            var showArch = group.Select(a => a.Architecture).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1;
+            foreach (var app in group)
+            {
+                var showVersion = group.Count(o => string.Equals(o.Architecture, app.Architecture, StringComparison.OrdinalIgnoreCase)) > 1;
+                var parts = new List<string>(2);
+                if (showArch && app.Architecture.Length > 0) parts.Add(app.Architecture);
+                if (showVersion && app.Version.Length > 0) parts.Add(app.Version);
+                if (parts.Count > 0) app.DisplayName += $" ({string.Join(", ", parts)})";
+            }
+        }
     }
 }

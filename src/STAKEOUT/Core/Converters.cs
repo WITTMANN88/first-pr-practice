@@ -34,6 +34,22 @@ public sealed class StringToVisibilityConverter : IValueConverter
         => Binding.DoNothing;
 }
 
+/// <summary>
+/// Enum value ⇄ "is this the one named by the parameter" (navigation radio
+/// buttons). Checking a button writes its enum value back; unchecking writes
+/// nothing, so the group never leaves the source without a value.
+/// </summary>
+public sealed class EnumEqualsConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value != null && string.Equals(value.ToString(), parameter as string, StringComparison.Ordinal);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is true && parameter is string name && targetType.IsEnum && Enum.TryParse(targetType, name, out var result)
+            ? result
+            : Binding.DoNothing;
+}
+
 /// <summary>CPU temperature bar colour: hot (>=85 °C) → bright red, else accent.</summary>
 public sealed class TempHotToBrushConverter : IValueConverter
 {

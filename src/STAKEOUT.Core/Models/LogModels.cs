@@ -24,7 +24,10 @@ public sealed partial class LogEntry
     private static partial Regex LinePattern();
 
     private static readonly string[] ErrorStatuses =
-        { "ERROR", "ACCESS_DENIED", "TIMEOUT", "FAILED", "PARTIAL", "REVERT-PARTIAL", "BLOCKED", "CANCELLED" };
+        {
+            "ERROR", "FATAL", "CRITICAL", "ACCESS_DENIED", "TIMEOUT", "FAILED", "PARTIAL", "REVERT-PARTIAL",
+            "BLOCKED", "CANCELLED", "TLS_REJECTED",
+        };
 
     private static readonly string[] SuccessStatuses =
         { "OK", "APPLIED", "REVERTED", "DONE", "SUCCESS", "RESTARTED" };

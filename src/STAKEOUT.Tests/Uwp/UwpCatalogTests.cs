@@ -154,6 +154,49 @@ public class UwpListingTests
         Assert.False(xbox.IsCritical);
     }
 
+    [Fact]
+    public void Parse_ReadsVersionAndArchitectureFromFullName()
+    {
+        var candy = UwpListing.Parse(SampleOutput).Single(a => a.Name == "king.com.CandyCrushSaga");
+        Assert.Equal("x86", candy.Architecture);
+        Assert.Equal("1.0", candy.Version);
+    }
+
+    [Fact]
+    public void Parse_SameNameTwoArchitectures_ShowsArchitecture()
+    {
+        // The field test showed "WindowsAppRuntime.1.8" twice: x64 and x86 builds.
+        var apps = UwpListing.Parse(
+            "Microsoft.WindowsAppRuntime.1.8|Microsoft.WindowsAppRuntime.1.8_8000.616.304.0_x64__8wekyb3d8bbwe|C:\\a\n" +
+            "Microsoft.WindowsAppRuntime.1.8|Microsoft.WindowsAppRuntime.1.8_8000.616.304.0_x86__8wekyb3d8bbwe|C:\\b\n" +
+            "Microsoft.BingNews|Microsoft.BingNews_4.1_x64__8wekyb3d8bbwe|C:\\c\n");
+
+        Assert.Equal(
+            new[] { "BingNews", "WindowsAppRuntime.1.8 (x64)", "WindowsAppRuntime.1.8 (x86)" },
+            apps.Select(a => a.DisplayName));
+    }
+
+    [Fact]
+    public void Parse_SameNameAndArchitecture_ShowsVersion()
+    {
+        var apps = UwpListing.Parse(
+            "Microsoft.VCLibs.140.00|Microsoft.VCLibs.140.00_14.0.33519.0_x64__8wekyb3d8bbwe|C:\\a\n" +
+            "Microsoft.VCLibs.140.00|Microsoft.VCLibs.140.00_14.0.30704.0_x64__8wekyb3d8bbwe|C:\\b\n" +
+            "Microsoft.VCLibs.140.00|Microsoft.VCLibs.140.00_14.0.33519.0_x86__8wekyb3d8bbwe|C:\\c\n");
+
+        Assert.Equal(
+            new[] { "VCLibs.140.00 (x64, 14.0.30704.0)", "VCLibs.140.00 (x64, 14.0.33519.0)", "VCLibs.140.00 (x86)" },
+            apps.Select(a => a.DisplayName));
+    }
+
+    [Fact]
+    public void FromIdentity_MalformedFullName_LeavesIdentityPartsEmpty()
+    {
+        var app = UwpApp.FromIdentity("Contoso.App", "not-a-full-name", "");
+        Assert.Equal("", app.Architecture);
+        Assert.Equal("", app.Version);
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]

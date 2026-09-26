@@ -43,7 +43,6 @@ public sealed class MainViewModel : ViewModelBase
         Toasts = feed.Active;
         _currentPage = SysInfo;
 
-        NavigateCommand = new RelayCommand(p => Navigate(Enum.Parse<Page>(p!.ToString()!)));
         ToggleSidebarCommand = new RelayCommand(() => IsSidebarCollapsed = !IsSidebarCollapsed);
         RevertAllCommand = new AsyncRelayCommand(_ => RevertAllAsync());
     }
@@ -60,7 +59,6 @@ public sealed class MainViewModel : ViewModelBase
     /// <summary>Active toasts (bottom-right stack), owned by the notification service.</summary>
     public ReadOnlyObservableCollection<Notification> Toasts { get; }
 
-    public RelayCommand NavigateCommand { get; }
     public RelayCommand ToggleSidebarCommand { get; }
     public AsyncRelayCommand RevertAllCommand { get; }
 
@@ -70,10 +68,15 @@ public sealed class MainViewModel : ViewModelBase
         private set => SetProperty(ref _currentPage, value);
     }
 
+    /// <summary>
+    /// The shown page. Settable, so the navigation radio buttons bind to it: a
+    /// click, the keyboard or UI Automation's Select all switch the page, not
+    /// only a mouse click on a command.
+    /// </summary>
     public Page Selected
     {
         get => _selected;
-        private set => SetProperty(ref _selected, value);
+        set => Navigate(value);
     }
 
     public bool IsSidebarCollapsed
@@ -101,7 +104,7 @@ public sealed class MainViewModel : ViewModelBase
 
     private void Navigate(Page page)
     {
-        Selected = page;
+        SetProperty(ref _selected, page, nameof(Selected));
         CurrentPage = page switch
         {
             Page.SysInfo => SysInfo,

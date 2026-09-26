@@ -1,5 +1,6 @@
 using System.Management;
 using LibreHardwareMonitor.Hardware;
+using LibreHardwareMonitor.PawnIo;
 using System.Globalization;
 using Stakeout.Core;
 using Stakeout.Localization;
@@ -29,6 +30,7 @@ public sealed class SystemInfoService : IDisposable
         {
             CpuName = GetCpuName(),
             CpuTemperatureC = GetCpuTemperature(),
+            CpuTemperatureGap = _temperatureGap,
             Motherboard = GetMotherboard(),
             Gpus = GetGpus(),
             RamSummary = GetRam(),
@@ -53,8 +55,16 @@ public sealed class SystemInfoService : IDisposable
     }
 
     /// <summary>
+    /// Why the latest temperature read came back empty (<see cref="CpuTemperatureGap.None"/>
+    /// after a successful one). Written by the read, so read it after awaiting it.
+    /// </summary>
+    public CpuTemperatureGap TemperatureGap => _temperatureGap;
+    private volatile CpuTemperatureGap _temperatureGap;
+
+    /// <summary>
     /// Read the CPU package temperature via LibreHardwareMonitor. Returns null if
-    /// no thermal sensor is exposed (common on some desktops / VMs).
+    /// no thermal sensor is exposed (common on some desktops / VMs, and on every
+    /// machine without the PawnIO driver); <see cref="TemperatureGap"/> says why.
     /// </summary>
     private double? GetCpuTemperature()
     {
@@ -64,11 +74,13 @@ public sealed class SystemInfoService : IDisposable
             {
                 _computer ??= OpenComputer();
                 var visitor = new UpdateVisitor();
+                var cpus = new List<string>();
 
                 foreach (var hw in _computer.Hardware)
                 {
                     if (hw.HardwareType != HardwareType.Cpu) continue;
                     hw.Accept(visitor);
+                    cpus.Add(hw.Name);
 
                     // Prefer an explicit package sensor, else average the cores.
                     double? package = null;
@@ -87,26 +99,50 @@ public sealed class SystemInfoService : IDisposable
                             coreTemps.Add(v);
                         }
                     }
-                    if (package.HasValue) return Math.Round(package.Value, 1);
-                    if (coreTemps.Count > 0) return Math.Round(coreTemps.Average(), 1);
+                    if (package.HasValue) return Reading(Math.Round(package.Value, 1));
+                    if (coreTemps.Count > 0) return Reading(Math.Round(coreTemps.Average(), 1));
                 }
+
+                ReportGap(PawnIo.IsInstalled ? CpuTemperatureGap.NoSensor : CpuTemperatureGap.DriverMissing, cpus);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError("CPU temperature", ex);
+            // Polled every 3 s: log a failure once, not on every tick.
+            if (_temperatureGap != CpuTemperatureGap.Error) Logger.LogError("CPU temperature", ex);
+            _temperatureGap = CpuTemperatureGap.Error;
         }
         return null;
     }
 
+    private double Reading(double celsius)
+    {
+        if (_temperatureGap != CpuTemperatureGap.None)
+            Logger.Log("Sensors.CpuTemp", "OK", "temperature readings resumed");
+        _temperatureGap = CpuTemperatureGap.None;
+        return celsius;
+    }
+
+    /// <summary>Log the reason once per change, not on every 3 s poll.</summary>
+    private void ReportGap(CpuTemperatureGap gap, List<string> cpus)
+    {
+        if (gap == _temperatureGap) return;
+        _temperatureGap = gap;
+
+        var hardware = cpus.Count == 0 ? "no CPU detected" : string.Join(", ", cpus);
+        var reason = gap == CpuTemperatureGap.DriverMissing
+            ? "PawnIO driver not installed (LibreHardwareMonitor reads CPU registers through it)"
+            : $"no CPU temperature sensor exposed (PawnIO {PawnIo.Version})";
+        Logger.Log("Sensors.CpuTemp", "UNAVAILABLE", $"{reason}; {hardware}");
+    }
+
+    /// <summary>
+    /// CPU only: the page reads nothing else from the library, and GPU and
+    /// motherboard probing (vendor GPU APIs, Super I/O) would only slow the first read.
+    /// </summary>
     private static Computer OpenComputer()
     {
-        var c = new Computer
-        {
-            IsCpuEnabled = true,
-            IsGpuEnabled = true,
-            IsMotherboardEnabled = true,
-        };
+        var c = new Computer { IsCpuEnabled = true };
         c.Open();
         return c;
     }

@@ -8,6 +8,9 @@ namespace Stakeout.Core;
 /// </summary>
 public static class Logger
 {
+    /// <summary>Exception chain levels <see cref="Describe"/> prints; real chains are a few deep.</summary>
+    private const int MaxChainDepth = 8;
+
     private static readonly object Gate = new();
     private static EncryptedLogFile? _file;
 
@@ -60,7 +63,39 @@ public static class Logger
         }
     }
 
-    public static void LogError(string action, Exception ex) => Log(action, "ERROR", ex.Message);
+    /// <summary>
+    /// Record a handled failure as one readable line: the type and message of
+    /// every exception in the chain (no stack trace).
+    /// </summary>
+    public static void LogError(string action, Exception ex) => Log(action, "ERROR", Describe(ex));
+
+    /// <summary>
+    /// Record a failure the app cannot recover from (startup, unhandled
+    /// exceptions) in full: types, messages and stack traces of the whole chain.
+    /// </summary>
+    public static void LogFatal(string action, Exception ex)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        Log(action, "FATAL", ex.ToString());
+    }
+
+    /// <summary>
+    /// "Outer.Type: message → Inner.Type: message", outermost first. Every level
+    /// names its type, so the text is never blank even for exceptions thrown
+    /// without a message.
+    /// </summary>
+    public static string Describe(Exception ex)
+    {
+        ArgumentNullException.ThrowIfNull(ex);
+        var parts = new List<string>();
+        for (var e = ex; e != null && parts.Count < MaxChainDepth; e = e.InnerException)
+        {
+            var type = e.GetType().FullName ?? e.GetType().Name;
+            var message = e.Message.Trim();
+            parts.Add(message.Length == 0 ? type : $"{type}: {message}");
+        }
+        return string.Join(" → ", parts);
+    }
 
     /// <summary>Decrypt the current log back to plaintext lines (bad lines skipped).</summary>
     public static IEnumerable<string> ReadDecrypted()

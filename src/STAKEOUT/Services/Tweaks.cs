@@ -9,6 +9,8 @@ public interface ITweak
     string Id { get; }
     string Title { get; }
     string Description { get; }
+    /// <summary>What exactly changes (registry values, commands), shown in the help tooltip.</summary>
+    string Details { get; }
     TweakCategory Category { get; }
 
     /// <summary>Shows a confirmation dialog before applying (BitLocker, MPO...).</summary>
@@ -24,10 +26,14 @@ public interface ITweak
     Task<bool> RevertAsync();
 }
 
-/// <summary>Display metadata shared by the tweak implementations.</summary>
+/// <summary>
+/// Display metadata shared by the tweak implementations. <paramref name="Details"/>
+/// is required for action tweaks; a registry tweak derives it from its writes.
+/// </summary>
 public sealed record TweakInfo(
     string Id, string Title, string Description, TweakCategory Category,
-    bool Destructive = false, bool RequiresRestart = false, bool RequiresExplorerRestart = false);
+    bool Destructive = false, bool RequiresRestart = false, bool RequiresExplorerRestart = false,
+    string? Details = null);
 
 /// <summary>
 /// Tweak implemented purely as registry writes, applied transactionally through
@@ -48,11 +54,13 @@ public sealed class RegistryTweak : ITweak
         _rollback = rollback;
         _info = info;
         _ops = ops;
+        Details = info.Details ?? TweakDetails.Registry(ops);
     }
 
     public string Id => _info.Id;
     public string Title => _info.Title;
     public string Description => _info.Description;
+    public string Details { get; }
     public TweakCategory Category => _info.Category;
     public bool IsDestructive => _info.Destructive;
     public bool RequiresRestart => _info.RequiresRestart;
@@ -123,6 +131,7 @@ public sealed class ActionTweak : ITweak
     public string Id => _info.Id;
     public string Title => _info.Title;
     public string Description => _info.Description;
+    public string Details => _info.Details ?? "";
     public TweakCategory Category => _info.Category;
     public bool IsDestructive => _info.Destructive;
     public bool RequiresRestart => _info.RequiresRestart;

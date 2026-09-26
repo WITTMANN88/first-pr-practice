@@ -9,13 +9,13 @@
     <value>STAKEOUT could not start. Details were written to the encrypted log.
 
 {0}</value>
-    <comment>{0} = exception message</comment>
+    <comment>{0} = exception types and messages, outermost first</comment>
   </data>
   <data name="App_UnhandledError" xml:space="preserve">
     <value>An error occurred. Details were written to the encrypted log.
 
 {0}</value>
-    <comment>{0} = exception message</comment>
+    <comment>{0} = exception types and messages, outermost first</comment>
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>n/a</value>
@@ -160,6 +160,14 @@
     <value>No temperature sensor available</value>
     <comment>Shown instead of the sparkline</comment>
   </data>
+  <data name="SysInfo_TempNoDriver" xml:space="preserve">
+    <value>No PawnIO driver — temperature unavailable</value>
+    <comment>Shown instead of the sparkline when the sensor driver is missing</comment>
+  </data>
+  <data name="SysInfo_TempNoDriverHint" xml:space="preserve">
+    <value>LibreHardwareMonitor reads the CPU temperature through the PawnIO driver, which is not installed. Install PawnIO (pawnio.eu) and restart STAKEOUT.</value>
+    <comment>Tooltip / screen reader text when the sensor driver is missing</comment>
+  </data>
   <data name="Tweaks_Title" xml:space="preserve">
     <value>TWEAKS</value>
     <comment>Page header, upper case</comment>
@@ -170,6 +178,26 @@
   <data name="Tweaks_RebootBadge" xml:space="preserve">
     <value>reboot</value>
     <comment>Badge: needs a restart</comment>
+  </data>
+  <data name="Tweaks_HelpChanges" xml:space="preserve">
+    <value>What changes:</value>
+    <comment>Tooltip heading above the registry values / commands</comment>
+  </data>
+  <data name="Tweaks_HelpRestart" xml:space="preserve">
+    <value>Takes effect after a restart.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_HelpExplorer" xml:space="preserve">
+    <value>Visible after Explorer restarts.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_HelpRevert" xml:space="preserve">
+    <value>Turn the switch off to undo: the previous state is restored.</value>
+    <comment>Tooltip line</comment>
+  </data>
+  <data name="Tweaks_DetailsExistingOnly" xml:space="preserve">
+    <value>(existing values only)</value>
+    <comment>Tooltip: USB flags are changed only where present</comment>
   </data>
   <data name="Tweaks_ConfirmDestructive" xml:space="preserve">
     <value>“{0}” is a potentially dangerous action.

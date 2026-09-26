@@ -15,6 +15,9 @@ public interface IUwpService
 
     /// <summary>Remove one package for all users; protected packages are refused.</summary>
     Task<UwpRemovalResult> RemoveAsync(UwpApp app);
+
+    /// <summary>Size of the package's install folder in bytes (0 when unknown).</summary>
+    Task<long> MeasureSizeAsync(UwpApp app);
 }
 
 /// <summary>
@@ -66,8 +69,8 @@ public sealed class UwpService : IUwpService
             return new UwpRemovalResult(false, 0);
         }
 
-        // Walks every file of the package: off the UI thread.
-        var freed = await Task.Run(() => MeasureSize(app.InstallLocation));
+        // Reuse the size measured for the table; otherwise walk the files now.
+        var freed = app.SizeBytes > 0 ? app.SizeBytes : await MeasureSizeAsync(app);
 
         // Remove strictly by package full name to avoid wildcard mishaps.
         var script =
@@ -86,10 +89,14 @@ public sealed class UwpService : IUwpService
 
     /// <summary>
     /// Best-effort resolution of a package's logo for the table thumbnail.
-    /// Reads AppxManifest.xml, finds the square logo reference, and picks a real
-    /// file on disk (logos ship with scale/targetsize qualifiers, e.g.
-    /// "Square44x44Logo.scale-200.png"). Returns null when nothing usable is found.
-    /// Fully guarded: a locked folder or malformed manifest never throws.
+    /// Reads AppxManifest.xml and tries, in order, the app-list icon
+    /// (Square44x44Logo, what Start shows), the tile (Square150x150Logo) and the
+    /// Store logo (Properties/Logo). System packages often ship only a template
+    /// placeholder as their Store logo, so it comes last. Logos ship with
+    /// scale/targetsize qualifiers ("Square44x44Logo.targetsize-32_altform-unplated.png");
+    /// the first reference that resolves to a real file wins. Returns null when
+    /// nothing usable is found. Fully guarded: a locked folder or malformed
+    /// manifest never throws.
     /// </summary>
     private static string? ResolveIcon(string installLocation)
     {
@@ -103,31 +110,18 @@ public sealed class UwpService : IUwpService
 
             var doc = System.Xml.Linq.XDocument.Load(manifest);
             // Search by local name to be namespace-agnostic across manifest versions.
-            var logoRel =
-                doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value
-                ?? doc.Descendants()
-                      .Where(e => e.Name.LocalName == "VisualElements")
-                      .Select(e => (string?)e.Attribute("Square44x44Logo") ?? (string?)e.Attribute("Square150x150Logo"))
-                      .FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+            var visual = doc.Descendants().Where(e => e.Name.LocalName == "VisualElements").ToList();
+            var references = visual.Select(e => (string?)e.Attribute("Square44x44Logo"))
+                .Concat(visual.Select(e => (string?)e.Attribute("Square150x150Logo")))
+                .Append(doc.Descendants().FirstOrDefault(e => e.Name.LocalName == "Logo")?.Value);
 
-            if (string.IsNullOrWhiteSpace(logoRel)) return null;
-
-            // Normalize separators and split into folder + base filename.
-            var rel = logoRel.Replace('/', '\\');
-            var dir = Path.Combine(installLocation, Path.GetDirectoryName(rel) ?? "");
-            var baseName = Path.GetFileNameWithoutExtension(rel);
-            var ext = Path.GetExtension(rel);
-            if (!Directory.Exists(dir)) return null;
-
-            // Exact file first, then any scale/targetsize variant.
-            var exact = Path.Combine(dir, baseName + ext);
-            if (File.Exists(exact)) return exact;
-
-            var candidates = Directory.EnumerateFiles(dir, baseName + "*" + ext).ToList();
-            // Prefer a mid-size asset if several exist.
-            return candidates.FirstOrDefault(f => f.Contains("targetsize-32", StringComparison.OrdinalIgnoreCase))
-                ?? candidates.FirstOrDefault(f => f.Contains("scale-200", StringComparison.OrdinalIgnoreCase))
-                ?? candidates.FirstOrDefault();
+            foreach (var reference in references)
+            {
+                if (string.IsNullOrWhiteSpace(reference)) continue;
+                var file = ResolveLogoFile(installLocation, reference);
+                if (file != null) return file;
+            }
+            return null;
         }
         catch (UnauthorizedAccessException ex)
         {
@@ -141,21 +135,69 @@ public sealed class UwpService : IUwpService
         }
     }
 
-    /// <summary>Sum the install folder size (best-effort, guarded).</summary>
+    /// <summary>Qualifier preference: 32 px on a dark row (unplated), then 32 px, then 200 % scale.</summary>
+    private static readonly string[] PreferredQualifiers =
+        { "targetsize-32_altform-unplated", "targetsize-32", "scale-200", "scale-100" };
+
+    /// <summary>A manifest logo reference → an existing file, exact name first, then qualified variants.</summary>
+    private static string? ResolveLogoFile(string installLocation, string reference)
+    {
+        var rel = reference.Replace('/', '\\');
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(installLocation)) + Path.DirectorySeparatorChar;
+        var dir = Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.Combine(root, Path.GetDirectoryName(rel) ?? "")))
+            + Path.DirectorySeparatorChar;
+        // The reference comes from a file on disk: never let it point outside the package.
+        if (!dir.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !Directory.Exists(dir))
+            return null;
+
+        var baseName = Path.GetFileNameWithoutExtension(rel);
+        var ext = Path.GetExtension(rel);
+        var exact = Path.Combine(dir, baseName + ext);
+        if (File.Exists(exact)) return exact;
+
+        var candidates = Directory.EnumerateFiles(dir, baseName + ".*" + ext).ToList();
+        foreach (var qualifier in PreferredQualifiers)
+        {
+            var match = candidates.FirstOrDefault(f =>
+                Path.GetFileName(f).Contains("." + qualifier + ".", StringComparison.OrdinalIgnoreCase));
+            if (match != null) return match;
+        }
+        return candidates.FirstOrDefault();
+    }
+
+    /// <inheritdoc />
+    public Task<long> MeasureSizeAsync(UwpApp app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        // Walks every file of the package: off the UI thread.
+        return Task.Run(() => MeasureSize(app.InstallLocation));
+    }
+
+    /// <summary>
+    /// Sum the install folder size (best-effort, guarded). File lengths come
+    /// from the directory listing itself, so there is no extra stat per file.
+    /// </summary>
     private static long MeasureSize(string location)
     {
         if (string.IsNullOrWhiteSpace(location) || !Directory.Exists(location)) return 0;
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            // One locked sub-folder must not zero the whole package.
+            IgnoreInaccessible = true,
+            // Count hidden and system files too, but never follow a link out of the package.
+            AttributesToSkip = FileAttributes.ReparsePoint,
+        };
         try
         {
             long total = 0;
-            foreach (var file in Directory.EnumerateFiles(location, "*", SearchOption.AllDirectories))
-            {
-                try { total += new FileInfo(file).Length; } catch { /* skip locked file */ }
-            }
+            foreach (var file in new DirectoryInfo(location).EnumerateFiles("*", options))
+                total += file.Length;
             return total;
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
         {
+            Logger.Log("UWP size", "ERROR", $"{location}: {ex.Message}");
             return 0;
         }
     }

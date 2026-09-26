@@ -38,6 +38,10 @@ LibreHardwareMonitor (температура), WMI (железо), реестр 
 
 Температура процессора обновляется каждые 3 с: бар (красный выше 85 °C) и
 спарклайн за последние ~2 минуты с подписанной линией порога 85 °C.
+LibreHardwareMonitor 0.9.6 читает регистры CPU только через драйвер
+[PawnIO](https://pawnio.eu) (WinRing0 в библиотеке больше нет). Без драйвера
+температура — «н/д», страница пишет «Нет драйвера PawnIO», а лог — причину
+(`[Sensors.CpuTemp] [UNAVAILABLE]`). STAKEOUT драйвер не устанавливает.
 
 ### Твики (21, все обратимые)
 
@@ -135,16 +139,16 @@ dotnet publish STAKEOUT -c Release -p:StakeoutFlavor=Trimmed
 dotnet publish STAKEOUT -c Release -p:Version=1.2.3   # версия в свойствах файла
 ```
 
-Шрифт заголовков (Cinzel) уже лежит в репозитории; `STAKEOUT/prepare-assets.ps1`
-перекачивает его с проверкой SHA-256.
+Шрифты заголовков (Cinzel и Cormorant SC) уже лежат в репозитории;
+`STAKEOUT/prepare-assets.ps1` перекачивает их с проверкой SHA-256.
 
 ### Варианты сборки
 
 | Флейвор | Размер | Как устроен |
 |---|---|---|
-| по умолчанию | 65.4 МБ | self-contained, сжатый single file; только языки `en;ru` (−5.1 МБ) |
-| `Lite` | 5.6 МБ | framework-dependent: runtime берётся из установленного .NET 8 |
-| `Trimmed` | 44.4 МБ | принудительный тримминг, см. ниже |
+| по умолчанию | 65.7 МБ | self-contained, сжатый single file; только языки `en;ru` (−5.1 МБ) |
+| `Lite` | 6.6 МБ | framework-dependent: runtime берётся из установленного .NET 8 |
+| `Trimmed` | 44.7 МБ | принудительный тримминг, см. ниже |
 
 SDK запрещает тримминг WPF (`NETSDK1168`): XAML/BAML и привязки обращаются к коду
 через рефлексию, которую триммер не видит. `Trimmed` обходит запрет внутренним
@@ -154,6 +158,11 @@ trimmable (`TrimMode=partial`), а приложение, ядро, DI, WMI, Libr
 конфигурацию не поддерживает, и отсутствие предупреждений триммера не доказывает,
 что приложение работает (BAML триммеру не виден). Поэтому это экспериментальный
 вариант: перед использованием каждую страницу нужно проверить на Windows.
+
+Тримминг по умолчанию выключает встроенный COM interop
+(`BuiltInComInterop.IsSupported=false`), а на нём построены WPF (службы текста,
+UI Automation) и `System.Management` (WMI). Флейвор включает его обратно
+(`BuiltInComInteropSupport=true`): без этого сборка падала на старте.
 
 ## Архитектура
 
@@ -388,8 +397,15 @@ git push origin v1.0.0
 **Температура.** 40 замеров × 3 с; шкала 30–100 °C расширяется при выходе
 замера за её пределы; опрос, не уложившийся в таймаут, на график не попадает.
 
-**Шрифт.** Cinzel (SIL OFL 1.1) встроен как WPF-ресурс (`pack://application:,,,/Assets/Fonts/#Cinzel`),
-fallback — Constantia/Georgia.
+**Шрифт.** Cinzel (SIL OFL 1.1) встроен как WPF-ресурс (`pack://application:,,,/Assets/Fonts/#Cinzel`).
+Кириллицы в Cinzel нет (0 из 66 букв А–я, Ёё), поэтому следом в списке семейств
+стоит Cormorant SC (SIL OFL 1.1, все 66 букв, Regular и Bold): WPF подбирает шрифт
+посимвольно, латиница остаётся в Cinzel. Последний fallback — Constantia/Georgia.
+
+**Развёрнутое окно.** Окно без рамки (`WindowStyle=None`) Windows разворачивает
+на весь монитор, поверх панели задач. `MaximizedWindowHook` обрабатывает
+`WM_GETMINMAXINFO` и ограничивает его рабочей областью монитора; у автоскрытой
+панели задач оставляется 1 px, чтобы она могла выехать.
 
 ### Структура репозитория
 
@@ -401,14 +417,17 @@ src/
   Directory.Build.props            анализаторы, warnings as errors
   STAKEOUT.sln
   STAKEOUT/                        WPF: Views, ViewModels, Services, Infrastructure, Design, Themes
-  STAKEOUT.Core/                   ядро: Logging, Registry, Persistence, Uwp, Notifications, Localization, Common
+  STAKEOUT.Core/                   ядро: Logging, Registry, Persistence, Uwp, Notifications, Localization, Windowing, Common
   STAKEOUT.Tests/                  xUnit
 ```
 
 ## Известные ограничения
 
-- Приложение ещё не запускалось на реальной Windows: проверены сборка, тесты
-  и публикация в CI на `windows-latest`. Отрисовка в XAML-дизайнере не проверялась.
+- Полевой тест (коммит 6a0503f, Windows 10 Pro 22H2, i5-12450H, RTX 3060 Laptop)
+  пройден стандартной сборкой: данные железа, твики, 76 UWP-пакетов, лог и ACL
+  `%ProgramData%\STAKEOUT` верны. Исправления по его итогам (Trimmed, развёрнутое
+  окно, кириллический шрифт, UWP) проверены только сборкой и тестами в CI.
+  Отрисовка в XAML-дизайнере не проверялась.
 - Путь `RawMouseThrottleDuration` помечен `TODO` до проверки на реальной сборке Windows.
 - Блокировка Яндекса (`DisallowRun`) работает по имени файла: `browser.exe`
   блокируется независимо от издателя.
@@ -416,8 +435,7 @@ src/
   настоящим SHA-256.
 - План электропитания: вместо импорта `.pow`-файла дублируется встроенная схема
   «Максимальная производительность» (`e9a42b02-…`), а при откате копия удаляется.
-- Ограничение прав на `%ProgramData%\STAKEOUT`, отвязка winget и разметка
-  при развёртывании окна написаны без проверки на реальной Windows.
+- Отвязка winget написана без проверки на реальной Windows.
 - `Trimmed` — экспериментальный вариант (см. выше); exe не подписан.
-- Лицензия проекта не указана. Сторонние компоненты: Cinzel (SIL OFL 1.1),
+- Лицензия проекта не указана. Сторонние компоненты: Cinzel и Cormorant SC (SIL OFL 1.1),
   LibreHardwareMonitorLib (MPL-2.0), System.Management и Microsoft.Extensions.DependencyInjection (MIT).

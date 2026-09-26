@@ -92,7 +92,8 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Title}" Style="{StaticResource Body}"
                                                                FontWeight="SemiBold" />
-                                                    <!-- [?] help with delayed tooltip -->
+                                                    <!-- [?] help with delayed tooltip: what exactly changes
+                                                         (the description is already on the row) -->
                                                     <Border Width="16" Height="16" Margin="8,0,0,0" CornerRadius="8"
                                                             Background="{StaticResource HoverBrush}"
                                                             ToolTipService.InitialShowDelay="300"
@@ -101,8 +102,8 @@
                                                                    FontSize="11" HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center" />
                                                         <Border.ToolTip>
-                                                            <ToolTip MaxWidth="320">
-                                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap"
+                                                            <ToolTip MaxWidth="480">
+                                                                <TextBlock Text="{Binding HelpText}" TextWrapping="Wrap"
                                                                            Foreground="{StaticResource TextPrimaryBrush}" />
                                                             </ToolTip>
                                                         </Border.ToolTip>

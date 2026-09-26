@@ -1,13 +1,19 @@
 <#
 .SYNOPSIS
-    Downloads the embedded font assets for STAKEOUT (Cinzel) into Assets/Fonts.
+    Downloads the embedded font assets for STAKEOUT (Cinzel, Cormorant SC) into Assets/Fonts.
 
 .DESCRIPTION
-    The heading font (Cinzel, SIL Open Font License 1.1) is compiled into the
-    executable as a WPF <Resource>, so it renders on machines where the font is
-    not installed. This script fetches the static TTF files from the upstream
-    project, pinned to an immutable commit, and verifies each file's SHA-256
-    before moving it into place. A tampered or truncated download is rejected.
+    The heading fonts (SIL Open Font License 1.1) are compiled into the
+    executable as WPF <Resource>s, so they render on machines where the fonts
+    are not installed: Cinzel for Latin, and Cormorant SC for Cyrillic, which
+    Cinzel lacks (WPF falls back per character, see Themes/Styles.xaml).
+    This script fetches the static TTF files from immutable, versioned URLs
+    and verifies each file's SHA-256 before moving it into place. A tampered or
+    truncated download is rejected.
+
+    Cormorant SC's license text (Assets/Fonts/OFL-CormorantSC.txt) is kept in
+    the repository: Google Fonts serves it only inside its download bundle,
+    which has no immutable URL to pin.
 
     Idempotent: files that are already present with the expected hash are
     skipped. Rebuild the project afterwards so the fonts are embedded.
@@ -35,7 +41,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 # Windows PowerShell 5.1 on older .NET Framework configs may not offer TLS 1.2,
-# which GitHub requires.
+# which both hosts require.
 if ($PSVersionTable.PSEdition -ne 'Core') {
     [Net.ServicePointManager]::SecurityProtocol =
         [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
@@ -45,6 +51,7 @@ if ($PSVersionTable.PSEdition -ne 'Core') {
 # immutable and the hashes below stay valid.
 $commit = 'dd598495b0fb2ad84270d5cc75d642d2f1e8eabf'
 $base   = "https://raw.githubusercontent.com/NDISCOVER/Cinzel/$commit"
+$gstatic = 'https://fonts.gstatic.com/s/cormorantsc/v19'
 
 $assets = @(
     @{ Name = 'Cinzel-Regular.ttf'; Url = "$base/fonts/ttf/Cinzel-Regular.ttf"
@@ -54,6 +61,15 @@ $assets = @(
     # The OFL requires the license text to travel with the font.
     @{ Name = 'OFL.txt';            Url = "$base/OFL.txt"
        Sha256 = 'a46624198eeb4c2e442c38b0ff3bd8f52caeefd76675c36f410e2fb69014a239' }
+
+    # Cormorant SC (Cyrillic headings), Google Fonts release v19: the version is
+    # part of the URL, so the files behind it do not change.
+    @{ Name = 'CormorantSC-Regular.ttf'
+       Url = "$gstatic/0yb5GD4kxqXBmOVLG30OGwserDow9Tbu-Q.ttf"
+       Sha256 = 'd3d8c2ca6a8fdf47e38d05b6aeb0b62e6116321719f680e7a7e3a42710d6d1e8' }
+    @{ Name = 'CormorantSC-Bold.ttf'
+       Url = "$gstatic/0ybmGD4kxqXBmOVLG30OGwsmEBUU_R3y8DOWGA.ttf"
+       Sha256 = '56f7ed2188fe7bde701359e8fb7cb44c6d1a023655dc25884d132855457f797f' }
 )
 
 $dest = Join-Path (Join-Path $PSScriptRoot 'Assets') 'Fonts'

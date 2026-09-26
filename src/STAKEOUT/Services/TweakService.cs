@@ -32,6 +32,33 @@ public sealed class TweakService
     /// <summary>Xbox helper services disabled by the GameDVR tweak (Start=4).</summary>
     private static readonly string[] XboxServices = { "XblAuthManager", "XblGameSave", "XboxGipSvc", "XboxNetApiSvc" };
 
+    /// <summary>Telemetry services disabled (Start=4) and the DataCollection policy set to 0.</summary>
+    private static readonly RegistryOp[] DiagTrackOps =
+    {
+        new(HKLM, @"SYSTEM\CurrentControlSet\Services\DiagTrack", "Start", 4, RegValueKind.DWord),
+        new(HKLM, @"SYSTEM\CurrentControlSet\Services\dmwappushservice", "Start", 4, RegValueKind.DWord),
+        new(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 0, RegValueKind.DWord),
+    };
+
+    /// <summary>GameDVR / capture off, then the Xbox helper services disabled.</summary>
+    private static readonly RegistryOp[] GameDvrOps = new RegistryOp[]
+    {
+        new(HKCU, @"System\GameConfigStore", "GameDVR_Enabled", 0, RegValueKind.DWord),
+        new(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, RegValueKind.DWord),
+        new(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegValueKind.DWord),
+    }.Concat(XboxServices.Select(svc =>
+        new RegistryOp(HKLM, $@"SYSTEM\CurrentControlSet\Services\{svc}", "Start", 4, RegValueKind.DWord))).ToArray();
+
+    /// <summary>TODO: Verify exact path on Windows build (see ApplyRawMouse).</summary>
+    private static readonly RegistryOp RawMouseOp =
+        new(HKCU, @"Control Panel\Mouse", "RawMouseThrottleDuration", 50, RegValueKind.DWord);
+
+    private const string UsbEnumRoot = @"SYSTEM\CurrentControlSet\Enum\USB";
+
+    /// <summary>Global USB selective suspend off, via the service key.</summary>
+    private static readonly RegistryOp UsbSelectiveSuspendOp =
+        new(HKLM, @"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1, RegValueKind.DWord);
+
     /// <summary>USB "Device Parameters" flags that, when set to 0, keep a device powered.</summary>
     private static readonly string[] UsbPowerFlags =
     {
@@ -78,6 +105,18 @@ public sealed class TweakService
     private ActionTweak Act(TweakInfo info, Func<TweakState, Task<bool>> apply, Func<TweakState, Task<bool>> revert)
         => new(_store, _rollback, info, apply, revert);
 
+    /// <summary>
+    /// Capture and write every value, continuing past a failed one (each captured
+    /// value is still restored on revert); true only if all succeeded.
+    /// </summary>
+    private bool CaptureAndSetAll(TweakState s, IEnumerable<RegistryOp> ops)
+    {
+        var ok = true;
+        foreach (var op in ops)
+            ok &= _rollback.CaptureAndSet(s, op.Hive, op.SubKey, op.Name, op.Value, op.Kind);
+        return ok;
+    }
+
     /// <summary>Revert delegate for tweaks whose only side effects are registry writes.</summary>
     private Task<bool> RestoreAllAsync(TweakState s) => Task.Run(() => _rollback.RestoreAll(s));
 
@@ -88,15 +127,11 @@ public sealed class TweakService
         // Block telemetry collection services WITHOUT deleting any files: set the
         // service Start type to 4 (Disabled) and the DataCollection policy to 0,
         // then stop the running service. Reverting restores the prior Start type.
-        Act(new TweakInfo("diagtrack", Strings.Tweak_DiagTrack_Title, Strings.Tweak_DiagTrack_Desc, TweakCategory.Privacy),
+        Act(new TweakInfo("diagtrack", Strings.Tweak_DiagTrack_Title, Strings.Tweak_DiagTrack_Desc, TweakCategory.Privacy,
+                Details: TweakDetails.Join(TweakDetails.Registry(DiagTrackOps), "sc stop DiagTrack")),
             apply: async s =>
             {
-                var ok = _rollback.CaptureAndSet(s, HKLM,
-                    @"SYSTEM\CurrentControlSet\Services\DiagTrack", "Start", 4, RegValueKind.DWord);
-                ok &= _rollback.CaptureAndSet(s, HKLM,
-                    @"SYSTEM\CurrentControlSet\Services\dmwappushservice", "Start", 4, RegValueKind.DWord);
-                ok &= _rollback.CaptureAndSet(s, HKLM,
-                    @"SOFTWARE\Policies\Microsoft\Windows\DataCollection", "AllowTelemetry", 0, RegValueKind.DWord);
+                var ok = CaptureAndSetAll(s, DiagTrackOps);
                 // Stop the live service now (best-effort; failure does not fail the tweak).
                 await ProcessRunner.RunAsync(SystemTools.Sc, "stop DiagTrack");
                 return ok;
@@ -123,7 +158,8 @@ public sealed class TweakService
 
         // BitLocker off via WMI encryption classes (more control than manage-bde).
         Act(new TweakInfo("bitlocker", Strings.Tweak_BitLocker_Title, Strings.Tweak_BitLocker_Desc, TweakCategory.Security,
-                Destructive: true),
+                Destructive: true,
+                Details: "WMI root\\CIMV2\\Security\\MicrosoftVolumeEncryption\n  Win32_EncryptableVolume: DisableKeyProtectors, Decrypt"),
             apply: _ => Task.Run(() => SetBitLocker(decrypt: true)),
             revert: _ => Task.Run(() => SetBitLocker(decrypt: false))),
 
@@ -136,7 +172,8 @@ public sealed class TweakService
             new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings", "PreventDeviceMetadataFromNetwork", 1, RegValueKind.DWord)),
 
         // Hibernation off via the hidden powercfg command.
-        Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System),
+        Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System,
+                Details: "powercfg -h off"),
             apply: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h off")).Success,
             revert: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h on")).Success),
 
@@ -174,7 +211,8 @@ public sealed class TweakService
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegValueKind.DWord)),
 
         // Custom power plan: duplicate the Ultimate Performance scheme and activate it.
-        Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, TweakCategory.Performance),
+        Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, TweakCategory.Performance,
+                Details: $"powercfg -duplicatescheme {UltimateGuid}\npowercfg /setactive <GUID>"),
             apply: ApplyPowerPlan,
             revert: RevertPowerPlan),
 
@@ -184,29 +222,27 @@ public sealed class TweakService
         // Panel\Mouse is the working assumption. This tweak is wrapped in its
         // own try/catch with verbose logging so a wrong path (or a locked key)
         // never breaks the rest of the catalogue and is traceable in the log.
-        Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, TweakCategory.Performance),
+        Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, TweakCategory.Performance,
+                Details: TweakDetails.Registry(new[] { RawMouseOp })),
             apply: ApplyRawMouse,
             revert: RestoreAllAsync),
 
         // USB power saving off — programmatic walk of the USB device tree.
-        Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, TweakCategory.Performance),
+        Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, TweakCategory.Performance,
+                Details: TweakDetails.Join(
+                    TweakDetails.Key(HKLM, UsbEnumRoot + @"\*\*\Device Parameters",
+                        UsbPowerFlags.Select(f => f + " = 0").Append(Strings.Tweaks_DetailsExistingOnly).ToArray()),
+                    TweakDetails.Registry(new[] { UsbSelectiveSuspendOp }))),
             apply: ApplyUsbPower,
             revert: RestoreAllAsync),
 
         // ---- Gaming -------------------------------------------------------
 
         // GameDVR + Xbox deep block.
-        Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, TweakCategory.Gaming),
-            apply: s => Task.Run(() =>
-            {
-                var ok = _rollback.CaptureAndSet(s, HKCU, @"System\GameConfigStore", "GameDVR_Enabled", 0, RegValueKind.DWord);
-                ok &= _rollback.CaptureAndSet(s, HKLM, @"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0, RegValueKind.DWord);
-                ok &= _rollback.CaptureAndSet(s, HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0, RegValueKind.DWord);
-                // Disable Xbox helper services (Start=4). Reverting restores prior Start.
-                foreach (var svc in XboxServices)
-                    ok &= _rollback.CaptureAndSet(s, HKLM, $@"SYSTEM\CurrentControlSet\Services\{svc}", "Start", 4, RegValueKind.DWord);
-                return ok;
-            }),
+        // Xbox helper services are disabled too (Start=4); reverting restores prior Start.
+        Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, TweakCategory.Gaming,
+                Details: TweakDetails.Registry(GameDvrOps)),
+            apply: s => Task.Run(() => CaptureAndSetAll(s, GameDvrOps)),
             revert: RestoreAllAsync),
 
         // Game Mode on.
@@ -365,15 +401,14 @@ public sealed class TweakService
     /// </summary>
     private Task<bool> ApplyRawMouse(TweakState s) => Task.Run(() =>
     {
-        const string subKey = @"Control Panel\Mouse";
-        const string name = "RawMouseThrottleDuration";
+        var op = RawMouseOp;
         try
         {
             // Capture the prior value (or "absent") so revert is exact, then set 50.
-            var ok = _rollback.CaptureAndSet(s, HKCU, subKey, name, 50, RegValueKind.DWord);
+            var ok = _rollback.CaptureAndSet(s, op.Hive, op.SubKey, op.Name, op.Value, op.Kind);
             var prior = s.Saved.Count > 0 && s.Saved[^1].Existed ? "present" : "absent";
             Logger.Log("RawMouseThrottleDuration", ok ? "APPLIED" : "FAILED",
-                $@"HKCU\{subKey}\{name}=50 (prior value: {prior})");
+                $"{TweakDetails.KeyPath(op.Hive, op.SubKey)}\\{op.Name}={op.Value} (prior value: {prior})");
             return ok;
         }
         catch (UnauthorizedAccessException ex)
@@ -398,7 +433,7 @@ public sealed class TweakService
     /// </summary>
     private Task<bool> ApplyUsbPower(TweakState s) => Task.Run(() =>
     {
-        const string root = @"SYSTEM\CurrentControlSet\Enum\USB";
+        const string root = UsbEnumRoot;
 
         var touched = 0;
         foreach (var device in RegistryHelper.SubKeyNames(HKLM, root))
@@ -412,8 +447,8 @@ public sealed class TweakService
         }
 
         // Also disable global USB selective suspend via the service key.
-        var ok = _rollback.CaptureAndSet(s, HKLM,
-            @"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1, RegValueKind.DWord);
+        var op = UsbSelectiveSuspendOp;
+        var ok = _rollback.CaptureAndSet(s, op.Hive, op.SubKey, op.Name, op.Value, op.Kind);
 
         Logger.Log("USB power", ok ? "APPLIED" : "PARTIAL", $"{touched} device flag(s) cleared");
         return ok;

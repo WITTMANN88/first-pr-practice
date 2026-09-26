@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Stakeout.Infrastructure;
 using Stakeout.ViewModels;
 
 namespace Stakeout;
@@ -18,12 +19,12 @@ public partial class MainWindow : Window
     public MainWindow(MainViewModel vm)
     {
         InitializeComponent();
+        MaximizedWindowHook.Attach(this);
         _vm = vm;
         DataContext = _vm;
 
         Loaded += OnLoaded;
         Closed += OnClosed;
-        StateChanged += OnStateChanged;
         PreviewKeyDown += OnPreviewKeyDown;
 
         // The view models are container singletons and outlive any window, so
@@ -148,18 +149,6 @@ public partial class MainWindow : Window
     {
         _vm.Logs.CloseCommand.Execute(null);
         e.Handled = true;
-    }
-
-    /// <summary>
-    /// A maximized WindowChrome window is sized past the monitor edge by the
-    /// resize border, cutting off the caption buttons: pad it back in.
-    /// </summary>
-    private void OnStateChanged(object? sender, EventArgs e)
-    {
-        var border = SystemParameters.WindowResizeBorderThickness;
-        Root.Margin = WindowState == WindowState.Maximized
-            ? new Thickness(border.Left + 1, border.Top + 1, border.Right + 1, border.Bottom + 1)
-            : new Thickness(0);
     }
 
     // --- caption buttons ---

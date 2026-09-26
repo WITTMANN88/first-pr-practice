@@ -33,6 +33,7 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
     private bool _isLoading = true;
     private string _cpuName = "—";
     private double? _cpuTemp;
+    private CpuTemperatureGap _tempGap;
     private string _motherboard = "—";
     private string _ram = "—";
     private string _disk = "—";
@@ -102,12 +103,19 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
     /// <summary>Min / max as text: the chart itself carries no numbers.</summary>
     public string TempRangeText => HasTempHistory
         ? F(Strings.SysInfo_TempRange, _tempHistory.Min!.Value, _tempHistory.Max!.Value)
-        : Strings.SysInfo_TempNoSensor;
-    /// <summary>Tooltip and screen-reader description of the whole chart.</summary>
+        : NoTemperatureText(hint: false);
+    /// <summary>Tooltip and screen-reader description of the whole chart (or of why it is empty).</summary>
     public string TempSummary => HasTempHistory
         ? F(Strings.SysInfo_TempSummary, _tempHistory.Count, _tempHistory.Latest!.Value,
             _tempHistory.Min!.Value, _tempHistory.Max!.Value, CpuTemperatureScale.HotThresholdC)
-        : Strings.SysInfo_TempNoSensor;
+        : NoTemperatureText(hint: true);
+
+    /// <summary>Why the chart is empty: a missing driver is named, with what to do in the long form.</summary>
+    private string NoTemperatureText(bool hint)
+    {
+        if (_tempGap != CpuTemperatureGap.DriverMissing) return Strings.SysInfo_TempNoSensor;
+        return hint ? Strings.SysInfo_TempNoDriverHint : Strings.SysInfo_TempNoDriver;
+    }
 
     /// <summary>Load a full snapshot. Only the temperature is cheap to re-poll.</summary>
     public async Task LoadAsync()
@@ -150,7 +158,7 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
         Gpus.Clear();
         foreach (var g in info.Gpus) Gpus.Add(g);
 
-        RecordTemperature(info.CpuTemperatureC);
+        RecordTemperature(info.CpuTemperatureC, info.CpuTemperatureGap);
         IsLoading = false;
         OnPropertyChanged(nameof(IsLoaded));
     }
@@ -160,9 +168,10 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
     /// Every poll is a sample (a flat line is information too); a missing reading
     /// (null) is skipped, not drawn as zero.
     /// </summary>
-    internal void RecordTemperature(double? celsius)
+    internal void RecordTemperature(double? celsius, CpuTemperatureGap gap = CpuTemperatureGap.None)
     {
         _cpuTemp = celsius;
+        _tempGap = celsius.HasValue ? CpuTemperatureGap.None : gap;
         if (celsius.HasValue) _tempHistory.Add(celsius.Value);
         RaiseTempChanged();
         RebuildSparkline();
@@ -181,7 +190,7 @@ public sealed class SysInfoViewModel : ViewModelBase, IDisposable
             var t = await TimeoutGuard.Await(
                 _service.RefreshTemperatureAsync(), TimeSpan.FromSeconds(6), (double?)double.NaN, "SysInfo.Temp");
             if (t is double v && double.IsNaN(v)) return;
-            RecordTemperature(t);
+            RecordTemperature(t, _service.TemperatureGap);
         }
         catch (Exception ex)
         {

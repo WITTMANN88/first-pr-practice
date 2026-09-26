@@ -16,6 +16,14 @@ public sealed class UwpItemViewModel : ViewModelBase
 
     public UwpItemViewModel(UwpApp app) => App = app;
 
+    /// <summary>Record the measured install size (arrives after the row is shown).</summary>
+    internal void SetSize(long bytes)
+    {
+        if (bytes <= 0 || bytes == App.SizeBytes) return;
+        App.SizeBytes = bytes;
+        OnPropertyChanged(nameof(SizeText));
+    }
+
     public UwpApp App { get; }
     public string DisplayName => App.DisplayName;
     public string PackageFullName => App.PackageFullName;
@@ -70,6 +78,8 @@ public sealed class UwpViewModel : ViewModelBase
     private readonly INotificationService _notify;
     private bool _isLoading;
     private double _freedMb;
+    /// <summary>Bumped by every load, so a size pass for an older list stops.</summary>
+    private int _loadGeneration;
 
     public UwpViewModel(IUwpService service, INotificationService notify)
     {
@@ -96,6 +106,7 @@ public sealed class UwpViewModel : ViewModelBase
     {
         IsLoading = true;
         OnPropertyChanged(nameof(IsLoaded));
+        var generation = ++_loadGeneration;
         try
         {
             Apps.Clear();
@@ -104,6 +115,7 @@ public sealed class UwpViewModel : ViewModelBase
                 _service.ListAsync(), TimeSpan.FromSeconds(90), Array.Empty<UwpApp>(), "Uwp.List");
             ShowApps(list);
             _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Uwp_Found, Apps.Count));
+            _ = MeasureSizesAsync(generation);
         }
         catch (Exception ex)
         {
@@ -115,6 +127,28 @@ public sealed class UwpViewModel : ViewModelBase
         {
             IsLoading = false;
             OnPropertyChanged(nameof(IsLoaded));
+        }
+    }
+
+    /// <summary>
+    /// Fill in sizes after the rows are shown: walking every package's files takes
+    /// seconds, so the list appears at once and sizes arrive one by one, on the
+    /// UI thread (each await resumes there). A reload abandons the older pass.
+    /// </summary>
+    private async Task MeasureSizesAsync(int generation)
+    {
+        try
+        {
+            foreach (var item in Apps.ToList())
+            {
+                if (generation != _loadGeneration) return;
+                item.SetSize(await _service.MeasureSizeAsync(item.App));
+            }
+        }
+        catch (Exception ex)
+        {
+            // Fire-and-forget: never let a failure go unobserved.
+            Logger.LogError("Uwp.Size", ex);
         }
     }
 

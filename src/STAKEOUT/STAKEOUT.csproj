@@ -16,8 +16,8 @@
          `dotnet publish -c Release` produces the one-file executable.
          Flavors (see the StakeoutFlavor groups below):
            (default)                     self-contained, supported config   ~65 MB
-           -p:StakeoutFlavor=Lite        needs .NET 8 Desktop Runtime       ~5.5 MB
-           -p:StakeoutFlavor=Trimmed     EXPERIMENTAL forced trimming       ~44 MB -->
+           -p:StakeoutFlavor=Lite        needs .NET 8 Desktop Runtime       ~6.6 MB
+           -p:StakeoutFlavor=Trimmed     EXPERIMENTAL forced trimming       ~45 MB -->
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
@@ -57,7 +57,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Heading font (Cinzel, SIL OFL 1.1), fetched by prepare-assets.ps1.
+    <!-- Heading fonts (Cinzel, and Cormorant SC for Cyrillic; both SIL OFL 1.1),
+         fetched by prepare-assets.ps1.
          Build action "Resource" compiles it into the WPF .g.resources blob, so
          pack://application:,,,/Assets/Fonts/#Cinzel resolves inside the
          single-file exe without the font being installed on the machine.
@@ -81,6 +82,11 @@
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
     <_SuppressWpfTrimError>true</_SuppressWpfTrimError>
+    <!-- Trimming turns built-in COM interop off by default (the
+         System.Runtime.InteropServices.BuiltInComInterop.IsSupported switch),
+         but WPF (text services, UI Automation) and System.Management (WMI)
+         are built on [ComImport] interfaces: without it the app fails at startup. -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
   <ItemGroup Condition="'$(StakeoutFlavor)' == 'Trimmed'">
     <TrimmerRootDescriptor Include="Trimming\TrimmerRoots.xml" />
@@ -96,8 +102,8 @@
 
   <!-- Surface a missing font at build time instead of silently falling back. -->
   <Target Name="WarnMissingFonts" BeforeTargets="BeforeBuild"
-          Condition="!Exists('$(MSBuildProjectDirectory)\Assets\Fonts\Cinzel-Regular.ttf')">
-    <Warning Text="Cinzel font not found in Assets\Fonts. Run prepare-assets.ps1; headings will fall back to Constantia/Georgia." />
+          Condition="!Exists('$(MSBuildProjectDirectory)\Assets\Fonts\Cinzel-Regular.ttf') or !Exists('$(MSBuildProjectDirectory)\Assets\Fonts\CormorantSC-Regular.ttf')">
+    <Warning Text="Heading fonts not found in Assets\Fonts. Run prepare-assets.ps1; headings will fall back to Constantia/Georgia." />
   </Target>
 
 </Project>
