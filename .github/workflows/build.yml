@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: STAKEOUT-*
           path: artifacts/in
@@ -258,7 +258,7 @@ jobs:
           persist-credentials: false
 
       - name: Download the three builds
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: STAKEOUT-*
           path: artifacts/in
