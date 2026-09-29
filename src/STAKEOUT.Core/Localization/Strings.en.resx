@@ -199,6 +199,14 @@
     <value>Turn the switch off to undo: the previous state is restored.</value>
     <comment>Tooltip line</comment>
   </data>
+  <data name="Tweaks_HelpOutside" xml:space="preserve">
+    <value>Already on in Windows (not set by STAKEOUT): the previous values are unknown, so it cannot be turned off here.</value>
+    <comment>Tooltip line for a tweak that is in effect without a STAKEOUT rollback record</comment>
+  </data>
+  <data name="Tweaks_RevertUnavailable" xml:space="preserve">
+    <value>“{0}” was not turned on by STAKEOUT: the previous values are unknown, so it cannot be undone. Restore it in Windows settings.</value>
+    <comment>{0} = tweak title</comment>
+  </data>
   <data name="Tweaks_DetailsExistingOnly" xml:space="preserve">
     <value>(existing values only)</value>
     <comment>Tooltip: USB flags are changed only where present</comment>

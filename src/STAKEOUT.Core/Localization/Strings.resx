@@ -199,6 +199,14 @@
     <value>Выключите переключатель, чтобы отменить: прежнее состояние восстановится.</value>
     <comment>Tooltip line</comment>
   </data>
+  <data name="Tweaks_HelpOutside" xml:space="preserve">
+    <value>Уже включено в Windows (не через STAKEOUT): исходные значения неизвестны, поэтому отключить отсюда нельзя.</value>
+    <comment>Tooltip line for a tweak that is in effect without a STAKEOUT rollback record</comment>
+  </data>
+  <data name="Tweaks_RevertUnavailable" xml:space="preserve">
+    <value>«{0}» включено не через STAKEOUT: исходные значения неизвестны, отменить нельзя. Верните настройку средствами Windows.</value>
+    <comment>{0} = tweak title</comment>
+  </data>
   <data name="Tweaks_DetailsExistingOnly" xml:space="preserve">
     <value>(только значения, которые уже есть)</value>
     <comment>Tooltip: USB flags are changed only where present</comment>

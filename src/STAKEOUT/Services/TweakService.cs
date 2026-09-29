@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Management;
 using System.Text.RegularExpressions;
 using Stakeout.Core;
@@ -55,6 +56,13 @@ public sealed class TweakService
 
     private const string UsbEnumRoot = @"SYSTEM\CurrentControlSet\Enum\USB";
 
+    /// <summary>What "powercfg -h off" leaves in the registry (read-only use: detection).</summary>
+    private static readonly RegistryOp HibernateOffOp =
+        new(HKLM, @"SYSTEM\CurrentControlSet\Control\Power", "HibernateEnabled", 0, RegValueKind.DWord);
+
+    /// <summary>Where Windows keeps the active power scheme GUID (REG_SZ).</summary>
+    private const string PowerSchemesKey = @"SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes";
+
     /// <summary>Global USB selective suspend off, via the service key.</summary>
     private static readonly RegistryOp UsbSelectiveSuspendOp =
         new(HKLM, @"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1, RegValueKind.DWord);
@@ -102,8 +110,9 @@ public sealed class TweakService
 
     private RegistryTweak Reg(TweakInfo info, params RegistryOp[] ops) => new(_store, _rollback, info, ops);
 
-    private ActionTweak Act(TweakInfo info, Func<TweakState, Task<bool>> apply, Func<TweakState, Task<bool>> revert)
-        => new(_store, _rollback, info, apply, revert);
+    private ActionTweak Act(TweakInfo info, Func<TweakState, Task<bool>> apply, Func<TweakState, Task<bool>> revert,
+        Func<bool?> detect)
+        => new(_store, _rollback, info, apply, revert, detect);
 
     /// <summary>
     /// Capture and write every value, continuing past a failed one (each captured
@@ -136,7 +145,8 @@ public sealed class TweakService
                 await ProcessRunner.RunAsync(SystemTools.Sc, "stop DiagTrack");
                 return ok;
             },
-            revert: RestoreAllAsync),
+            revert: RestoreAllAsync,
+            detect: () => _rollback.AllMatch(DiagTrackOps)),
 
         // Advertising ID off (machine policy + current-user switch).
         Reg(new TweakInfo("advid", Strings.Tweak_AdvertisingId_Title, Strings.Tweak_AdvertisingId_Desc, TweakCategory.Privacy),
@@ -161,7 +171,8 @@ public sealed class TweakService
                 Destructive: true,
                 Details: "WMI root\\CIMV2\\Security\\MicrosoftVolumeEncryption\n  Win32_EncryptableVolume: DisableKeyProtectors, Decrypt"),
             apply: _ => Task.Run(() => SetBitLocker(decrypt: true)),
-            revert: _ => Task.Run(() => SetBitLocker(decrypt: false))),
+            revert: _ => Task.Run(() => SetBitLocker(decrypt: false)),
+            detect: IsBitLockerOff),
 
         // ---- System -------------------------------------------------------
 
@@ -175,7 +186,9 @@ public sealed class TweakService
         Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System,
                 Details: "powercfg -h off"),
             apply: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h off")).Success,
-            revert: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h on")).Success),
+            revert: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h on")).Success,
+            // powercfg -h off records HibernateEnabled = 0; absent means the default (on).
+            detect: () => _rollback.Matches(HibernateOffOp)),
 
         // Windows animations + transparency off.
         Reg(new TweakInfo("animations", Strings.Tweak_Animations_Title, Strings.Tweak_Animations_Desc, TweakCategory.Interface,
@@ -214,7 +227,8 @@ public sealed class TweakService
         Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, TweakCategory.Performance,
                 Details: $"powercfg -duplicatescheme {UltimateGuid}\npowercfg /setactive <GUID>"),
             apply: ApplyPowerPlan,
-            revert: RevertPowerPlan),
+            revert: RevertPowerPlan,
+            detect: IsUltimatePlanActive),
 
         // Mouse polling helper value from the guide.
         // TODO: Verify exact path on Windows build. The exact hive/subkey for
@@ -225,7 +239,8 @@ public sealed class TweakService
         Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, TweakCategory.Performance,
                 Details: TweakDetails.Registry(new[] { RawMouseOp })),
             apply: ApplyRawMouse,
-            revert: RestoreAllAsync),
+            revert: RestoreAllAsync,
+            detect: () => _rollback.Matches(RawMouseOp)),
 
         // USB power saving off — programmatic walk of the USB device tree.
         Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, TweakCategory.Performance,
@@ -234,7 +249,9 @@ public sealed class TweakService
                         UsbPowerFlags.Select(f => f + " = 0").Append(Strings.Tweaks_DetailsExistingOnly).ToArray()),
                     TweakDetails.Registry(new[] { UsbSelectiveSuspendOp }))),
             apply: ApplyUsbPower,
-            revert: RestoreAllAsync),
+            revert: RestoreAllAsync,
+            // The global switch; per-device flags vary by hardware and are not required.
+            detect: () => _rollback.Matches(UsbSelectiveSuspendOp)),
 
         // ---- Gaming -------------------------------------------------------
 
@@ -243,7 +260,8 @@ public sealed class TweakService
         Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, TweakCategory.Gaming,
                 Details: TweakDetails.Registry(GameDvrOps)),
             apply: s => Task.Run(() => CaptureAndSetAll(s, GameDvrOps)),
-            revert: RestoreAllAsync),
+            revert: RestoreAllAsync,
+            detect: () => _rollback.AllMatch(GameDvrOps)),
 
         // Game Mode on.
         Reg(new TweakInfo("gamemode", Strings.Tweak_GameMode_Title, Strings.Tweak_GameMode_Desc, TweakCategory.Gaming),
@@ -327,6 +345,47 @@ public sealed class TweakService
         }
     }
 
+    /// <summary>
+    /// "BitLocker off" is in effect when no encryptable volume has protection on
+    /// (ProtectionStatus 0 = off, 1 = on, 2 = unknown). Null when BitLocker is not
+    /// available (the WMI namespace is missing on editions without it), access is
+    /// denied, or no volume reports: then the rollback record decides.
+    /// </summary>
+    private static bool? IsBitLockerOff()
+    {
+        try
+        {
+            var scope = new ManagementScope(@"\\.\root\CIMV2\Security\MicrosoftVolumeEncryption",
+                new ConnectionOptions { Timeout = TimeSpan.FromSeconds(10) });
+            scope.Connect();
+            using var searcher = new ManagementObjectSearcher(scope,
+                new ObjectQuery("SELECT ProtectionStatus FROM Win32_EncryptableVolume"), Wmi.Options(TimeSpan.FromSeconds(10)));
+
+            var volumes = 0;
+            var anyProtected = false;
+            var anyUnknown = false;
+            Wmi.ForEach(searcher, item =>
+            {
+                volumes++;
+                var status = Convert.ToUInt32(item["ProtectionStatus"] ?? 2u, CultureInfo.InvariantCulture);
+                if (status == 1) anyProtected = true;
+                else if (status != 0) anyUnknown = true;
+                return !anyProtected; // one protected volume settles it
+            });
+
+            if (anyProtected) return false;
+            return volumes == 0 || anyUnknown ? null : true;
+        }
+        catch (ManagementException ex) when (ex.ErrorCode is ManagementStatus.InvalidNamespace or ManagementStatus.AccessDenied)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
     // --- Power plan (powercfg) --------------------------------------------
 
     private const string UltimateGuid = "e9a42b02-d5df-448d-aa00-03f14749eb61";
@@ -373,6 +432,21 @@ public sealed class TweakService
             Logger.Log("PowerPlan", deleted.Success ? "OK" : "WARNING", $"duplicate scheme {applied} delete exit {deleted.ExitCode}");
         }
         return true;
+    }
+
+    /// <summary>
+    /// Active scheme is Ultimate Performance itself or the copy this tweak
+    /// activated. A copy made by another tool has its own GUID and cannot be
+    /// told apart from any other plan, so it reads as off. Registry only.
+    /// </summary>
+    private bool? IsUltimatePlanActive()
+    {
+        var active = ExtractGuid(RegistryHelper.ReadString(HKLM, PowerSchemesKey, "ActivePowerScheme") ?? "");
+        if (active is null) return null;
+        if (string.Equals(active, UltimateGuid, StringComparison.OrdinalIgnoreCase)) return true;
+        return _store.GetApplied("powerplan") is { } state
+            && state.Notes.TryGetValue("appliedScheme", out var applied)
+            && string.Equals(active, applied, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>powercfg prints "Power Scheme GUID: xxxxxxxx-xxxx-... (Name)".</summary>

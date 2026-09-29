@@ -54,7 +54,21 @@ public sealed class YandexBlockService : ITweak
     public bool IsDestructive => false;
     public bool RequiresRestart => false;
     public bool RequiresExplorerRestart => false;
-    public bool IsApplied => _store.IsApplied(Id);
+    public bool HasRollbackRecord => _store.IsApplied(Id);
+
+    /// <summary>
+    /// On when the DisallowRun policy is enabled and lists every process this
+    /// tweak blocks (under any entry number). Missing key or values read as off.
+    /// </summary>
+    public bool? ReadCurrentState() => TweakProbe.Run(Id, () =>
+    {
+        if (!_rollback.Matches(new RegistryOp(HKCU, PolicyKey, "DisallowRun", 1, RegValueKind.DWord))) return false;
+        var listed = RegistryHelper.ValueNames(HKCU, ListKey)
+            .Select(n => RegistryHelper.ReadString(HKCU, ListKey, n))
+            .OfType<string>()
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return Processes.All(listed.Contains);
+    });
 
     public Task<bool> ApplyAsync() => Task.Run(() =>
     {

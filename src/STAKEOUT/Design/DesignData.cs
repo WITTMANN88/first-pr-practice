@@ -50,7 +50,7 @@ public static class DesignData
             var rollback = new RegistryRollback(new ReadOnlyRegistry());
             var tweakService = new TweakService(store, rollback, new YandexBlockService(store, rollback));
             var tweaks = new TweaksViewModel(tweakService, notifications, dialogs);
-            tweaks.SyncAll();
+            tweaks.ShowExplorerRestartPending();
 
             var sysInfo = new SysInfoViewModel(new SystemInfoService());
             FillSysInfo(sysInfo);

@@ -86,8 +86,12 @@ public sealed class MainViewModel : ViewModelBase
         set => SetProperty(ref _isSidebarCollapsed, value);
     }
 
-    /// <summary>Called once from the window Loaded event to kick off first load.</summary>
-    public Task InitializeAsync() => SysInfo.LoadAsync();
+    /// <summary>
+    /// Called once from the window Loaded event: first system snapshot, and a
+    /// scan of which tweaks are already in effect, so the toggles are truthful
+    /// before the Tweaks page is ever opened.
+    /// </summary>
+    public Task InitializeAsync() => Task.WhenAll(SysInfo.LoadAsync(), Tweaks.RefreshStatesAsync());
 
     /// <summary>
     /// Called once when the splash has gone: report startup events the user must
@@ -115,6 +119,10 @@ public sealed class MainViewModel : ViewModelBase
             _ => SysInfo,
         };
 
+        // Settings may have changed outside the app since the last look: rescan.
+        if (page == Page.Tweaks)
+            _ = Tweaks.RefreshStatesAsync();
+
         // Lazy-load the UWP list the first time that page is opened.
         if (page == Page.Uwp && Uwp.Apps.Count == 0 && !Uwp.IsLoading)
             _ = Uwp.LoadAsync();
@@ -123,7 +131,7 @@ public sealed class MainViewModel : ViewModelBase
     private async Task RevertAllAsync()
     {
         var result = await _tweakService.RevertAllAsync();
-        Tweaks.SyncAll();
+        await Tweaks.RefreshStatesAsync();
 
         if (result.Complete)
             _notify.Success(string.Format(CultureInfo.CurrentCulture, Strings.Tweaks_RevertAllDone, result.Reverted));

@@ -67,6 +67,40 @@ public sealed class RegistryRollback
     }
 
     /// <summary>
+    /// Whether the registry currently holds <paramref name="op"/>'s value: same
+    /// kind and the same data. A missing key or value reads as false, and so
+    /// does anything that cannot be compared (never throws). Read-only.
+    /// </summary>
+    public bool Matches(RegistryOp op)
+    {
+        ArgumentNullException.ThrowIfNull(op);
+        var snap = _registry.Capture(op.Hive, op.SubKey, op.Name);
+        if (!snap.Existed || snap.Value is null || snap.Kind != op.Kind) return false;
+        try
+        {
+            return RegistryValueCodec.Encode(snap.Value, snap.Kind)
+                .AsSpan().SequenceEqual(RegistryValueCodec.Encode(op.Value, op.Kind));
+        }
+        catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException or NotSupportedException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>True when every op's value is in place (see <see cref="Matches"/>); false for an empty list.</summary>
+    public bool AllMatch(IEnumerable<RegistryOp> ops)
+    {
+        ArgumentNullException.ThrowIfNull(ops);
+        var any = false;
+        foreach (var op in ops)
+        {
+            if (!Matches(op)) return false;
+            any = true;
+        }
+        return any;
+    }
+
+    /// <summary>
     /// Restore every captured value in reverse order. Continues past failures and
     /// returns false if any restore failed or a record could not be decoded.
     /// </summary>
