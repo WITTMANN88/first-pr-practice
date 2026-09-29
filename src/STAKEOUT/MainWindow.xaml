@@ -14,7 +14,22 @@
         MinWidth="900" MinHeight="600"
         WindowStyle="None" ResizeMode="CanResize"
         Background="#FF000000" Foreground="#DEFFFFFF"
-        FontFamily="{StaticResource BodyFont}">
+        FontFamily="{StaticResource BodyFont}"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
+    <!-- Text: WPF's default "Ideal" formatting lays glyphs out at fractional
+         positions (print metrics), which blurs small text and the thin strokes
+         of Cormorant SC on screen. "Display" snaps glyph metrics to whole
+         pixels; layout rounding keeps element edges on whole device pixels.
+         Both are inherited, so this covers the window's whole tree; popups
+         (tooltips) have their own tree and set it in their style.
+         ClearType also needs text NOT to be under an Effect or opacity < 1:
+         WPF renders such elements through a bitmap and falls back to grayscale.
+         So shadows here and in Styles.xaml sit on separate layers behind the
+         text, never on an element that contains it. -->
 
     <!-- Custom chrome: no white frame, sharp corners, our own caption bar. -->
     <shell:WindowChrome.WindowChrome>
@@ -228,25 +243,30 @@
                       Margin="0,0,20,20" IsHitTestVisible="False">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Background="#FF141414" BorderThickness="0,0,0,3"
-                            BorderBrush="{Binding Kind, Mode=OneTime, Converter={StaticResource NotificationKindToBrush}}"
-                            Padding="16,10" Margin="0,6,0,0" MinWidth="220"
-                            RenderTransformOrigin="0.5,0.5">
-                        <Border.RenderTransform><TranslateTransform X="0" /></Border.RenderTransform>
-                        <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="0" Opacity="0.7" /></Border.Effect>
-                        <TextBlock Text="{Binding Message, Mode=OneTime}" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
-                        <Border.Triggers>
-                            <EventTrigger RoutedEvent="Border.Loaded">
+                    <!-- The shadow is its own layer behind the toast: an Effect on the
+                         border holding the text would cost the text its ClearType. -->
+                    <Grid Margin="0,6,0,0" MinWidth="220" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform><TranslateTransform X="0" /></Grid.RenderTransform>
+                        <Border Background="#FF141414">
+                            <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="0" Opacity="0.7" /></Border.Effect>
+                        </Border>
+                        <Border Background="#FF141414" BorderThickness="0,0,0,3"
+                                BorderBrush="{Binding Kind, Mode=OneTime, Converter={StaticResource NotificationKindToBrush}}"
+                                Padding="16,10">
+                            <TextBlock Text="{Binding Message, Mode=OneTime}" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" />
+                        </Border>
+                        <Grid.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </EventTrigger>
-                        </Border.Triggers>
+                        </Grid.Triggers>
                         <!-- Error toasts shake on appearance. -->
-                        <Border.Style>
-                            <Style TargetType="Border">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Kind, Mode=OneTime}" Value="Error">
                                         <DataTrigger.EnterActions>
@@ -265,8 +285,8 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Border.Style>
-                    </Border>
+                        </Grid.Style>
+                    </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -157,4 +157,49 @@ public class XamlLintTests
         }
         Assert.Empty(problems);
     }
+    /// <summary>Every XAML file of the app, resource dictionaries and controls included.</summary>
+    private static IEnumerable<string> AllXamlFiles() =>
+        Directory.GetFiles(AppDir, "*.xaml", SearchOption.AllDirectories)
+            .Where(f => !IsBuildOutput(f))
+            .OrderBy(f => f, StringComparer.Ordinal);
+
+    [Fact]
+    public void Effects_AreOnlyOnEmptyShadowLayers()
+    {
+        // WPF renders an element with an Effect through a bitmap: any text inside
+        // loses ClearType and looks blurred (the field test's "soapy" cards had a
+        // DropShadowEffect on every card). Shadows must be separate, empty layers
+        // behind the content.
+        XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        var offenders = new List<string>();
+        foreach (var file in AllXamlFiles())
+        {
+            var doc = XDocument.Load(file);
+            foreach (var effect in doc.Descendants().Where(e => e.Name.LocalName.EndsWith(".Effect", StringComparison.Ordinal)))
+            {
+                var owner = effect.Parent!;
+                var content = owner.Elements().Where(e => !e.Name.LocalName.Contains('.', StringComparison.Ordinal));
+                if (content.Any()) offenders.Add($"{Path.GetFileName(file)}: <{owner.Name.LocalName}> has an Effect and content");
+            }
+            foreach (var setter in doc.Descendants(wpf + "Setter").Where(e => (string?)e.Attribute("Property") == "Effect"))
+                offenders.Add($"{Path.GetFileName(file)}: a style sets Effect on a whole element");
+        }
+        Assert.Empty(offenders);
+    }
+
+    [Fact]
+    public void Text_IsPixelSnapped_InTheWindowAndInPopups()
+    {
+        // Inherited from the window root; tooltips are popups with their own tree.
+        var window = Read("MainWindow.xaml");
+        Assert.Contains("TextOptions.TextFormattingMode=\"Display\"", window, StringComparison.Ordinal);
+        Assert.Contains("UseLayoutRounding=\"True\"", window, StringComparison.Ordinal);
+
+        var styles = Read(Path.Combine("Themes", "Styles.xaml"));
+        var tooltip = styles[styles.IndexOf("<Style TargetType=\"ToolTip\">", StringComparison.Ordinal)..];
+        Assert.Contains("Property=\"TextOptions.TextFormattingMode\" Value=\"Display\"", tooltip[..tooltip.IndexOf("</Style>", StringComparison.Ordinal)], StringComparison.Ordinal);
+
+        foreach (var file in AllXamlFiles())
+            Assert.DoesNotContain("TextFormattingMode=\"Ideal\"", File.ReadAllText(file), StringComparison.Ordinal);
+    }
 }

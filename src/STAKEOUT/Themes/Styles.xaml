@@ -104,15 +104,14 @@
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="18" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
         <Setter Property="RenderTransform">
             <Setter.Value><ScaleTransform ScaleX="1" ScaleY="1" /></Setter.Value>
         </Setter>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.6" Color="#FF000000" />
-            </Setter.Value>
-        </Setter>
+        <!-- No DropShadowEffect: a black shadow on the black window was invisible,
+             and an Effect renders the whole card (text included) through a bitmap,
+             which disables ClearType for every card's text. -->
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Trigger.EnterActions>
@@ -258,30 +257,51 @@
     <!-- "Apply" button that pulses with a dark-red glow while a restart-requiring
          tweak is pending (spec: "плавно пульсирует свечением"). Pulse is toggled
          by setting Tag to 'pulse'; the glow is an accent-coloured shadow whose
-         opacity breathes, so the button itself stays fully readable. -->
+         opacity breathes. It is drawn by its own layer UNDER the button face:
+         an Effect on the button itself would render the label through a bitmap
+         and cost it ClearType. -->
     <Style x:Key="PulseButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-        <Setter Property="Effect">
+        <Setter Property="Template">
             <Setter.Value>
-                <DropShadowEffect Color="{StaticResource AccentBrightColor}" ShadowDepth="0" BlurRadius="22" Opacity="0" />
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Border x:Name="Glow" Background="{TemplateBinding Background}">
+                            <Border.Effect>
+                                <DropShadowEffect Color="{StaticResource AccentBrightColor}" ShadowDepth="0" BlurRadius="22" Opacity="0" />
+                            </Border.Effect>
+                        </Border>
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrightBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                            <Setter TargetName="Glow" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+                        <Trigger Property="Tag" Value="pulse">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Name="PulseSb">
+                                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                        <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Effect.Opacity"
+                                                         From="0.15" To="0.95" Duration="0:0:0.9">
+                                            <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <StopStoryboard BeginStoryboardName="PulseSb" />
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style.Triggers>
-            <Trigger Property="Tag" Value="pulse">
-                <Trigger.EnterActions>
-                    <BeginStoryboard Name="PulseSb">
-                        <Storyboard RepeatBehavior="Forever" AutoReverse="True">
-                            <DoubleAnimation Storyboard.TargetProperty="Effect.Opacity"
-                                             From="0.15" To="0.95" Duration="0:0:0.9">
-                                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
-                            </DoubleAnimation>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </Trigger.EnterActions>
-                <Trigger.ExitActions>
-                    <StopStoryboard BeginStoryboardName="PulseSb" />
-                </Trigger.ExitActions>
-            </Trigger>
-        </Style.Triggers>
     </Style>
 
     <!-- Custom spring toggle switch (a restyled ToggleButton). The thumb moves
@@ -483,6 +503,12 @@
     <!-- Dark tooltip (implicit). The system default is a light box, on which the
          app's light text would be unreadable. -->
     <Style TargetType="ToolTip">
+        <!-- A tooltip is a popup with its own visual tree: it does not inherit the
+             window's text settings (MainWindow.xaml), so it sets them itself. -->
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Background" Value="#FF141414" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />

@@ -8,7 +8,10 @@
              xmlns:design="clr-namespace:Stakeout.Design"
              mc:Ignorable="d"
              d:DataContext="{x:Static design:DesignData.Logs}"
-             d:DesignWidth="900" d:DesignHeight="600">
+             d:DesignWidth="900" d:DesignHeight="600"
+             TextOptions.TextFormattingMode="Display"
+             TextOptions.TextRenderingMode="ClearType"
+             UseLayoutRounding="True">
     <!-- Content of the in-app log modal. The overlay around it (backdrop,
          open/close animation, shadow, focus trap) lives in MainWindow; the
          DataContext is LogViewerViewModel, inherited from the overlay. -->
