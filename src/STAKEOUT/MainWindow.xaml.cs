@@ -55,9 +55,11 @@ public partial class MainWindow : Window
     private static readonly TimeSpan SplashHold = TimeSpan.FromMilliseconds(1200);
 
     /// <summary>
-    /// Decode the emblem at the size it is shown (520 DIP, doubled for high DPI)
-    /// rather than its full 2000 px, fully and once (OnLoad), frozen. A build
-    /// without the file shows the splash with the name only instead of failing.
+    /// Decode the emblem once (OnLoad), frozen. The asset is stored at 1300 px,
+    /// the width it is shown at (520 DIP) on a 250 % display: PNG cannot be
+    /// decoded at a reduced size, so a larger source would only cost startup
+    /// time and memory. A build without the file shows the name only instead
+    /// of failing.
     /// </summary>
     private void LoadSplashImage()
     {
@@ -66,7 +68,6 @@ public partial class MainWindow : Window
             var image = new BitmapImage();
             image.BeginInit();
             image.UriSource = SplashImageUri;
-            image.DecodePixelWidth = 1040;
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.EndInit();
             image.Freeze();
