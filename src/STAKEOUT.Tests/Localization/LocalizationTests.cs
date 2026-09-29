@@ -13,7 +13,7 @@ public class StringsTests
     {
         using var _ = new CultureScope("ru-RU");
         Assert.Equal("Система", Strings.Nav_System);
-        Assert.Equal("Предустановленный мусор", Strings.UwpCategory_Bloatware);
+        Assert.Equal("Предустановленный мусор", Strings.AppCategory_Bloatware);
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public class StringsTests
     {
         using var _ = new CultureScope("en-US");
         Assert.Equal("System", Strings.Nav_System);
-        Assert.Equal("Preinstalled junk", Strings.UwpCategory_Bloatware);
+        Assert.Equal("Preinstalled junk", Strings.AppCategory_Bloatware);
     }
 
     [Theory]

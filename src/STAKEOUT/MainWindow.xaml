@@ -42,7 +42,7 @@
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:SysInfoViewModel}"><views:SysInfoView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:TweaksViewModel}"><views:TweaksView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:UwpViewModel}"><views:UwpView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AppsViewModel}"><views:AppsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SoftwareViewModel}"><views:SoftwareView /></DataTemplate>
 
         <!-- Hand-drawn Cthulhu tentacle pattern, tiled at 5% opacity. -->
@@ -151,7 +151,7 @@
                             </StackPanel>
                         </RadioButton>
                         <RadioButton GroupName="Nav" Style="{StaticResource NavButton}"
-                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=Uwp}"
+                                     IsChecked="{Binding Selected, Mode=TwoWay, Converter={StaticResource EnumEquals}, ConverterParameter=Apps}"
                                      AutomationProperties.Name="{x:Static loc:Strings.Nav_Apps}"
                                      ToolTip="{x:Static loc:Strings.Nav_Apps}"
                                      ToolTipService.IsEnabled="{Binding IsSidebarCollapsed}">

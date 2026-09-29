@@ -484,74 +484,94 @@
     <value>Запрещает запуск программ Яндекса — браузера, его обновлений, Яндекс Диска и Punto Switcher — через политику Windows DisallowRun. Файлы не удаляются, программы просто не стартуют. Внимание: блокировка идёт по имени файла, поэтому под неё попадёт любой browser.exe, даже от другого разработчика.</value>
     <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
-  <data name="Uwp_Title" xml:space="preserve">
-    <value>ПРИЛОЖЕНИЯ UWP</value>
+  <data name="Apps_Title" xml:space="preserve">
+    <value>ПРИЛОЖЕНИЯ</value>
     <comment>Page header, upper case</comment>
   </data>
-  <data name="Uwp_RefreshList" xml:space="preserve">
+  <data name="Apps_RefreshList" xml:space="preserve">
     <value>Обновить список</value>
   </data>
-  <data name="Uwp_SelectJunk" xml:space="preserve">
+  <data name="Apps_SelectJunk" xml:space="preserve">
     <value>Выбрать всё (только мусор)</value>
   </data>
-  <data name="Uwp_RemoveSelected" xml:space="preserve">
+  <data name="Apps_RemoveSelected" xml:space="preserve">
     <value>Удалить выбранные</value>
   </data>
-  <data name="Uwp_Loading" xml:space="preserve">
-    <value>Загрузка списка приложений...</value>
+  <data name="Apps_Loading" xml:space="preserve">
+    <value>Загрузка списка программ и приложений...</value>
   </data>
-  <data name="Uwp_Protected" xml:space="preserve">
+  <data name="Apps_Protected" xml:space="preserve">
     <value>защищено</value>
     <comment>Badge on apps that cannot be removed</comment>
   </data>
-  <data name="Uwp_Freed" xml:space="preserve">
+  <data name="Apps_Freed" xml:space="preserve">
     <value>Освобождено: {0:0.#} МБ</value>
     <comment>{0} = megabytes</comment>
   </data>
-  <data name="Uwp_Found" xml:space="preserve">
-    <value>Найдено приложений: {0}</value>
-    <comment>{0} = count</comment>
+  <data name="Apps_Found" xml:space="preserve">
+    <value>Найдено приложений: {0} (десктопных {1}, UWP {2})</value>
+    <comment>{0} = total, {1} = desktop programs, {2} = UWP packages</comment>
   </data>
-  <data name="Uwp_NothingSelected" xml:space="preserve">
+  <data name="Apps_Uninstalling" xml:space="preserve">
+    <value>ждём деинсталлятор…</value>
+    <comment>Row status while a desktop program's own uninstaller window is open</comment>
+  </data>
+  <data name="Apps_StillInstalled" xml:space="preserve">
+    <value>{0}: программа всё ещё установлена — удаление отменено или ещё не завершено</value>
+    <comment>{0} = program name</comment>
+  </data>
+  <data name="Apps_UninstallNotStarted" xml:space="preserve">
+    <value>{0}: не удалось запустить деинсталлятор</value>
+    <comment>{0} = program name</comment>
+  </data>
+  <data name="AppKind_Desktop" xml:space="preserve">
+    <value>Десктопные</value>
+    <comment>Badge: classic Win32 program</comment>
+  </data>
+  <data name="AppKind_Uwp" xml:space="preserve">
+    <value>UWP</value>
+    <comment>Badge: Microsoft Store / UWP package</comment>
+  </data>
+  <data name="Apps_NothingSelected" xml:space="preserve">
     <value>Ничего не выбрано</value>
   </data>
-  <data name="Uwp_JunkSelected" xml:space="preserve">
+  <data name="Apps_JunkSelected" xml:space="preserve">
     <value>Выбрано: {0} (только предустановленный мусор)</value>
     <comment>{0} = count</comment>
   </data>
-  <data name="Uwp_RemoveDone" xml:space="preserve">
+  <data name="Apps_RemoveDone" xml:space="preserve">
     <value>Удалено: {0} из {1}</value>
     <comment>{0} = removed, {1} = selected</comment>
   </data>
-  <data name="Uwp_RemoveFailed" xml:space="preserve">
+  <data name="Apps_RemoveFailed" xml:space="preserve">
     <value>{0}: не удалось удалить</value>
     <comment>{0} = app name</comment>
   </data>
-  <data name="UwpCategory_Bloatware" xml:space="preserve">
+  <data name="AppCategory_Bloatware" xml:space="preserve">
     <value>Предустановленный мусор</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Games" xml:space="preserve">
+  <data name="AppCategory_Games" xml:space="preserve">
     <value>Игры</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Media" xml:space="preserve">
+  <data name="AppCategory_Media" xml:space="preserve">
     <value>Мультимедиа</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Utilities" xml:space="preserve">
+  <data name="AppCategory_Utilities" xml:space="preserve">
     <value>Утилиты</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_ThirdParty" xml:space="preserve">
+  <data name="AppCategory_ThirdParty" xml:space="preserve">
     <value>Сторонние</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Other" xml:space="preserve">
+  <data name="AppCategory_Other" xml:space="preserve">
     <value>Прочие Microsoft</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_System" xml:space="preserve">
+  <data name="AppCategory_System" xml:space="preserve">
     <value>Системные</value>
     <comment>Badge</comment>
   </data>

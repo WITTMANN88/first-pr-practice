@@ -106,6 +106,44 @@ public static class RegistryHelper
         }
     }
 
+    /// <summary>
+    /// Every value of one key, read with a single open (name → value; REG_EXPAND_SZ
+    /// expanded). Empty when the key is missing or unreadable.
+    /// </summary>
+    public static IReadOnlyDictionary<string, object> ReadValues(RegHive hive, string subKey)
+    {
+        var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var baseKey = BaseKey(hive);
+            using var key = baseKey.OpenSubKey(subKey, writable: false);
+            if (key == null) return values;
+            foreach (var name in key.GetValueNames())
+                if (key.GetValue(name) is { } value) values[name] = value;
+        }
+        catch (Exception ex)
+        {
+            LogRegistryError($"Registry.ReadValues {subKey}", ex);
+        }
+        return values;
+    }
+
+    /// <summary>Whether a key exists (false on error).</summary>
+    public static bool KeyExists(RegHive hive, string subKey)
+    {
+        try
+        {
+            using var baseKey = BaseKey(hive);
+            using var key = baseKey.OpenSubKey(subKey, writable: false);
+            return key != null;
+        }
+        catch (Exception ex)
+        {
+            LogRegistryError($"Registry.KeyExists {subKey}", ex);
+            return false;
+        }
+    }
+
     /// <summary>Enumerate immediate sub-key names under a path (empty on error).</summary>
     public static IReadOnlyList<string> SubKeyNames(RegHive hive, string subKey)
     {

@@ -8,7 +8,7 @@ using Stakeout.Services;
 namespace Stakeout.ViewModels;
 
 /// <summary>Which page is shown in the content host.</summary>
-public enum Page { SysInfo, Tweaks, Uwp, Software }
+public enum Page { SysInfo, Tweaks, Apps, Software }
 
 /// <summary>
 /// Application shell view model: navigation, sidebar collapse state, the toast
@@ -27,7 +27,7 @@ public sealed class MainViewModel : ViewModelBase
     public MainViewModel(
         SysInfoViewModel sysInfo,
         TweaksViewModel tweaks,
-        UwpViewModel uwp,
+        AppsViewModel apps,
         SoftwareViewModel software,
         LogViewerViewModel logs,
         TweakService tweakService,
@@ -36,7 +36,7 @@ public sealed class MainViewModel : ViewModelBase
     {
         SysInfo = sysInfo;
         Tweaks = tweaks;
-        Uwp = uwp;
+        Apps = apps;
         Software = software;
         Logs = logs;
         _tweakService = tweakService;
@@ -51,7 +51,7 @@ public sealed class MainViewModel : ViewModelBase
     // Page view models
     public SysInfoViewModel SysInfo { get; }
     public TweaksViewModel Tweaks { get; }
-    public UwpViewModel Uwp { get; }
+    public AppsViewModel Apps { get; }
     public SoftwareViewModel Software { get; }
 
     /// <summary>In-app log viewer overlay (sidebar "Логи").</summary>
@@ -114,7 +114,7 @@ public sealed class MainViewModel : ViewModelBase
         {
             Page.SysInfo => SysInfo,
             Page.Tweaks => Tweaks,
-            Page.Uwp => Uwp,
+            Page.Apps => Apps,
             Page.Software => Software,
             _ => SysInfo,
         };
@@ -124,8 +124,8 @@ public sealed class MainViewModel : ViewModelBase
             _ = Tweaks.RefreshStatesAsync();
 
         // Lazy-load the UWP list the first time that page is opened.
-        if (page == Page.Uwp && Uwp.Apps.Count == 0 && !Uwp.IsLoading)
-            _ = Uwp.LoadAsync();
+        if (page == Page.Apps && Apps.Apps.Count == 0 && !Apps.IsLoading)
+            _ = Apps.LoadAsync();
     }
 
     private async Task RevertAllAsync()

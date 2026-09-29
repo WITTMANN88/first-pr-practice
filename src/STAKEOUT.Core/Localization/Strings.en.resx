@@ -484,74 +484,94 @@ Continue?</value>
     <value>Blocks Yandex programs (the browser, its updaters, Yandex Disk and Punto Switcher) from starting via the Windows DisallowRun policy. No files are deleted; the programs simply do not start. Note: the block works by file name, so any browser.exe is blocked, even one from another vendor.</value>
     <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
-  <data name="Uwp_Title" xml:space="preserve">
-    <value>UWP APPS</value>
+  <data name="Apps_Title" xml:space="preserve">
+    <value>APPS</value>
     <comment>Page header, upper case</comment>
   </data>
-  <data name="Uwp_RefreshList" xml:space="preserve">
+  <data name="Apps_RefreshList" xml:space="preserve">
     <value>Refresh list</value>
   </data>
-  <data name="Uwp_SelectJunk" xml:space="preserve">
+  <data name="Apps_SelectJunk" xml:space="preserve">
     <value>Select all (junk only)</value>
   </data>
-  <data name="Uwp_RemoveSelected" xml:space="preserve">
+  <data name="Apps_RemoveSelected" xml:space="preserve">
     <value>Remove selected</value>
   </data>
-  <data name="Uwp_Loading" xml:space="preserve">
-    <value>Loading app list...</value>
+  <data name="Apps_Loading" xml:space="preserve">
+    <value>Loading programs and apps...</value>
   </data>
-  <data name="Uwp_Protected" xml:space="preserve">
+  <data name="Apps_Protected" xml:space="preserve">
     <value>protected</value>
     <comment>Badge on apps that cannot be removed</comment>
   </data>
-  <data name="Uwp_Freed" xml:space="preserve">
+  <data name="Apps_Freed" xml:space="preserve">
     <value>Freed: {0:0.#} MB</value>
     <comment>{0} = megabytes</comment>
   </data>
-  <data name="Uwp_Found" xml:space="preserve">
-    <value>Apps found: {0}</value>
-    <comment>{0} = count</comment>
+  <data name="Apps_Found" xml:space="preserve">
+    <value>Apps found: {0} ({1} desktop, {2} UWP)</value>
+    <comment>{0} = total, {1} = desktop programs, {2} = UWP packages</comment>
   </data>
-  <data name="Uwp_NothingSelected" xml:space="preserve">
+  <data name="Apps_Uninstalling" xml:space="preserve">
+    <value>waiting for the uninstaller…</value>
+    <comment>Row status while a desktop program's own uninstaller window is open</comment>
+  </data>
+  <data name="Apps_StillInstalled" xml:space="preserve">
+    <value>{0}: still installed — the uninstall was cancelled or has not finished</value>
+    <comment>{0} = program name</comment>
+  </data>
+  <data name="Apps_UninstallNotStarted" xml:space="preserve">
+    <value>{0}: the uninstaller could not be started</value>
+    <comment>{0} = program name</comment>
+  </data>
+  <data name="AppKind_Desktop" xml:space="preserve">
+    <value>Desktop</value>
+    <comment>Badge: classic Win32 program</comment>
+  </data>
+  <data name="AppKind_Uwp" xml:space="preserve">
+    <value>UWP</value>
+    <comment>Badge: Microsoft Store / UWP package</comment>
+  </data>
+  <data name="Apps_NothingSelected" xml:space="preserve">
     <value>Nothing selected</value>
   </data>
-  <data name="Uwp_JunkSelected" xml:space="preserve">
+  <data name="Apps_JunkSelected" xml:space="preserve">
     <value>Selected: {0} (preinstalled junk only)</value>
     <comment>{0} = count</comment>
   </data>
-  <data name="Uwp_RemoveDone" xml:space="preserve">
+  <data name="Apps_RemoveDone" xml:space="preserve">
     <value>Removed: {0} of {1}</value>
     <comment>{0} = removed, {1} = selected</comment>
   </data>
-  <data name="Uwp_RemoveFailed" xml:space="preserve">
+  <data name="Apps_RemoveFailed" xml:space="preserve">
     <value>{0}: could not remove</value>
     <comment>{0} = app name</comment>
   </data>
-  <data name="UwpCategory_Bloatware" xml:space="preserve">
+  <data name="AppCategory_Bloatware" xml:space="preserve">
     <value>Preinstalled junk</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Games" xml:space="preserve">
+  <data name="AppCategory_Games" xml:space="preserve">
     <value>Games</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Media" xml:space="preserve">
+  <data name="AppCategory_Media" xml:space="preserve">
     <value>Media</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Utilities" xml:space="preserve">
+  <data name="AppCategory_Utilities" xml:space="preserve">
     <value>Utilities</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_ThirdParty" xml:space="preserve">
+  <data name="AppCategory_ThirdParty" xml:space="preserve">
     <value>Third-party</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_Other" xml:space="preserve">
+  <data name="AppCategory_Other" xml:space="preserve">
     <value>Other Microsoft</value>
     <comment>Badge</comment>
   </data>
-  <data name="UwpCategory_System" xml:space="preserve">
+  <data name="AppCategory_System" xml:space="preserve">
     <value>System</value>
     <comment>Badge</comment>
   </data>

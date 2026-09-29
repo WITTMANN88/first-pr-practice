@@ -5,7 +5,7 @@ namespace Stakeout.Services;
 /// <summary>
 /// Parses the output of the listing script
 /// <c>Get-AppxPackage -AllUsers | ForEach-Object { "$($_.Name)|$($_.PackageFullName)|$($_.InstallLocation)" }</c>
-/// into <see cref="UwpApp"/> entries.
+/// into <see cref="InstalledApp"/> entries.
 /// </summary>
 public static class UwpListing
 {
@@ -14,9 +14,9 @@ public static class UwpListing
     /// user), categorised and sorted by category (junk first, system last), then
     /// by display name. Malformed lines are skipped.
     /// </summary>
-    public static IReadOnlyList<UwpApp> Parse(string? stdout)
+    public static IReadOnlyList<InstalledApp> Parse(string? stdout)
     {
-        var apps = new List<UwpApp>();
+        var apps = new List<InstalledApp>();
         if (string.IsNullOrWhiteSpace(stdout)) return apps;
 
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -30,7 +30,7 @@ public static class UwpListing
             if (name.Length == 0 || full.Length == 0 || !seen.Add(full)) continue;
 
             var location = parts.Length > 2 ? parts[2].Trim() : "";
-            apps.Add(UwpApp.FromIdentity(name, full, location));
+            apps.Add(InstalledApp.FromIdentity(name, full, location));
         }
 
         Disambiguate(apps);
@@ -45,7 +45,7 @@ public static class UwpListing
     /// x86, or in two versions side by side) would show as identical rows: append
     /// what tells them apart, "(x86)" or "(x64, 8000.616.304.0)".
     /// </summary>
-    private static void Disambiguate(List<UwpApp> apps)
+    private static void Disambiguate(List<InstalledApp> apps)
     {
         foreach (var group in apps.GroupBy(a => a.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
         {

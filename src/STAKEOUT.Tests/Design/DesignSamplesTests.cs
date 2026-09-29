@@ -13,28 +13,39 @@ namespace Stakeout.Tests.Design;
 public class DesignSamplesTests
 {
     [Fact]
-    public void UwpApps_ShowEveryCategoryBadge()
+    public void Apps_ShowEveryCategoryBadge()
     {
-        var shown = DesignSamples.UwpApps().Select(a => a.Category).ToHashSet();
-        Assert.Equal(Enum.GetValues<UwpCategory>().ToHashSet(), shown);
+        var shown = DesignSamples.Apps().Select(a => a.Category).ToHashSet();
+        Assert.Equal(Enum.GetValues<AppCategory>().ToHashSet(), shown);
     }
 
     [Fact]
-    public void UwpApps_IncludeProtectedAndRemovable_WithSizes_AndUniqueNames()
+    public void Apps_IncludeBothKinds_ThroughTheRealFilter()
     {
-        var apps = DesignSamples.UwpApps();
+        var apps = DesignSamples.Apps();
+        Assert.Contains(apps, a => a.Kind == Stakeout.Models.AppKind.Uwp);
+        Assert.Contains(apps, a => a.Kind == Stakeout.Models.AppKind.Desktop && a.IsPerUser);
+        // The KB update in the samples is filtered out, as on a real machine.
+        Assert.DoesNotContain(apps, a => a.DisplayName.Contains("KB5005565", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Apps_IncludeProtectedAndRemovable_WithSizes_AndUniqueNames()
+    {
+        var apps = DesignSamples.Apps();
         Assert.Contains(apps, a => a.IsCritical);
-        Assert.Contains(apps, a => !a.IsCritical && a.Category == UwpCategory.Bloatware);
+        Assert.Contains(apps, a => !a.IsCritical && a.Category == AppCategory.Bloatware);
         Assert.All(apps, a => Assert.True(a.SizeBytes > 0, a.Name));
-        Assert.All(apps, a => Assert.StartsWith(a.Name + "_", a.PackageFullName, StringComparison.Ordinal));
+        Assert.All(apps.Where(a => a.Kind == Stakeout.Models.AppKind.Uwp),
+            a => Assert.StartsWith(a.Name + "_", a.PackageFullName, StringComparison.Ordinal));
         Assert.Equal(apps.Count, apps.Select(a => a.Name).Distinct().Count());
     }
 
     [Fact]
     public void UwpApps_ProtectedPackagesAreBadgedSystem()
     {
-        Assert.All(DesignSamples.UwpApps().Where(a => a.IsCritical),
-            a => Assert.Equal(UwpCategory.System, a.Category));
+        Assert.All(DesignSamples.Apps().Where(a => a.IsCritical),
+            a => Assert.Equal(AppCategory.System, a.Category));
     }
 
     [Fact]

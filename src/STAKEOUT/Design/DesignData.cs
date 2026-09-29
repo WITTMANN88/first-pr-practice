@@ -29,7 +29,7 @@ public static class DesignData
     public static MainViewModel Main => Instance.Value.Shell;
     public static SysInfoViewModel SysInfo => Instance.Value.Shell.SysInfo;
     public static TweaksViewModel Tweaks => Instance.Value.Shell.Tweaks;
-    public static UwpViewModel Uwp => Instance.Value.Shell.Uwp;
+    public static AppsViewModel Apps => Instance.Value.Shell.Apps;
     public static SoftwareViewModel Software => Instance.Value.Shell.Software;
     public static LogViewerViewModel Logs => Instance.Value.Shell.Logs;
 
@@ -55,9 +55,9 @@ public static class DesignData
             var sysInfo = new SysInfoViewModel(new SystemInfoService());
             FillSysInfo(sysInfo);
 
-            var uwp = new UwpViewModel(new UwpService(), notifications);
-            uwp.ShowApps(DesignSamples.UwpApps());
-            foreach (var app in uwp.Apps.Where(a => a.Category == UwpCategory.Bloatware).Take(2))
+            var uwp = new AppsViewModel(new UwpService(), new DesktopAppService(), notifications);
+            uwp.ShowApps(DesignSamples.Apps());
+            foreach (var app in uwp.Apps.Where(a => a.Category == AppCategory.Bloatware).Take(2))
                 app.IsSelected = true;
             uwp.AddFreed(64L * 1024 * 1024 + 318L * 1024);
 
@@ -74,7 +74,7 @@ public static class DesignData
             // One toast of each visible kind, using the real message formats.
             notifications.Success(F(Strings.Software_Started, "7-Zip"));
             notifications.Warning(F(Strings.State_RecoveredFromBackup, "tweak-state.20260926T180211.4410032Z.json"));
-            notifications.Error(F(Strings.Uwp_RemoveFailed, "XboxGameCallableUI"));
+            notifications.Error(F(Strings.Apps_RemoveFailed, "XboxGameCallableUI"));
         }
 
         public MainViewModel Shell { get; }

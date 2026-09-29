@@ -3,7 +3,7 @@
 [![build](https://github.com/WITTMANN88/first-pr-practice/actions/workflows/build.yml/badge.svg)](https://github.com/WITTMANN88/first-pr-practice/actions/workflows/build.yml)
 
 Оконное приложение для глубокой оптимизации Windows 10/11: системный монитор,
-21 обратимый твик, удаление UWP-мусора, блокировка Яндекса, установка ПО.
+21 обратимый твик, удаление любых программ (десктопных и UWP), блокировка Яндекса, установка ПО.
 Каждое изменение реестра сохраняется до применения и откатывается одной кнопкой,
 в том числе после перезапуска.
 
@@ -69,13 +69,34 @@ LibreHardwareMonitor 0.9.6 читает регистры CPU только чер
 - Изменение твика интерфейса подсвечивает кнопку перезапуска Проводника.
 - «Отменить все» (двойной клик, внизу бокового меню) возвращает всё применённое.
 
-### Приложения UWP
+### Приложения
 
-Список всех пакетов с цветными бейджами категорий: предустановленный мусор,
-игры, мультимедиа, утилиты, сторонние, прочие Microsoft, системные.
-«Выбрать мусор» отмечает только предустановленный мусор. Магазин, Калькулятор,
-App Installer, runtime-библиотеки и компоненты оболочки защищены: их нельзя
-отметить, а удаление отклоняется и на уровне сервиса.
+Один список всех установленных программ: десктопные (Win32) и UWP-пакеты, с бейджем
+типа «Десктопные» / «UWP» и иконками.
+
+- **Десктопные программы** читаются из трёх веток реестра `…\CurrentVersion\Uninstall`:
+  HKLM (64 бит), HKLM `WOW6432Node` (32 бит) и HKCU. Правила как в «Программах и
+  компонентах»: нужны `DisplayName` и команда удаления; скрыты системные компоненты
+  (`SystemComponent = 1`), обновления (ключи `KB<номер>`, записи с `ParentKeyName`,
+  `ReleaseType` Update/Hotfix) и дубли одной программы в разных ветках. Размер — из
+  `EstimatedSize`, иконка — из `DisplayIcon` (.exe/.dll по индексу или .ico).
+- **Удаление программы** запускает её собственный деинсталлятор (`UninstallString`,
+  `QuietUninstallString` — только если другой нет) и ждёт, пока он закроется, вместе с
+  его копией в `%TEMP%` (так работают NSIS и Inno Setup). `MsiExec /I{…}` превращается
+  в `/X{…}`. Программа считается удалённой, только когда её запись в реестре исчезла;
+  иначе строка остаётся с пояснением (удаление отменено или не завершено).
+- **Безопасность.** Запись в HKCU может создать любая программа пользователя без прав
+  администратора, поэтому деинсталляторы из HKCU запускаются без повышения прав — с
+  токеном Проводника (`CreateProcessWithTokenW`). Если это не удалось, запуска с правами
+  администратора не будет. Системные утилиты из `UninstallString` (`msiexec`, `rundll32`)
+  ищутся только в System32 и Windows.
+- **UWP-пакеты** — с цветными бейджами категорий: предустановленный мусор, игры,
+  мультимедиа, утилиты, сторонние, прочие Microsoft, системные. «Выбрать мусор»
+  отмечает только предустановленный мусор. Магазин, Калькулятор, App Installer,
+  runtime-библиотеки и компоненты оболочки защищены: их нельзя отметить, а удаление
+  отклоняется и на уровне сервиса.
+- Сканирование идёт в фоне (реестр и PowerShell параллельно), иконки и размеры
+  UWP-пакетов подгружаются после показа списка.
 
 ### Установка ПО
 
@@ -185,17 +206,17 @@ Windows (реестр, UI-поток, диалоги), скрыто за инт�
 flowchart TB
     subgraph APP["STAKEOUT · WPF, net8.0-windows"]
         direction TB
-        V["<b>Views</b><br/>MainWindow · SysInfoView · TweaksView<br/>UwpView · SoftwareView · LogViewerView"]
-        VM["<b>ViewModels</b><br/>MainViewModel · SysInfo · Tweaks<br/>Uwp · Software · LogViewer"]
+        V["<b>Views</b><br/>MainWindow · SysInfoView · TweaksView<br/>AppsView · SoftwareView · LogViewerView"]
+        VM["<b>ViewModels</b><br/>MainViewModel · SysInfo · Tweaks<br/>Apps · Software · LogViewer"]
         DI["<b>DI-контейнер</b><br/>App.xaml.cs · ServiceRegistration"]
-        S["<b>Services</b><br/>SystemInfoService · TweakService · YandexBlockService<br/>UwpService · SoftwareInstallService · DownloadService"]
+        S["<b>Services</b><br/>SystemInfoService · TweakService · YandexBlockService<br/>UwpService · DesktopAppService · SoftwareInstallService · DownloadService"]
         R["<b>Раннеры и адаптеры ОС</b><br/>ProcessRunner · PowerShellRunner · SystemTools · Wmi<br/>WindowsRegistryAccess · WpfUiDispatcher · WpfDialogService"]
     end
 
     subgraph CORE["STAKEOUT.Core · net8.0, без WPF"]
         direction TB
         I["<b>Интерфейсы</b><br/>IRegistryAccess · IUiDispatcher · IDialogService<br/>INotificationService · INotificationFeed"]
-        L["<b>Логика</b><br/>RegistryRollback · TweakStateStore · UwpCatalog<br/>NotificationService · Logger + AES-256-GCM"]
+        L["<b>Логика</b><br/>RegistryRollback · TweakStateStore · UwpCatalog · DesktopAppListing<br/>NotificationService · Logger + AES-256-GCM"]
         U["<b>Общие компоненты</b><br/>WeakHandler · TimeoutGuard · SampleHistory<br/>ExecutableResolver · Strings.resx"]
     end
 
@@ -430,7 +451,7 @@ src/
   STAKEOUT/                        WPF: Views, ViewModels, Mvvm, Converters, Controls, Services,
                                    Infrastructure, Models, Design, Themes, Assets, Trimming;
                                    prepare-assets.ps1 (шрифты в Assets/Fonts с проверкой SHA-256)
-  STAKEOUT.Core/                   ядро: Logging, Registry, Persistence, Uwp, Notifications, Localization, Windowing, Common
+  STAKEOUT.Core/                   ядро: Logging, Registry, Persistence, Uwp, Apps, Notifications, Localization, Windowing, Common
   STAKEOUT.Tests/                  xUnit
 ```
 

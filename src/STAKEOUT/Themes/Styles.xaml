@@ -9,10 +9,10 @@
     <conv:StringToVisibilityConverter x:Key="StringToVis" />
     <conv:TempHotToBrushConverter x:Key="TempHotToBrush" />
     <conv:NotificationKindToBrushConverter x:Key="NotificationKindToBrush" />
-    <conv:UwpCategoryToBrushConverter x:Key="UwpCategoryToBrush" />
+    <conv:AppCategoryToBrushConverter x:Key="AppCategoryToBrush" />
     <conv:ResourceKeyToImageConverter x:Key="ResourceKeyToImage" />
     <conv:LogLevelToBrushConverter x:Key="LogLevelToBrush" />
-    <conv:IconPathToImageConverter x:Key="IconPathToImage" />
+    <conv:AppKindToBrushConverter x:Key="AppKindToBrush" />
     <conv:EnumEqualsConverter x:Key="EnumEquals" />
 
     <!-- ============================================================

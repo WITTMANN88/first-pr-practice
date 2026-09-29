@@ -18,8 +18,36 @@ public static class DesignSamples
 {
     private const string MsPublisher = "8wekyb3d8bbwe";
 
-    /// <summary>Installed packages covering every <see cref="UwpCategory"/>, protected ones included.</summary>
-    public static IReadOnlyList<UwpApp> UwpApps()
+    /// <summary>
+    /// Desktop programs (through the real <see cref="DesktopAppListing"/> filter,
+    /// one per-user install and one filtered-out update among them) followed by
+    /// UWP packages covering every other <see cref="AppCategory"/>, protected ones included.
+    /// </summary>
+    public static IReadOnlyList<InstalledApp> Apps() => DesktopApps().Concat(UwpApps()).ToList();
+
+    private static IReadOnlyList<InstalledApp> DesktopApps()
+    {
+        static UninstallEntry Program(UninstallSource source, string key, string name, string publisher, string version, int sizeKb)
+            => new(source, key, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["DisplayName"] = name,
+                ["Publisher"] = publisher,
+                ["DisplayVersion"] = version,
+                ["EstimatedSize"] = sizeKb,
+                ["UninstallString"] = $@"""C:\Program Files\{name}\uninstall.exe""",
+            });
+
+        return DesktopAppListing.Parse(new[]
+        {
+            Program(UninstallSource.LocalMachine, "Google Chrome", "Google Chrome", "Google LLC", "129.0.6668.90", 580_000),
+            Program(UninstallSource.LocalMachine32, "Steam", "Steam", "Valve Corporation", "2.10.91", 1_210_000),
+            Program(UninstallSource.LocalMachine, "7-Zip", "7-Zip 24.08 (x64)", "Igor Pavlov", "24.08", 5_947),
+            Program(UninstallSource.CurrentUser, "Discord", "Discord", "Discord Inc.", "1.0.9163", 330_000),
+            Program(UninstallSource.LocalMachine, "KB5005565", "Security Update for Windows (KB5005565)", "Microsoft", "1", 0),
+        });
+    }
+
+    private static List<InstalledApp> UwpApps()
     {
         (string Name, string Version, string Publisher, double SizeMb)[] packages =
         {
@@ -42,7 +70,7 @@ public static class DesignSamples
 
         return packages.Select(p =>
         {
-            var app = UwpApp.FromIdentity(
+            var app = InstalledApp.FromIdentity(
                 p.Name,
                 $"{p.Name}_{p.Version}_x64__{p.Publisher}",
                 $@"C:\Program Files\WindowsApps\{p.Name}_{p.Version}_x64__{p.Publisher}");

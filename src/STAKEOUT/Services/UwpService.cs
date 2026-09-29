@@ -11,13 +11,13 @@ public readonly record struct UwpRemovalResult(bool Success, long FreedBytes);
 public interface IUwpService
 {
     /// <summary>Enumerate all installed packages for all users.</summary>
-    Task<IReadOnlyList<UwpApp>> ListAsync();
+    Task<IReadOnlyList<InstalledApp>> ListAsync();
 
     /// <summary>Remove one package for all users; protected packages are refused.</summary>
-    Task<UwpRemovalResult> RemoveAsync(UwpApp app);
+    Task<UwpRemovalResult> RemoveAsync(InstalledApp app);
 
     /// <summary>Size of the package's install folder in bytes (0 when unknown).</summary>
-    Task<long> MeasureSizeAsync(UwpApp app);
+    Task<long> MeasureSizeAsync(InstalledApp app);
 }
 
 /// <summary>
@@ -30,7 +30,7 @@ public interface IUwpService
 public sealed class UwpService : IUwpService
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<UwpApp>> ListAsync()
+    public async Task<IReadOnlyList<InstalledApp>> ListAsync()
     {
         // Emit a stable pipe-delimited line per package.
         const string script =
@@ -41,7 +41,7 @@ public sealed class UwpService : IUwpService
         if (!result.Success && string.IsNullOrWhiteSpace(result.StdOut))
         {
             Logger.Log("UWP list", "ERROR", result.StdErr);
-            return Array.Empty<UwpApp>();
+            return Array.Empty<InstalledApp>();
         }
 
         // Parsing ~150 manifests and probing icon files is disk work: keep it off
@@ -61,7 +61,7 @@ public sealed class UwpService : IUwpService
     /// Remove one package for all users. Refuses protected packages. On success
     /// reports the bytes freed (measured before removal).
     /// </summary>
-    public async Task<UwpRemovalResult> RemoveAsync(UwpApp app)
+    public async Task<UwpRemovalResult> RemoveAsync(InstalledApp app)
     {
         if (app.IsCritical)
         {
@@ -170,7 +170,7 @@ public sealed class UwpService : IUwpService
     }
 
     /// <inheritdoc />
-    public Task<long> MeasureSizeAsync(UwpApp app)
+    public Task<long> MeasureSizeAsync(InstalledApp app)
     {
         ArgumentNullException.ThrowIfNull(app);
         // Walks every file of the package: off the UI thread.

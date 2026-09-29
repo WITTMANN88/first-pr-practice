@@ -4,7 +4,7 @@ using Stakeout.Core;
 namespace Stakeout.Services;
 
 /// <summary>Category shown as a badge in the UWP table. Declaration order = sort order.</summary>
-public enum UwpCategory
+public enum AppCategory
 {
     Bloatware,   // preinstalled / sponsored junk — the only category "select junk" picks
     Games,       // Xbox ecosystem and Microsoft games
@@ -13,6 +13,7 @@ public enum UwpCategory
     ThirdParty,  // non-Microsoft packages we do not recognise
     Other,       // Microsoft packages we do not recognise
     System,      // frameworks, shell components, codecs, protected apps
+    Desktop,     // classic Win32 programs (registry Uninstall entries), never auto-selected
 }
 
 /// <summary>
@@ -45,9 +46,9 @@ public static class UwpCatalog
         "XboxGameCallableUI", // unremovable system component despite the "Xbox" name
     };
 
-    private static readonly (UwpCategory Category, string[] Patterns)[] SpecificRules =
+    private static readonly (AppCategory Category, string[] Patterns)[] SpecificRules =
     {
-        (UwpCategory.Bloatware, new[]
+        (AppCategory.Bloatware, new[]
         {
             // Microsoft preinstalled extras
             "Microsoft.Bing*", "Microsoft.GetHelp", "Microsoft.Getstarted", "Microsoft.MicrosoftOfficeHub",
@@ -64,18 +65,18 @@ public static class UwpCatalog
             "*Instagram*", "AmazonVideo.PrimeVideo", "*Flipboard*", "*Duolingo*", "*PandoraMediaInc*",
             "*HiddenCity*", "*Hulu*", "*McAfee*",
         }),
-        (UwpCategory.Games, new[]
+        (AppCategory.Games, new[]
         {
             "Microsoft.XboxApp", "Microsoft.GamingApp", "Microsoft.GamingServices", "Microsoft.Xbox*",
             "Microsoft.MicrosoftSolitaireCollection", "Microsoft.MicrosoftMahjong",
             "Microsoft.MicrosoftMinesweeper", "Microsoft.Minecraft*",
         }),
-        (UwpCategory.Media, new[]
+        (AppCategory.Media, new[]
         {
             "Microsoft.ZuneMusic", "Microsoft.ZuneVideo", "Microsoft.Windows.Photos", "Microsoft.WindowsCamera",
             "Microsoft.WindowsSoundRecorder", "Microsoft.Photos.*",
         }),
-        (UwpCategory.Utilities, new[]
+        (AppCategory.Utilities, new[]
         {
             "Microsoft.WindowsAlarms", "Microsoft.WindowsNotepad", "Microsoft.Paint", "Microsoft.ScreenSketch",
             "Microsoft.MicrosoftStickyNotes", "Microsoft.WindowsTerminal", "Microsoft.PowerShell",
@@ -105,7 +106,7 @@ public static class UwpCatalog
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled, MatchTimeout);
 
     // Compiled once. Order of SpecificRules preserved.
-    private static readonly (UwpCategory Category, Regex[] Matchers)[] CompiledRules =
+    private static readonly (AppCategory Category, Regex[] Matchers)[] CompiledRules =
         SpecificRules.Select(r => (r.Category, r.Patterns.Select(Glob).ToArray())).ToArray();
     private static readonly Regex[] CompiledSystem = SystemPatterns.Select(Glob).ToArray();
 
@@ -115,19 +116,19 @@ public static class UwpCatalog
            CriticalMarkers.Any(m => name.Contains(m, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Category for a package identity name (never throws).</summary>
-    public static UwpCategory Categorize(string? name)
+    public static AppCategory Categorize(string? name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return UwpCategory.Other;
-        if (IsCritical(name)) return UwpCategory.System;
+        if (string.IsNullOrWhiteSpace(name)) return AppCategory.Other;
+        if (IsCritical(name)) return AppCategory.System;
 
         foreach (var (category, matchers) in CompiledRules)
             if (matchers.Any(m => Matches(m, name))) return category;
 
-        if (CompiledSystem.Any(m => Matches(m, name)) || Matches(GuidName, name)) return UwpCategory.System;
+        if (CompiledSystem.Any(m => Matches(m, name)) || Matches(GuidName, name)) return AppCategory.System;
 
         return name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
-            ? UwpCategory.Other
-            : UwpCategory.ThirdParty;
+            ? AppCategory.Other
+            : AppCategory.ThirdParty;
     }
 
     /// <summary>A timed-out match counts as "no match", keeping Categorize total.</summary>

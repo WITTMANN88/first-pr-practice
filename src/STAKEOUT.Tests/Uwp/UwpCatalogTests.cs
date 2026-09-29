@@ -8,58 +8,58 @@ public class UwpCatalogTests
 {
     [Theory]
     // Preinstalled / sponsored junk
-    [InlineData("Microsoft.BingNews", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.BingWeather", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.GetHelp", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.Getstarted", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.MicrosoftOfficeHub", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.WindowsFeedbackHub", UwpCategory.Bloatware)]
-    [InlineData("Microsoft.MSPaint", UwpCategory.Bloatware)]           // Paint 3D
-    [InlineData("Microsoft.Windows.DevHome", UwpCategory.Bloatware)]   // beats the generic Microsoft.Windows.* rule
-    [InlineData("MicrosoftWindows.Client.WebExperience", UwpCategory.Bloatware)]
-    [InlineData("Clipchamp.Clipchamp", UwpCategory.Bloatware)]
-    [InlineData("king.com.CandyCrushSaga", UwpCategory.Bloatware)]
-    [InlineData("SpotifyAB.SpotifyMusic", UwpCategory.Bloatware)]
-    [InlineData("4DF9E0F8.Netflix", UwpCategory.Bloatware)]
-    [InlineData("Disney.37853FC22B2CE", UwpCategory.Bloatware)]
+    [InlineData("Microsoft.BingNews", AppCategory.Bloatware)]
+    [InlineData("Microsoft.BingWeather", AppCategory.Bloatware)]
+    [InlineData("Microsoft.GetHelp", AppCategory.Bloatware)]
+    [InlineData("Microsoft.Getstarted", AppCategory.Bloatware)]
+    [InlineData("Microsoft.MicrosoftOfficeHub", AppCategory.Bloatware)]
+    [InlineData("Microsoft.WindowsFeedbackHub", AppCategory.Bloatware)]
+    [InlineData("Microsoft.MSPaint", AppCategory.Bloatware)]           // Paint 3D
+    [InlineData("Microsoft.Windows.DevHome", AppCategory.Bloatware)]   // beats the generic Microsoft.Windows.* rule
+    [InlineData("MicrosoftWindows.Client.WebExperience", AppCategory.Bloatware)]
+    [InlineData("Clipchamp.Clipchamp", AppCategory.Bloatware)]
+    [InlineData("king.com.CandyCrushSaga", AppCategory.Bloatware)]
+    [InlineData("SpotifyAB.SpotifyMusic", AppCategory.Bloatware)]
+    [InlineData("4DF9E0F8.Netflix", AppCategory.Bloatware)]
+    [InlineData("Disney.37853FC22B2CE", AppCategory.Bloatware)]
     // Games
-    [InlineData("Microsoft.XboxApp", UwpCategory.Games)]
-    [InlineData("Microsoft.GamingApp", UwpCategory.Games)]
-    [InlineData("Microsoft.XboxGamingOverlay", UwpCategory.Games)]
-    [InlineData("Microsoft.Xbox.TCUI", UwpCategory.Games)]
-    [InlineData("Microsoft.MicrosoftSolitaireCollection", UwpCategory.Games)]
+    [InlineData("Microsoft.XboxApp", AppCategory.Games)]
+    [InlineData("Microsoft.GamingApp", AppCategory.Games)]
+    [InlineData("Microsoft.XboxGamingOverlay", AppCategory.Games)]
+    [InlineData("Microsoft.Xbox.TCUI", AppCategory.Games)]
+    [InlineData("Microsoft.MicrosoftSolitaireCollection", AppCategory.Games)]
     // Media
-    [InlineData("Microsoft.Windows.Photos", UwpCategory.Media)]         // not System despite Microsoft.Windows.*
-    [InlineData("Microsoft.ZuneMusic", UwpCategory.Media)]
-    [InlineData("Microsoft.ZuneVideo", UwpCategory.Media)]
-    [InlineData("Microsoft.WindowsCamera", UwpCategory.Media)]
+    [InlineData("Microsoft.Windows.Photos", AppCategory.Media)]         // not System despite Microsoft.Windows.*
+    [InlineData("Microsoft.ZuneMusic", AppCategory.Media)]
+    [InlineData("Microsoft.ZuneVideo", AppCategory.Media)]
+    [InlineData("Microsoft.WindowsCamera", AppCategory.Media)]
     // Utilities
-    [InlineData("Microsoft.WindowsNotepad", UwpCategory.Utilities)]
-    [InlineData("Microsoft.Paint", UwpCategory.Utilities)]              // classic Paint, not Paint 3D
-    [InlineData("Microsoft.ScreenSketch", UwpCategory.Utilities)]
-    [InlineData("Microsoft.WindowsTerminal", UwpCategory.Utilities)]
+    [InlineData("Microsoft.WindowsNotepad", AppCategory.Utilities)]
+    [InlineData("Microsoft.Paint", AppCategory.Utilities)]              // classic Paint, not Paint 3D
+    [InlineData("Microsoft.ScreenSketch", AppCategory.Utilities)]
+    [InlineData("Microsoft.WindowsTerminal", AppCategory.Utilities)]
     // System (frameworks, shell, codecs, GUID-named apps, protected)
-    [InlineData("Microsoft.WindowsCalculator", UwpCategory.System)]
-    [InlineData("Microsoft.WindowsStore", UwpCategory.System)]
-    [InlineData("Microsoft.DesktopAppInstaller", UwpCategory.System)]
-    [InlineData("Microsoft.VCLibs.140.00.UWPDesktop", UwpCategory.System)]
-    [InlineData("Microsoft.UI.Xaml.2.8", UwpCategory.System)]
-    [InlineData("Microsoft.NET.Native.Framework.2.2", UwpCategory.System)]
-    [InlineData("Microsoft.HEIFImageExtension", UwpCategory.System)]
-    [InlineData("Microsoft.VP9VideoExtensions", UwpCategory.System)]
-    [InlineData("Microsoft.Windows.ShellExperienceHost", UwpCategory.System)]
-    [InlineData("windows.immersivecontrolpanel", UwpCategory.System)]
-    [InlineData("Microsoft.XboxGameCallableUI", UwpCategory.System)]    // not Games despite "Xbox"
-    [InlineData("c5e2524a-ea46-4f67-841f-6a9465d9d515", UwpCategory.System)]
-    [InlineData("Microsoft.MicrosoftEdge.Stable", UwpCategory.System)]
+    [InlineData("Microsoft.WindowsCalculator", AppCategory.System)]
+    [InlineData("Microsoft.WindowsStore", AppCategory.System)]
+    [InlineData("Microsoft.DesktopAppInstaller", AppCategory.System)]
+    [InlineData("Microsoft.VCLibs.140.00.UWPDesktop", AppCategory.System)]
+    [InlineData("Microsoft.UI.Xaml.2.8", AppCategory.System)]
+    [InlineData("Microsoft.NET.Native.Framework.2.2", AppCategory.System)]
+    [InlineData("Microsoft.HEIFImageExtension", AppCategory.System)]
+    [InlineData("Microsoft.VP9VideoExtensions", AppCategory.System)]
+    [InlineData("Microsoft.Windows.ShellExperienceHost", AppCategory.System)]
+    [InlineData("windows.immersivecontrolpanel", AppCategory.System)]
+    [InlineData("Microsoft.XboxGameCallableUI", AppCategory.System)]    // not Games despite "Xbox"
+    [InlineData("c5e2524a-ea46-4f67-841f-6a9465d9d515", AppCategory.System)]
+    [InlineData("Microsoft.MicrosoftEdge.Stable", AppCategory.System)]
     // Fallbacks
-    [InlineData("Microsoft.WindowsCommunicationsApps", UwpCategory.Other)]
-    [InlineData("Microsoft.YourPhone", UwpCategory.Other)]
-    [InlineData("SomeVendor.CoolApp", UwpCategory.ThirdParty)]
-    [InlineData("", UwpCategory.Other)]
-    [InlineData("   ", UwpCategory.Other)]
-    [InlineData(null, UwpCategory.Other)]
-    public void Categorize_KnownPackages(string? name, UwpCategory expected)
+    [InlineData("Microsoft.WindowsCommunicationsApps", AppCategory.Other)]
+    [InlineData("Microsoft.YourPhone", AppCategory.Other)]
+    [InlineData("SomeVendor.CoolApp", AppCategory.ThirdParty)]
+    [InlineData("", AppCategory.Other)]
+    [InlineData("   ", AppCategory.Other)]
+    [InlineData(null, AppCategory.Other)]
+    public void Categorize_KnownPackages(string? name, AppCategory expected)
     {
         Assert.Equal(expected, UwpCatalog.Categorize(name));
     }
@@ -70,7 +70,7 @@ public class UwpCatalogTests
     [InlineData("KING.COM.CANDYCRUSHSODASAGA")]
     public void Categorize_IsCaseInsensitive(string name)
     {
-        Assert.Equal(UwpCategory.Bloatware, UwpCatalog.Categorize(name));
+        Assert.Equal(AppCategory.Bloatware, UwpCatalog.Categorize(name));
     }
 
     [Theory]
@@ -97,26 +97,26 @@ public class UwpCatalogTests
     public void ProtectedPackage_IsNeverJunk_EvenIfItAlsoMatchesAJunkPattern(string name)
     {
         Assert.True(UwpCatalog.IsCritical(name));
-        Assert.Equal(UwpCategory.System, UwpCatalog.Categorize(name));
+        Assert.Equal(AppCategory.System, UwpCatalog.Categorize(name));
     }
 
     [Fact]
     public void FromIdentity_DerivesDisplayNameCategoryAndProtection()
     {
-        var app = UwpApp.FromIdentity("Microsoft.WindowsCalculator", "Microsoft.WindowsCalculator_11.2_x64__8wekyb3d8bbwe", @"C:\Program Files\WindowsApps\calc");
+        var app = InstalledApp.FromIdentity("Microsoft.WindowsCalculator", "Microsoft.WindowsCalculator_11.2_x64__8wekyb3d8bbwe", @"C:\Program Files\WindowsApps\calc");
         Assert.Equal("WindowsCalculator", app.DisplayName);
         Assert.True(app.IsCritical);
-        Assert.Equal(UwpCategory.System, app.Category);
+        Assert.Equal(AppCategory.System, app.Category);
         Assert.Equal(@"C:\Program Files\WindowsApps\calc", app.InstallLocation);
     }
 
     [Fact]
     public void SizeText_IsLocalized()
     {
-        var app = new UwpApp { SizeBytes = 3 * 1024 * 1024 / 2 }; // 1.5 MB
+        var app = new InstalledApp { SizeBytes = 3 * 1024 * 1024 / 2 }; // 1.5 MB
         using (new CultureScope("ru-RU")) Assert.Equal("1,5 МБ", app.SizeText);
         using (new CultureScope("en-US")) Assert.Equal("1.5 MB", app.SizeText);
-        Assert.Equal("—", new UwpApp().SizeText);
+        Assert.Equal("—", new InstalledApp().SizeText);
     }
 }
 
@@ -141,7 +141,7 @@ public class UwpListingTests
             new[] { "Microsoft.BingNews", "king.com.CandyCrushSaga", "Microsoft.XboxApp", "Microsoft.WindowsCalculator" },
             apps.Select(a => a.Name));
         Assert.Equal(
-            new[] { UwpCategory.Bloatware, UwpCategory.Bloatware, UwpCategory.Games, UwpCategory.System },
+            new[] { AppCategory.Bloatware, AppCategory.Bloatware, AppCategory.Games, AppCategory.System },
             apps.Select(a => a.Category));
     }
 
@@ -192,7 +192,7 @@ public class UwpListingTests
     [Fact]
     public void FromIdentity_MalformedFullName_LeavesIdentityPartsEmpty()
     {
-        var app = UwpApp.FromIdentity("Contoso.App", "not-a-full-name", "");
+        var app = InstalledApp.FromIdentity("Contoso.App", "not-a-full-name", "");
         Assert.Equal("", app.Architecture);
         Assert.Equal("", app.Version);
     }

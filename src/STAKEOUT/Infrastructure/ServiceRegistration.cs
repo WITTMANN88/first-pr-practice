@@ -40,13 +40,14 @@ public static class ServiceRegistration
         services.AddSingleton<TweakService>();
         services.AddSingleton<SystemInfoService>();
         services.AddSingleton<IUwpService, UwpService>();
+        services.AddSingleton<IDesktopAppService, DesktopAppService>();
         services.AddSingleton<DownloadService>();
         services.AddSingleton<SoftwareInstallService>();
 
         // View models (one instance each: pages keep their state across navigation).
         services.AddSingleton<SysInfoViewModel>();
         services.AddSingleton<TweaksViewModel>();
-        services.AddSingleton<UwpViewModel>();
+        services.AddSingleton<AppsViewModel>();
         services.AddSingleton<SoftwareViewModel>();
         services.AddSingleton<LogViewerViewModel>();
         services.AddSingleton<MainViewModel>();
