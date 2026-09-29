@@ -514,11 +514,13 @@
         <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}" />
         <Setter Property="FontFamily" Value="{StaticResource BodyFont}" />
         <Setter Property="FontSize" Value="12" />
+        <!-- A default a tooltip can override (the tweak help is wider). -->
+        <Setter Property="MaxWidth" Value="360" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
                     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="1" Padding="10,7" MaxWidth="360">
+                            BorderThickness="1" Padding="10,7">
                         <ContentPresenter>
                             <ContentPresenter.Resources>
                                 <Style TargetType="TextBlock">

@@ -183,9 +183,9 @@
     <value>перезагрузка</value>
     <comment>Badge: needs a restart</comment>
   </data>
-  <data name="Tweaks_HelpChanges" xml:space="preserve">
-    <value>Что меняется:</value>
-    <comment>Tooltip heading above the registry values / commands</comment>
+  <data name="Tweaks_HelpTechnical" xml:space="preserve">
+    <value>Технические изменения:</value>
+    <comment>Muted heading above registry values / commands at the bottom of the [?] tooltip</comment>
   </data>
   <data name="Tweaks_HelpRestart" xml:space="preserve">
     <value>Вступает в силу после перезагрузки.</value>
@@ -280,11 +280,19 @@
   <data name="Tweak_DiagTrack_Desc" xml:space="preserve">
     <value>Блокирует службы сбора данных DiagTrack и dmwappushservice и задаёт AllowTelemetry=0. Файлы не удаляются.</value>
   </data>
+  <data name="Tweak_DiagTrack_Help" xml:space="preserve">
+    <value>Отключает службы, которые собирают и отправляют в Microsoft диагностические данные: «Функциональные возможности для подключённых пользователей и телеметрия» (DiagTrack) и dmwappushservice. Меньше фоновой сетевой и дисковой активности, меньше данных уходит из системы. Минусы: перестают отправляться отчёты об ошибках; сама политика «уровень телеметрии 0» полностью действует только в Windows Enterprise и Education, в Home и Pro основной эффект дают отключённые службы.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_AdvertisingId_Title" xml:space="preserve">
     <value>Advertising ID</value>
   </data>
   <data name="Tweak_AdvertisingId_Desc" xml:space="preserve">
     <value>Отключает рекламный идентификатор для приложений.</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Help" xml:space="preserve">
+    <value>Отключает рекламный идентификатор — уникальный номер, по которому приложения из Microsoft Store подбирают рекламу под вас. Реклама в приложениях не исчезает, но перестаёт быть персональной. На работу Windows не влияет.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_Cortana_Title" xml:space="preserve">
     <value>Cortana</value>
@@ -292,11 +300,19 @@
   <data name="Tweak_Cortana_Desc" xml:space="preserve">
     <value>Блокирует Cortana через параметр AllowCortana в политиках Windows Search.</value>
   </data>
+  <data name="Tweak_Cortana_Help" xml:space="preserve">
+    <value>Запрещает голосовой помощник Cortana через политику поиска Windows: он не запускается и не держит память в фоне. Обычный поиск в меню «Пуск» продолжает работать. Минус: пропадают голосовые команды и подсказки Cortana.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Uac_Title" xml:space="preserve">
     <value>UAC (Контроль учётных записей)</value>
   </data>
   <data name="Tweak_Uac_Desc" xml:space="preserve">
     <value>Отключает контроль учётных записей. Требуется перезагрузка.</value>
+  </data>
+  <data name="Tweak_Uac_Help" xml:space="preserve">
+    <value>Полностью отключает окна с затемнением экрана, которые просят подтвердить запуск программ от имени администратора. Меньше прерываний при установке и настройке программ. Минусы: любая запущенная вами программа сразу получает права администратора, поэтому скачанные файлы нужно запускать осторожнее; при полностью отключённом UAC не открываются приложения из Microsoft Store (Фотографии, Калькулятор и другие).</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_BitLocker_Title" xml:space="preserve">
     <value>BitLocker</value>
@@ -304,11 +320,19 @@
   <data name="Tweak_BitLocker_Desc" xml:space="preserve">
     <value>Отключает шифрование BitLocker на всех томах через WMI (Win32_EncryptableVolume).</value>
   </data>
+  <data name="Tweak_BitLocker_Help" xml:space="preserve">
+    <value>Выключает шифрование BitLocker на всех дисках: снимает защиту ключа и запускает расшифровку в фоне. Больше не будет запроса ключа восстановления после обновления BIOS или замены комплектующих, пропадает небольшая нагрузка на процессор при работе с диском. Минус: при краже ноутбука или диска данные можно прочитать. Расшифровка большого диска может идти часами.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_DriverUpdates_Title" xml:space="preserve">
     <value>Обновление драйверов</value>
   </data>
   <data name="Tweak_DriverUpdates_Desc" xml:space="preserve">
     <value>Отключает принудительное обновление драйверов через Windows Update (групповые политики).</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Help" xml:space="preserve">
+    <value>Запрещает Windows Update самостоятельно устанавливать и обновлять драйверы. Полезно, если Windows заменяет ваш драйвер видеокарты, звука или тачпада более старым или «универсальным» и что-то перестаёт работать. Минус: новые драйверы придётся ставить вручную с сайтов производителей.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_Hibernation_Title" xml:space="preserve">
     <value>Гибернация</value>
@@ -316,11 +340,19 @@
   <data name="Tweak_Hibernation_Desc" xml:space="preserve">
     <value>Отключает гибернацию командой powercfg -h off (освобождает hiberfil.sys).</value>
   </data>
+  <data name="Tweak_Hibernation_Help" xml:space="preserve">
+    <value>Отключает гибернацию и удаляет файл hiberfil.sys, который занимает на системном диске заметную долю объёма оперативной памяти (обычно 40–75 %). Освобождает несколько гигабайт на SSD. Минусы: пропадает режим гибернации и «быстрый запуск» Windows, поэтому включение компьютера может стать немного дольше.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Animations_Title" xml:space="preserve">
     <value>Анимации Windows</value>
   </data>
   <data name="Tweak_Animations_Desc" xml:space="preserve">
     <value>Полностью отключает анимации и прозрачность интерфейса. Требуется перезапуск проводника.</value>
+  </data>
+  <data name="Tweak_Animations_Help" xml:space="preserve">
+    <value>Отключает анимацию открытия и сворачивания окон, анимацию панели задач и прозрачность. Интерфейс откликается мгновенно, на слабых компьютерах снижается нагрузка на видеокарту. Минус: Windows выглядит проще, без плавных переходов. Чтобы изменения стали видны, нужно перезапустить Проводник.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_MenuShowDelay_Title" xml:space="preserve">
     <value>MenuShowDelay</value>
@@ -328,11 +360,19 @@
   <data name="Tweak_MenuShowDelay_Desc" xml:space="preserve">
     <value>Устанавливает MenuShowDelay=0 для мгновенного отклика контекстных меню.</value>
   </data>
+  <data name="Tweak_MenuShowDelay_Help" xml:space="preserve">
+    <value>Убирает задержку перед раскрытием вложенных пунктов меню (по умолчанию 400 мс). Подменю в контекстных меню Проводника открываются сразу при наведении. Минус: подменю может раскрыться, если вы случайно провели по нему мышью.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Mpo_Title" xml:space="preserve">
     <value>MPO (Multi-Plane Overlay)</value>
   </data>
   <data name="Tweak_Mpo_Desc" xml:space="preserve">
     <value>Отключает MPO (OverlayTestMode=5 в ветке Dwm). Помогает от мерцания/артефактов.</value>
+  </data>
+  <data name="Tweak_Mpo_Help" xml:space="preserve">
+    <value>Отключает Multi-Plane Overlay (MPO) — механизм вывода изображения слоями. На части видеокарт NVIDIA и AMD MPO вызывает мерцание, чёрные вспышки, микрофризы и артефакты при просмотре видео или в играх в окне; отключение обычно их убирает. Минус: немного больше нагрузка на видеокарту в оконных режимах. Если таких проблем нет, включать не обязательно. Нужна перезагрузка.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_PowerThrottling_Title" xml:space="preserve">
     <value>Power Throttling</value>
@@ -340,11 +380,19 @@
   <data name="Tweak_PowerThrottling_Desc" xml:space="preserve">
     <value>Глобально отключает энергосбережение фоновых процессов (PowerThrottlingOff=1).</value>
   </data>
+  <data name="Tweak_PowerThrottling_Help" xml:space="preserve">
+    <value>Отключает Power Throttling — режим, в котором Windows снижает частоту процессора для программ в фоне. Свёрнутые рендер, архивация, загрузка или стрим больше не замедляются. Минус: на ноутбуке немного выше расход батареи и нагрев.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Hags_Title" xml:space="preserve">
     <value>HAGS (аппаратное планирование GPU)</value>
   </data>
   <data name="Tweak_Hags_Desc" xml:space="preserve">
     <value>Включает Hardware-accelerated GPU Scheduling (HwSchMode=2). Требуется перезагрузка.</value>
+  </data>
+  <data name="Tweak_Hags_Help" xml:space="preserve">
+    <value>Включает аппаратное планирование графического процессора (HAGS): видеокарта сама распределяет свою память и очередь задач. На современных видеокартах может снизить задержку и немного поднять FPS. Нужны драйвер с поддержкой (NVIDIA GTX 10xx и новее, AMD RX 5000 и новее) и перезагрузка; в отдельных играх и программах записи экрана бывают проблемы — тогда твик стоит отключить.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_NetworkThrottling_Title" xml:space="preserve">
     <value>NetworkThrottlingIndex</value>
@@ -352,11 +400,19 @@
   <data name="Tweak_NetworkThrottling_Desc" xml:space="preserve">
     <value>Снимает сетевые ограничения (NetworkThrottlingIndex=FFFFFFFF).</value>
   </data>
+  <data name="Tweak_NetworkThrottling_Help" xml:space="preserve">
+    <value>Снимает ограничение, из-за которого Windows урезает обработку сетевых пакетов, пока воспроизводится звук или видео (по умолчанию около 10 пакетов в миллисекунду). В онлайн-играх с включённой музыкой или голосовым чатом может уменьшить пинг и потери пакетов. Минус: при очень большом сетевом трафике чуть выше нагрузка на процессор.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_PowerPlan_Title" xml:space="preserve">
     <value>План электропитания</value>
   </data>
   <data name="Tweak_PowerPlan_Desc" xml:space="preserve">
     <value>Применяет план e9a42b02-… (Ultimate Performance) с предварительной проверкой.</value>
+  </data>
+  <data name="Tweak_PowerPlan_Help" xml:space="preserve">
+    <value>Включает схему электропитания «Максимальная производительность»: процессор не сбрасывает частоту и не «засыпает» между задачами, диски и USB не отключаются для экономии. Меньше задержек и микрофризов в играх и тяжёлых программах. Минусы: выше энергопотребление и нагрев, на ноутбуке быстрее садится батарея. При отмене возвращается прежняя схема.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_RawMouse_Title" xml:space="preserve">
     <value>Опрос мыши (RawMouseThrottleDuration)</value>
@@ -364,11 +420,19 @@
   <data name="Tweak_RawMouse_Desc" xml:space="preserve">
     <value>Устанавливает RawMouseThrottleDuration=50 (по гайду).</value>
   </data>
+  <data name="Tweak_RawMouse_Help" xml:space="preserve">
+    <value>Параметр из гайда: RawMouseThrottleDuration управляет тем, как часто Windows передаёт движения мыши с высокой частотой опроса фоновым окнам (появился в новых сборках Windows 11). Может снизить нагрузку на процессор от игровых мышей 1000–8000 Гц. На Windows 10 и старых сборках Windows 11, скорее всего, ни на что не влияет.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_UsbPower_Title" xml:space="preserve">
     <value>USB: энергосбережение</value>
   </data>
   <data name="Tweak_UsbPower_Desc" xml:space="preserve">
     <value>Отключает энергосбережение всех USB-контроллеров перебором дерева реестра.</value>
+  </data>
+  <data name="Tweak_UsbPower_Help" xml:space="preserve">
+    <value>Запрещает Windows отключать USB-контроллеры и устройства для экономии энергии. Помогает, если мышь, клавиатура, внешняя звуковая карта или геймпад «засыпают», отключаются или реагируют с задержкой после простоя. Минус: на ноутбуке немного выше расход батареи.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_GameDvr_Title" xml:space="preserve">
     <value>GameDVR и Xbox</value>
@@ -376,11 +440,19 @@
   <data name="Tweak_GameDvr_Desc" xml:space="preserve">
     <value>Глубоко отключает GameDVR, AppCaptureEnabled и службы Xbox.</value>
   </data>
+  <data name="Tweak_GameDvr_Help" xml:space="preserve">
+    <value>Отключает фоновую запись игр Windows (Xbox Game Bar / Game DVR) и вспомогательные службы Xbox. Освобождает ресурсы видеокарты и процессора: может поднять FPS и уменьшить задержку ввода (input lag). Минусы: перестают работать запись и скриншоты через Game Bar, а в играх из Xbox и Game Pass — вход, достижения и облачные сохранения.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_GameMode_Title" xml:space="preserve">
     <value>Игровой режим</value>
   </data>
   <data name="Tweak_GameMode_Desc" xml:space="preserve">
     <value>Включает Game Mode.</value>
+  </data>
+  <data name="Tweak_GameMode_Help" xml:space="preserve">
+    <value>Включает игровой режим Windows: пока идёт игра, система откладывает фоновые обновления и уведомления и отдаёт игре приоритет. Обычно он уже включён по умолчанию. Минусов почти нет; если в какой-то игре появились просадки, режим можно отключить.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_MouseAcceleration_Title" xml:space="preserve">
     <value>Акселерация мыши</value>
@@ -388,17 +460,29 @@
   <data name="Tweak_MouseAcceleration_Desc" xml:space="preserve">
     <value>Отключает ускорение указателя (MouseSpeed / MouseThreshold1/2 = 0).</value>
   </data>
+  <data name="Tweak_MouseAcceleration_Help" xml:space="preserve">
+    <value>Отключает «Повышенную точность установки указателя» — ускорение, при котором путь курсора зависит от скорости движения руки. Движение становится предсказуемым один к одному, что важно для точного прицеливания в играх. Минус: на большом мониторе в обычной работе может понадобиться поднять чувствительность мыши.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_GuidePack_Title" xml:space="preserve">
     <value>Совместимость с гайдами</value>
   </data>
   <data name="Tweak_GuidePack_Desc" xml:space="preserve">
     <value>Дополнительные настройки: приоритет переднего плана и мгновенный запуск автозагрузки.</value>
   </data>
+  <data name="Tweak_GuidePack_Help" xml:space="preserve">
+    <value>Два параметра из гайдов. Первый отдаёт больше процессорного времени активному окну, чем фоновым программам (короткие кванты с усилением для окна на переднем плане). Второй убирает задержку, с которой Windows запускает программы из автозагрузки после входа. Активное окно чуть отзывчивее, автозагрузка стартует сразу. Минус: первые секунды после входа в систему нагрузка выше.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Yandex_Title" xml:space="preserve">
     <value>Блокировка сервисов Яндекс</value>
   </data>
   <data name="Tweak_Yandex_Desc" xml:space="preserve">
     <value>Блокирует запуск процессов Яндекс (браузер, обновления, Диск, Алиса) через политику DisallowRun. Файлы не удаляются.</value>
+  </data>
+  <data name="Tweak_Yandex_Help" xml:space="preserve">
+    <value>Запрещает запуск программ Яндекса — браузера, его обновлений, Яндекс Диска и Punto Switcher — через политику Windows DisallowRun. Файлы не удаляются, программы просто не стартуют. Внимание: блокировка идёт по имени файла, поэтому под неё попадёт любой browser.exe, даже от другого разработчика.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Uwp_Title" xml:space="preserve">
     <value>ПРИЛОЖЕНИЯ UWP</value>

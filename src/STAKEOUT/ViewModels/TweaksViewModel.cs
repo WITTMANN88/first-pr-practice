@@ -51,21 +51,25 @@ public sealed class TweakItemViewModel : ViewModelBase
     public bool AppliedOutside => _status.AppliedOutside;
 
     /// <summary>
-    /// The [?] tooltip: what exactly changes (the description is already on the
-    /// row), when it takes effect and how to undo it.
+    /// Main text of the [?] tooltip, in plain words: what the tweak does, its
+    /// pros and cons, when it takes effect and how to undo it.
     /// </summary>
     public string HelpText
     {
         get
         {
-            var parts = new List<string>();
-            if (!string.IsNullOrWhiteSpace(_tweak.Details)) parts.Add(Strings.Tweaks_HelpChanges + "\n" + _tweak.Details);
+            var parts = new List<string> { _tweak.ExtendedDescription };
             if (RequiresRestart) parts.Add(Strings.Tweaks_HelpRestart);
             if (RequiresExplorerRestart) parts.Add(Strings.Tweaks_HelpExplorer);
             parts.Add(AppliedOutside ? Strings.Tweaks_HelpOutside : Strings.Tweaks_HelpRevert);
-            return string.Join("\n\n", parts);
+            return string.Join("\n\n", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
         }
     }
+
+    /// <summary>Registry values / commands, shown muted at the bottom of the tooltip ("" when none).</summary>
+    public string HelpTechnical => _tweak.Details;
+
+    public bool HasHelpTechnical => !string.IsNullOrWhiteSpace(_tweak.Details);
 
     public bool Busy
     {

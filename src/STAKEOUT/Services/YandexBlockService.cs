@@ -46,6 +46,7 @@ public sealed class YandexBlockService : ITweak
     public string Id => "yandex";
     public string Title => Strings.Tweak_Yandex_Title;
     public string Description => Strings.Tweak_Yandex_Desc;
+    public string ExtendedDescription => Strings.Tweak_Yandex_Help;
     /// <summary>Entries are numbered after any existing ones, hence "&lt;n&gt;".</summary>
     public string Details { get; } = TweakDetails.Join(
         TweakDetails.Registry(new[] { new RegistryOp(HKCU, PolicyKey, "DisallowRun", 1, RegValueKind.DWord) }),

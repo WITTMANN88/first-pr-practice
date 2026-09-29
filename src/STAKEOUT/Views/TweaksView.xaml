@@ -92,19 +92,31 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Title}" Style="{StaticResource Body}"
                                                                FontWeight="SemiBold" />
-                                                    <!-- [?] help with delayed tooltip: what exactly changes
-                                                         (the description is already on the row) -->
+                                                    <!-- [?] help with delayed tooltip: a plain-language explanation
+                                                         first (pros, cons, how to undo), the registry values /
+                                                         commands last, smaller and muted. -->
                                                     <Border Width="16" Height="16" Margin="8,0,0,0" CornerRadius="8"
                                                             Background="{StaticResource HoverBrush}"
                                                             ToolTipService.InitialShowDelay="300"
-                                                            ToolTipService.ShowDuration="8000">
+                                                            ToolTipService.ShowDuration="60000">
                                                         <TextBlock Text="?" Foreground="{StaticResource TextSecondaryBrush}"
                                                                    FontSize="11" HorizontalAlignment="Center"
                                                                    VerticalAlignment="Center" />
                                                         <Border.ToolTip>
-                                                            <ToolTip MaxWidth="480">
-                                                                <TextBlock Text="{Binding HelpText}" TextWrapping="Wrap"
-                                                                           Foreground="{StaticResource TextPrimaryBrush}" />
+                                                            <ToolTip MaxWidth="440">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding HelpText}" TextWrapping="Wrap"
+                                                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                                                    <StackPanel Margin="0,12,0,0"
+                                                                                Visibility="{Binding HasHelpTechnical, Converter={StaticResource BoolToVis}}">
+                                                                        <TextBlock Text="{x:Static loc:Strings.Tweaks_HelpTechnical}"
+                                                                                   FontSize="11" FontWeight="SemiBold"
+                                                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                        <TextBlock Text="{Binding HelpTechnical}" TextWrapping="Wrap"
+                                                                                   FontFamily="Consolas, Courier New" FontSize="11" Margin="0,2,0,0"
+                                                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                    </StackPanel>
+                                                                </StackPanel>
                                                             </ToolTip>
                                                         </Border.ToolTip>
                                                     </Border>

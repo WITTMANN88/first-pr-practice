@@ -183,9 +183,9 @@
     <value>reboot</value>
     <comment>Badge: needs a restart</comment>
   </data>
-  <data name="Tweaks_HelpChanges" xml:space="preserve">
-    <value>What changes:</value>
-    <comment>Tooltip heading above the registry values / commands</comment>
+  <data name="Tweaks_HelpTechnical" xml:space="preserve">
+    <value>Technical changes:</value>
+    <comment>Muted heading above registry values / commands at the bottom of the [?] tooltip</comment>
   </data>
   <data name="Tweaks_HelpRestart" xml:space="preserve">
     <value>Takes effect after a restart.</value>
@@ -280,11 +280,19 @@ Continue?</value>
   <data name="Tweak_DiagTrack_Desc" xml:space="preserve">
     <value>Blocks the DiagTrack and dmwappushservice data-collection services and sets AllowTelemetry=0. No files are deleted.</value>
   </data>
+  <data name="Tweak_DiagTrack_Help" xml:space="preserve">
+    <value>Turns off the services that collect diagnostic data and send it to Microsoft: Connected User Experiences and Telemetry (DiagTrack) and dmwappushservice. Less background network and disk activity, less data leaves the PC. Downsides: error reports are no longer sent; the "telemetry level 0" policy itself is fully honoured only by Windows Enterprise and Education, on Home and Pro the stopped services do the work.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_AdvertisingId_Title" xml:space="preserve">
     <value>Advertising ID</value>
   </data>
   <data name="Tweak_AdvertisingId_Desc" xml:space="preserve">
     <value>Turns off the advertising ID used by apps.</value>
+  </data>
+  <data name="Tweak_AdvertisingId_Help" xml:space="preserve">
+    <value>Turns off the advertising ID, a unique number Microsoft Store apps use to tailor ads to you. Ads in apps remain, but are no longer personalised. No effect on how Windows works.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_Cortana_Title" xml:space="preserve">
     <value>Cortana</value>
@@ -292,11 +300,19 @@ Continue?</value>
   <data name="Tweak_Cortana_Desc" xml:space="preserve">
     <value>Blocks Cortana via the AllowCortana Windows Search policy.</value>
   </data>
+  <data name="Tweak_Cortana_Help" xml:space="preserve">
+    <value>Disables the Cortana voice assistant through the Windows Search policy: it no longer starts or holds memory in the background. The regular Start menu search keeps working. Downside: Cortana's voice commands and suggestions are gone.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Uac_Title" xml:space="preserve">
     <value>UAC (User Account Control)</value>
   </data>
   <data name="Tweak_Uac_Desc" xml:space="preserve">
     <value>Turns off User Account Control. Requires a restart.</value>
+  </data>
+  <data name="Tweak_Uac_Help" xml:space="preserve">
+    <value>Completely turns off the dimmed-screen prompts that ask you to confirm running programs as administrator. Fewer interruptions when installing and configuring software. Downsides: every program you start gets administrator rights at once, so be more careful with downloaded files; with UAC fully off, Microsoft Store apps (Photos, Calculator and others) will not open.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_BitLocker_Title" xml:space="preserve">
     <value>BitLocker</value>
@@ -304,11 +320,19 @@ Continue?</value>
   <data name="Tweak_BitLocker_Desc" xml:space="preserve">
     <value>Turns off BitLocker encryption on all volumes via WMI (Win32_EncryptableVolume).</value>
   </data>
+  <data name="Tweak_BitLocker_Help" xml:space="preserve">
+    <value>Turns BitLocker encryption off on every drive: removes the key protectors and starts decryption in the background. No more recovery-key prompts after a BIOS update or hardware change, and the small CPU cost of disk encryption goes away. Downside: if the laptop or drive is stolen, the data can be read. Decrypting a large drive can take hours.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_DriverUpdates_Title" xml:space="preserve">
     <value>Driver updates</value>
   </data>
   <data name="Tweak_DriverUpdates_Desc" xml:space="preserve">
     <value>Stops Windows Update from force-installing drivers (group policies).</value>
+  </data>
+  <data name="Tweak_DriverUpdates_Help" xml:space="preserve">
+    <value>Stops Windows Update from installing and updating drivers on its own. Useful when Windows replaces your graphics, audio or touchpad driver with an older or generic one and something breaks. Downside: you install new drivers yourself from the manufacturers' sites.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_Hibernation_Title" xml:space="preserve">
     <value>Hibernation</value>
@@ -316,11 +340,19 @@ Continue?</value>
   <data name="Tweak_Hibernation_Desc" xml:space="preserve">
     <value>Turns off hibernation with powercfg -h off (frees hiberfil.sys).</value>
   </data>
+  <data name="Tweak_Hibernation_Help" xml:space="preserve">
+    <value>Turns hibernation off and deletes hiberfil.sys, which takes a sizeable share of your RAM size on the system drive (usually 40–75 %). Frees several gigabytes on the SSD. Downsides: hibernation and Windows Fast Startup are gone, so booting may take a little longer.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Animations_Title" xml:space="preserve">
     <value>Windows animations</value>
   </data>
   <data name="Tweak_Animations_Desc" xml:space="preserve">
     <value>Turns off all UI animations and transparency. Requires restarting Explorer.</value>
+  </data>
+  <data name="Tweak_Animations_Help" xml:space="preserve">
+    <value>Turns off window open and minimise animations, taskbar animations and transparency. The interface responds instantly, and on weak PCs the graphics load drops. Downside: Windows looks plainer, without smooth transitions. Explorer must restart for the change to show.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_MenuShowDelay_Title" xml:space="preserve">
     <value>MenuShowDelay</value>
@@ -328,11 +360,19 @@ Continue?</value>
   <data name="Tweak_MenuShowDelay_Desc" xml:space="preserve">
     <value>Sets MenuShowDelay=0 so context menus open instantly.</value>
   </data>
+  <data name="Tweak_MenuShowDelay_Help" xml:space="preserve">
+    <value>Removes the delay before nested menu items open (400 ms by default). Submenus in Explorer's context menus open as soon as you hover them. Downside: a submenu may pop open when the mouse merely passes over it.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Mpo_Title" xml:space="preserve">
     <value>MPO (Multi-Plane Overlay)</value>
   </data>
   <data name="Tweak_Mpo_Desc" xml:space="preserve">
     <value>Turns off MPO (OverlayTestMode=5 under Dwm). Helps with flicker and artifacts.</value>
+  </data>
+  <data name="Tweak_Mpo_Help" xml:space="preserve">
+    <value>Turns off Multi-Plane Overlay (MPO), a layered way of putting the picture on screen. On some NVIDIA and AMD cards MPO causes flicker, black flashes, stutter and artefacts in videos and windowed games; turning it off usually cures them. Downside: slightly more GPU load in windowed modes. If you have no such problems, you do not need it. Requires a restart.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_PowerThrottling_Title" xml:space="preserve">
     <value>Power Throttling</value>
@@ -340,11 +380,19 @@ Continue?</value>
   <data name="Tweak_PowerThrottling_Desc" xml:space="preserve">
     <value>Turns off power throttling of background processes globally (PowerThrottlingOff=1).</value>
   </data>
+  <data name="Tweak_PowerThrottling_Help" xml:space="preserve">
+    <value>Turns off Power Throttling, where Windows lowers CPU speed for background programs. Minimised rendering, archiving, downloading or streaming no longer slows down. Downside: on a laptop, slightly more battery drain and heat.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Hags_Title" xml:space="preserve">
     <value>HAGS (hardware GPU scheduling)</value>
   </data>
   <data name="Tweak_Hags_Desc" xml:space="preserve">
     <value>Turns on Hardware-accelerated GPU Scheduling (HwSchMode=2). Requires a restart.</value>
+  </data>
+  <data name="Tweak_Hags_Help" xml:space="preserve">
+    <value>Turns on hardware-accelerated GPU scheduling (HAGS): the graphics card manages its own memory and task queue. On modern cards it may lower latency and raise FPS slightly. Needs a supporting driver (NVIDIA GTX 10xx or newer, AMD RX 5000 or newer) and a restart; a few games and screen recorders misbehave with it, in which case turn it off.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_NetworkThrottling_Title" xml:space="preserve">
     <value>NetworkThrottlingIndex</value>
@@ -352,11 +400,19 @@ Continue?</value>
   <data name="Tweak_NetworkThrottling_Desc" xml:space="preserve">
     <value>Removes network throttling (NetworkThrottlingIndex=FFFFFFFF).</value>
   </data>
+  <data name="Tweak_NetworkThrottling_Help" xml:space="preserve">
+    <value>Removes the limit that makes Windows cut back network packet processing while audio or video plays (about 10 packets per millisecond by default). In online games with music or voice chat running it may lower ping and packet loss. Downside: slightly higher CPU load under very heavy network traffic.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_PowerPlan_Title" xml:space="preserve">
     <value>Power plan</value>
   </data>
   <data name="Tweak_PowerPlan_Desc" xml:space="preserve">
     <value>Applies the e9a42b02-… (Ultimate Performance) plan after checking the current one.</value>
+  </data>
+  <data name="Tweak_PowerPlan_Help" xml:space="preserve">
+    <value>Switches to the Ultimate Performance power plan: the CPU does not drop its clock or doze between tasks, and drives and USB are not powered down to save energy. Less latency and stutter in games and heavy programs. Downsides: more power draw and heat, faster battery drain on a laptop. Undoing it brings back your previous plan.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_RawMouse_Title" xml:space="preserve">
     <value>Mouse polling (RawMouseThrottleDuration)</value>
@@ -364,11 +420,19 @@ Continue?</value>
   <data name="Tweak_RawMouse_Desc" xml:space="preserve">
     <value>Sets RawMouseThrottleDuration=50 (per the guide).</value>
   </data>
+  <data name="Tweak_RawMouse_Help" xml:space="preserve">
+    <value>A setting from the guide: RawMouseThrottleDuration controls how often Windows passes high-polling-rate mouse movement to background windows (added in recent Windows 11 builds). May reduce the CPU load of 1000–8000 Hz gaming mice. On Windows 10 and older Windows 11 builds it most likely has no effect.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_UsbPower_Title" xml:space="preserve">
     <value>USB power saving</value>
   </data>
   <data name="Tweak_UsbPower_Desc" xml:space="preserve">
     <value>Turns off power saving on every USB controller by walking the registry device tree.</value>
+  </data>
+  <data name="Tweak_UsbPower_Help" xml:space="preserve">
+    <value>Stops Windows from powering down USB controllers and devices to save energy. Helps when a mouse, keyboard, external sound card or gamepad dozes off, disconnects or lags after being idle. Downside: slightly more battery drain on a laptop.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_GameDvr_Title" xml:space="preserve">
     <value>GameDVR and Xbox</value>
@@ -376,11 +440,19 @@ Continue?</value>
   <data name="Tweak_GameDvr_Desc" xml:space="preserve">
     <value>Fully turns off GameDVR, AppCaptureEnabled and the Xbox services.</value>
   </data>
+  <data name="Tweak_GameDvr_Help" xml:space="preserve">
+    <value>Turns off Windows background game recording (Xbox Game Bar / Game DVR) and the Xbox helper services. Frees GPU and CPU resources: may raise FPS and lower input lag. Downsides: Game Bar recording and screenshots stop working, and in Xbox and Game Pass games so do sign-in, achievements and cloud saves.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_GameMode_Title" xml:space="preserve">
     <value>Game Mode</value>
   </data>
   <data name="Tweak_GameMode_Desc" xml:space="preserve">
     <value>Turns on Game Mode.</value>
+  </data>
+  <data name="Tweak_GameMode_Help" xml:space="preserve">
+    <value>Turns on Windows Game Mode: while a game runs, the system postpones background updates and notifications and gives the game priority. It is usually on by default already. Hardly any downside; if a game starts stuttering, turn it off.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Tweak_MouseAcceleration_Title" xml:space="preserve">
     <value>Mouse acceleration</value>
@@ -388,17 +460,29 @@ Continue?</value>
   <data name="Tweak_MouseAcceleration_Desc" xml:space="preserve">
     <value>Turns off pointer acceleration (MouseSpeed / MouseThreshold1/2 = 0).</value>
   </data>
+  <data name="Tweak_MouseAcceleration_Help" xml:space="preserve">
+    <value>Turns off "Enhance pointer precision", the acceleration that makes cursor travel depend on how fast you move your hand. Movement becomes predictable one-to-one, which matters for precise aiming in games. Downside: on a large monitor you may need to raise mouse sensitivity for everyday work.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_GuidePack_Title" xml:space="preserve">
     <value>Guide compatibility</value>
   </data>
   <data name="Tweak_GuidePack_Desc" xml:space="preserve">
     <value>Extra settings: foreground priority and no startup delay.</value>
   </data>
+  <data name="Tweak_GuidePack_Help" xml:space="preserve">
+    <value>Two settings from the guides. The first gives the active window more CPU time than background programs (short time slices with a boost for the foreground window). The second removes the delay before Windows starts startup programs after sign-in. The active window feels a little snappier and startup programs launch at once. Downside: higher load in the first seconds after sign-in.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
+  </data>
   <data name="Tweak_Yandex_Title" xml:space="preserve">
     <value>Block Yandex services</value>
   </data>
   <data name="Tweak_Yandex_Desc" xml:space="preserve">
     <value>Blocks Yandex processes (browser, updaters, Disk, Alice) via the DisallowRun policy. No files are deleted.</value>
+  </data>
+  <data name="Tweak_Yandex_Help" xml:space="preserve">
+    <value>Blocks Yandex programs (the browser, its updaters, Yandex Disk and Punto Switcher) from starting via the Windows DisallowRun policy. No files are deleted; the programs simply do not start. Note: the block works by file name, so any browser.exe is blocked, even one from another vendor.</value>
+    <comment>[?] tooltip: what it does, pros and cons, in plain words</comment>
   </data>
   <data name="Uwp_Title" xml:space="preserve">
     <value>UWP APPS</value>

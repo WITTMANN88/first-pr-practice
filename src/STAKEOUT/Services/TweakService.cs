@@ -136,7 +136,7 @@ public sealed class TweakService
         // Block telemetry collection services WITHOUT deleting any files: set the
         // service Start type to 4 (Disabled) and the DataCollection policy to 0,
         // then stop the running service. Reverting restores the prior Start type.
-        Act(new TweakInfo("diagtrack", Strings.Tweak_DiagTrack_Title, Strings.Tweak_DiagTrack_Desc, TweakCategory.Privacy,
+        Act(new TweakInfo("diagtrack", Strings.Tweak_DiagTrack_Title, Strings.Tweak_DiagTrack_Desc, Strings.Tweak_DiagTrack_Help, TweakCategory.Privacy,
                 Details: TweakDetails.Join(TweakDetails.Registry(DiagTrackOps), "sc stop DiagTrack")),
             apply: async s =>
             {
@@ -149,25 +149,25 @@ public sealed class TweakService
             detect: () => _rollback.AllMatch(DiagTrackOps)),
 
         // Advertising ID off (machine policy + current-user switch).
-        Reg(new TweakInfo("advid", Strings.Tweak_AdvertisingId_Title, Strings.Tweak_AdvertisingId_Desc, TweakCategory.Privacy),
+        Reg(new TweakInfo("advid", Strings.Tweak_AdvertisingId_Title, Strings.Tweak_AdvertisingId_Desc, Strings.Tweak_AdvertisingId_Help, TweakCategory.Privacy),
             new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo", "DisabledByGroupPolicy", 1, RegValueKind.DWord),
             new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\AdvertisingInfo", "Enabled", 0, RegValueKind.DWord)),
 
         // Cortana off via Windows Search policy.
-        Reg(new TweakInfo("cortana", Strings.Tweak_Cortana_Title, Strings.Tweak_Cortana_Desc, TweakCategory.Privacy),
+        Reg(new TweakInfo("cortana", Strings.Tweak_Cortana_Title, Strings.Tweak_Cortana_Desc, Strings.Tweak_Cortana_Help, TweakCategory.Privacy),
             new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\Windows Search", "AllowCortana", 0, RegValueKind.DWord)),
 
         // ---- Security -----------------------------------------------------
 
         // UAC off. EnableLUA=0 needs a reboot to take effect.
-        Reg(new TweakInfo("uac", Strings.Tweak_Uac_Title, Strings.Tweak_Uac_Desc, TweakCategory.Security,
+        Reg(new TweakInfo("uac", Strings.Tweak_Uac_Title, Strings.Tweak_Uac_Desc, Strings.Tweak_Uac_Help, TweakCategory.Security,
                 Destructive: true, RequiresRestart: true),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "EnableLUA", 0, RegValueKind.DWord),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "ConsentPromptBehaviorAdmin", 0, RegValueKind.DWord),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "PromptOnSecureDesktop", 0, RegValueKind.DWord)),
 
         // BitLocker off via WMI encryption classes (more control than manage-bde).
-        Act(new TweakInfo("bitlocker", Strings.Tweak_BitLocker_Title, Strings.Tweak_BitLocker_Desc, TweakCategory.Security,
+        Act(new TweakInfo("bitlocker", Strings.Tweak_BitLocker_Title, Strings.Tweak_BitLocker_Desc, Strings.Tweak_BitLocker_Help, TweakCategory.Security,
                 Destructive: true,
                 Details: "WMI root\\CIMV2\\Security\\MicrosoftVolumeEncryption\n  Win32_EncryptableVolume: DisableKeyProtectors, Decrypt"),
             apply: _ => Task.Run(() => SetBitLocker(decrypt: true)),
@@ -177,13 +177,13 @@ public sealed class TweakService
         // ---- System -------------------------------------------------------
 
         // Disable forced driver updates via local group policy (revertible by hand too).
-        Reg(new TweakInfo("drvupd", Strings.Tweak_DriverUpdates_Title, Strings.Tweak_DriverUpdates_Desc, TweakCategory.System),
+        Reg(new TweakInfo("drvupd", Strings.Tweak_DriverUpdates_Title, Strings.Tweak_DriverUpdates_Desc, Strings.Tweak_DriverUpdates_Help, TweakCategory.System),
             new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUDriversInQualityUpdate", 1, RegValueKind.DWord),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\CurrentVersion\DriverSearching", "SearchOrderConfig", 0, RegValueKind.DWord),
             new RegistryOp(HKLM, @"SOFTWARE\Policies\Microsoft\Windows\DeviceInstall\Settings", "PreventDeviceMetadataFromNetwork", 1, RegValueKind.DWord)),
 
         // Hibernation off via the hidden powercfg command.
-        Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, TweakCategory.System,
+        Act(new TweakInfo("hibernate", Strings.Tweak_Hibernation_Title, Strings.Tweak_Hibernation_Desc, Strings.Tweak_Hibernation_Help, TweakCategory.System,
                 Details: "powercfg -h off"),
             apply: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h off")).Success,
             revert: async _ => (await ProcessRunner.RunAsync(SystemTools.PowerCfg, "-h on")).Success,
@@ -191,7 +191,7 @@ public sealed class TweakService
             detect: () => _rollback.Matches(HibernateOffOp)),
 
         // Windows animations + transparency off.
-        Reg(new TweakInfo("animations", Strings.Tweak_Animations_Title, Strings.Tweak_Animations_Desc, TweakCategory.Interface,
+        Reg(new TweakInfo("animations", Strings.Tweak_Animations_Title, Strings.Tweak_Animations_Desc, Strings.Tweak_Animations_Help, TweakCategory.Interface,
                 RequiresExplorerRestart: true),
             new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects", "VisualFXSetting", 3, RegValueKind.DWord),
             new RegistryOp(HKCU, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize", "EnableTransparency", 0, RegValueKind.DWord),
@@ -199,32 +199,32 @@ public sealed class TweakService
             new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "TaskbarAnimations", 0, RegValueKind.DWord)),
 
         // Instant context menus.
-        Reg(new TweakInfo("menudelay", Strings.Tweak_MenuShowDelay_Title, Strings.Tweak_MenuShowDelay_Desc, TweakCategory.Interface,
+        Reg(new TweakInfo("menudelay", Strings.Tweak_MenuShowDelay_Title, Strings.Tweak_MenuShowDelay_Desc, Strings.Tweak_MenuShowDelay_Help, TweakCategory.Interface,
                 RequiresExplorerRestart: true),
             new RegistryOp(HKCU, @"Control Panel\Desktop", "MenuShowDelay", "0", RegValueKind.String)),
 
         // ---- Performance --------------------------------------------------
 
         // MPO (Multi-Plane Overlay) off — OverlayTestMode=5 under Dwm.
-        Reg(new TweakInfo("mpo", Strings.Tweak_Mpo_Title, Strings.Tweak_Mpo_Desc, TweakCategory.Performance,
+        Reg(new TweakInfo("mpo", Strings.Tweak_Mpo_Title, Strings.Tweak_Mpo_Desc, Strings.Tweak_Mpo_Help, TweakCategory.Performance,
                 Destructive: true, RequiresRestart: true),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows\Dwm", "OverlayTestMode", 5, RegValueKind.DWord)),
 
         // Power Throttling off globally.
-        Reg(new TweakInfo("powerthrottle", Strings.Tweak_PowerThrottling_Title, Strings.Tweak_PowerThrottling_Desc, TweakCategory.Performance),
+        Reg(new TweakInfo("powerthrottle", Strings.Tweak_PowerThrottling_Title, Strings.Tweak_PowerThrottling_Desc, Strings.Tweak_PowerThrottling_Help, TweakCategory.Performance),
             new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", 1, RegValueKind.DWord)),
 
         // HAGS on — needs a reboot; UI shows the warning.
-        Reg(new TweakInfo("hags", Strings.Tweak_Hags_Title, Strings.Tweak_Hags_Desc, TweakCategory.Performance,
+        Reg(new TweakInfo("hags", Strings.Tweak_Hags_Title, Strings.Tweak_Hags_Desc, Strings.Tweak_Hags_Help, TweakCategory.Performance,
                 RequiresRestart: true),
             new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", 2, RegValueKind.DWord)),
 
         // Network throttling off — index 0xFFFFFFFF removes the limit entirely.
-        Reg(new TweakInfo("netthrottle", Strings.Tweak_NetworkThrottling_Title, Strings.Tweak_NetworkThrottling_Desc, TweakCategory.Performance),
+        Reg(new TweakInfo("netthrottle", Strings.Tweak_NetworkThrottling_Title, Strings.Tweak_NetworkThrottling_Desc, Strings.Tweak_NetworkThrottling_Help, TweakCategory.Performance),
             new RegistryOp(HKLM, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegValueKind.DWord)),
 
         // Custom power plan: duplicate the Ultimate Performance scheme and activate it.
-        Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, TweakCategory.Performance,
+        Act(new TweakInfo("powerplan", Strings.Tweak_PowerPlan_Title, Strings.Tweak_PowerPlan_Desc, Strings.Tweak_PowerPlan_Help, TweakCategory.Performance,
                 Details: $"powercfg -duplicatescheme {UltimateGuid}\npowercfg /setactive <GUID>"),
             apply: ApplyPowerPlan,
             revert: RevertPowerPlan,
@@ -236,14 +236,14 @@ public sealed class TweakService
         // Panel\Mouse is the working assumption. This tweak is wrapped in its
         // own try/catch with verbose logging so a wrong path (or a locked key)
         // never breaks the rest of the catalogue and is traceable in the log.
-        Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, TweakCategory.Performance,
+        Act(new TweakInfo("rawmouse", Strings.Tweak_RawMouse_Title, Strings.Tweak_RawMouse_Desc, Strings.Tweak_RawMouse_Help, TweakCategory.Performance,
                 Details: TweakDetails.Registry(new[] { RawMouseOp })),
             apply: ApplyRawMouse,
             revert: RestoreAllAsync,
             detect: () => _rollback.Matches(RawMouseOp)),
 
         // USB power saving off — programmatic walk of the USB device tree.
-        Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, TweakCategory.Performance,
+        Act(new TweakInfo("usbpower", Strings.Tweak_UsbPower_Title, Strings.Tweak_UsbPower_Desc, Strings.Tweak_UsbPower_Help, TweakCategory.Performance,
                 Details: TweakDetails.Join(
                     TweakDetails.Key(HKLM, UsbEnumRoot + @"\*\*\Device Parameters",
                         UsbPowerFlags.Select(f => f + " = 0").Append(Strings.Tweaks_DetailsExistingOnly).ToArray()),
@@ -257,25 +257,25 @@ public sealed class TweakService
 
         // GameDVR + Xbox deep block.
         // Xbox helper services are disabled too (Start=4); reverting restores prior Start.
-        Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, TweakCategory.Gaming,
+        Act(new TweakInfo("gamedvr", Strings.Tweak_GameDvr_Title, Strings.Tweak_GameDvr_Desc, Strings.Tweak_GameDvr_Help, TweakCategory.Gaming,
                 Details: TweakDetails.Registry(GameDvrOps)),
             apply: s => Task.Run(() => CaptureAndSetAll(s, GameDvrOps)),
             revert: RestoreAllAsync,
             detect: () => _rollback.AllMatch(GameDvrOps)),
 
         // Game Mode on.
-        Reg(new TweakInfo("gamemode", Strings.Tweak_GameMode_Title, Strings.Tweak_GameMode_Desc, TweakCategory.Gaming),
+        Reg(new TweakInfo("gamemode", Strings.Tweak_GameMode_Title, Strings.Tweak_GameMode_Desc, Strings.Tweak_GameMode_Help, TweakCategory.Gaming),
             new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AutoGameModeEnabled", 1, RegValueKind.DWord),
             new RegistryOp(HKCU, @"Software\Microsoft\GameBar", "AllowAutoGameMode", 1, RegValueKind.DWord)),
 
         // Mouse acceleration off.
-        Reg(new TweakInfo("mouseaccel", Strings.Tweak_MouseAcceleration_Title, Strings.Tweak_MouseAcceleration_Desc, TweakCategory.Gaming),
+        Reg(new TweakInfo("mouseaccel", Strings.Tweak_MouseAcceleration_Title, Strings.Tweak_MouseAcceleration_Desc, Strings.Tweak_MouseAcceleration_Help, TweakCategory.Gaming),
             new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseSpeed", "0", RegValueKind.String),
             new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold1", "0", RegValueKind.String),
             new RegistryOp(HKCU, @"Control Panel\Mouse", "MouseThreshold2", "0", RegValueKind.String)),
 
         // Extra guide-compatibility tweaks ("Легендарная установка", "Лучшая настройка").
-        Reg(new TweakInfo("guidepack", Strings.Tweak_GuidePack_Title, Strings.Tweak_GuidePack_Desc, TweakCategory.System),
+        Reg(new TweakInfo("guidepack", Strings.Tweak_GuidePack_Title, Strings.Tweak_GuidePack_Desc, Strings.Tweak_GuidePack_Help, TweakCategory.System),
             // Favor foreground app (0x26 = short, variable, high foreground boost).
             new RegistryOp(HKLM, @"SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 0x26, RegValueKind.DWord),
             new RegistryOp(HKCU, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize", "StartupDelayInMSec", 0, RegValueKind.DWord)),

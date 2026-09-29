@@ -9,6 +9,8 @@ public interface ITweak
     string Id { get; }
     string Title { get; }
     string Description { get; }
+    /// <summary>Plain-language explanation for the [?] tooltip: what it does, pros and cons.</summary>
+    string ExtendedDescription { get; }
     /// <summary>What exactly changes (registry values, commands), shown in the help tooltip.</summary>
     string Details { get; }
     TweakCategory Category { get; }
@@ -68,7 +70,7 @@ internal static class TweakProbe
 /// is required for action tweaks; a registry tweak derives it from its writes.
 /// </summary>
 public sealed record TweakInfo(
-    string Id, string Title, string Description, TweakCategory Category,
+    string Id, string Title, string Description, string ExtendedDescription, TweakCategory Category,
     bool Destructive = false, bool RequiresRestart = false, bool RequiresExplorerRestart = false,
     string? Details = null);
 
@@ -97,6 +99,7 @@ public sealed class RegistryTweak : ITweak
     public string Id => _info.Id;
     public string Title => _info.Title;
     public string Description => _info.Description;
+    public string ExtendedDescription => _info.ExtendedDescription;
     public string Details { get; }
     public TweakCategory Category => _info.Category;
     public bool IsDestructive => _info.Destructive;
@@ -179,6 +182,7 @@ public sealed class ActionTweak : ITweak
     public string Id => _info.Id;
     public string Title => _info.Title;
     public string Description => _info.Description;
+    public string ExtendedDescription => _info.ExtendedDescription;
     public string Details => _info.Details ?? "";
     public TweakCategory Category => _info.Category;
     public bool IsDestructive => _info.Destructive;
