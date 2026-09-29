@@ -92,12 +92,26 @@
     <TrimmerRootDescriptor Include="Trimming\TrimmerRoots.xml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Startup splash emblem. Build action "Resource": compiled into the WPF
+         .g.resources blob, so it survives single-file, Lite and Trimmed publishing
+         (pack://application:,,,/Assets/CustomSplash.png). Conditional so a
+         checkout without the file still builds (the splash then shows the name
+         only; see WarnMissingSplash). -->
+    <Resource Include="Assets\CustomSplash.png" Condition="Exists('$(MSBuildProjectDirectory)\Assets\CustomSplash.png')" />
+  </ItemGroup>
+
   <Target Name="ValidateStakeoutFlavor" BeforeTargets="Restore;BeforeBuild"
           Condition="'$(StakeoutFlavor)' != '' and '$(StakeoutFlavor)' != 'Lite' and '$(StakeoutFlavor)' != 'Trimmed'">
     <Error Text="Unknown StakeoutFlavor '$(StakeoutFlavor)'. Use Lite, Trimmed, or omit it." />
   </Target>
   <Target Name="WarnExperimentalTrim" BeforeTargets="BeforeBuild" Condition="'$(StakeoutFlavor)' == 'Trimmed'">
     <Warning Text="EXPERIMENTAL trimmed WPF build (NETSDK1168 suppressed). Unsupported by Microsoft; verify on Windows before use." />
+  </Target>
+
+  <Target Name="WarnMissingSplash" BeforeTargets="BeforeBuild"
+          Condition="!Exists('$(MSBuildProjectDirectory)\Assets\CustomSplash.png')">
+    <Warning Text="Assets\CustomSplash.png not found: the startup splash will show the name without the emblem." />
   </Target>
 
   <!-- Surface a missing font at build time instead of silently falling back. -->

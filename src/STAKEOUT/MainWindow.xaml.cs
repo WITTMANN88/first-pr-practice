@@ -1,10 +1,13 @@
 using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Stakeout.Core;
 using Stakeout.Infrastructure;
 using Stakeout.Localization;
 using Stakeout.ViewModels;
@@ -21,6 +24,7 @@ public partial class MainWindow : Window
     public MainWindow(MainViewModel vm)
     {
         InitializeComponent();
+        LoadSplashImage();
         MaximizedWindowHook.Attach(this);
         _vm = vm;
         DataContext = _vm;
@@ -44,14 +48,49 @@ public partial class MainWindow : Window
         _vm.Shutdown();
     }
 
+    /// <summary>The splash emblem, compiled into the exe as a WPF Resource (see STAKEOUT.csproj).</summary>
+    private static readonly Uri SplashImageUri = new("pack://application:,,,/Assets/CustomSplash.png", UriKind.Absolute);
+
+    private static readonly TimeSpan SplashFadeIn = TimeSpan.FromMilliseconds(450);
+    private static readonly TimeSpan SplashHold = TimeSpan.FromMilliseconds(1200);
+
+    /// <summary>
+    /// Decode the emblem at the size it is shown (520 DIP, doubled for high DPI)
+    /// rather than its full 2000 px, fully and once (OnLoad), frozen. A build
+    /// without the file shows the splash with the name only instead of failing.
+    /// </summary>
+    private void LoadSplashImage()
+    {
+        try
+        {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.UriSource = SplashImageUri;
+            image.DecodePixelWidth = 1040;
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.EndInit();
+            image.Freeze();
+            SplashImage.Source = image;
+        }
+        catch (Exception ex) when (ex is IOException or NotSupportedException or FileFormatException or InvalidOperationException)
+        {
+            SplashImage.Visibility = Visibility.Collapsed;
+            Logger.Log("Splash", "WARNING", "Assets/CustomSplash.png is not in this build: " + ex.Message);
+        }
+    }
+
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         // Kick off the first data load in the background.
         _ = _vm.InitializeAsync();
 
-        // Reveal sequence: hold the skull briefly, then fade the splash out while
+        // Splash: the emblem fades in from transparent, holds, then fades out while
         // the interface "unfolds" around it (fade + slight scale-up).
-        await Task.Delay(700);
+        SplashContent.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, SplashFadeIn)
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+        });
+        await Task.Delay(SplashFadeIn + SplashHold);
         PlayReveal();
         _vm.AnnounceStartupState();
     }

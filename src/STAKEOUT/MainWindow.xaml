@@ -291,37 +291,20 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- ===== Startup splash: skull + spear ===== -->
-        <!-- Hidden in the designer so the shell underneath is visible. -->
+        <!-- ===== Startup splash: the STAKEOUT emblem (Assets/CustomSplash.png) =====
+             The image is compiled into the exe as a WPF Resource (STAKEOUT.csproj)
+             and set from code (MainWindow.LoadSplashImage): a pack URI written
+             here would make startup fail outright if the file were ever missing
+             from a build. Fades in, holds, then gives way to the interface
+             (MainWindow.OnLoaded / PlayReveal). Hidden in the designer so the
+             shell underneath is visible. -->
         <Grid x:Name="Splash" Background="#FF000000" d:Visibility="Collapsed">
-            <Viewbox Width="180" Height="180" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Canvas Width="200" Height="200">
-                    <!-- cranium (no lower jaw) -->
-                    <Path Fill="#FFFFFFFF" Data="M100,20
-                        C55,20 35,55 40,95
-                        C42,115 55,130 70,135
-                        L70,150 L85,150 L85,138
-                        L115,138 L115,150 L130,150 L130,135
-                        C145,130 158,115 160,95
-                        C165,55 145,20 100,20 Z" />
-                    <!-- eye sockets -->
-                    <Ellipse Canvas.Left="62" Canvas.Top="78" Width="26" Height="30" Fill="#FF000000" />
-                    <Ellipse Canvas.Left="112" Canvas.Top="78" Width="26" Height="30" Fill="#FF000000" />
-                    <!-- nasal cavity -->
-                    <Path Fill="#FF000000" Data="M100,110 L92,128 L108,128 Z" />
-                    <!-- teeth gaps -->
-                    <Rectangle Canvas.Left="90" Canvas.Top="138" Width="2" Height="12" Fill="#FF000000" />
-                    <Rectangle Canvas.Left="99" Canvas.Top="138" Width="2" Height="12" Fill="#FF000000" />
-                    <Rectangle Canvas.Left="108" Canvas.Top="138" Width="2" Height="12" Fill="#FF000000" />
-                    <!-- spear through the skull -->
-                    <Line X1="30" Y1="170" X2="175" Y2="35" Stroke="#FFFFFFFF" StrokeThickness="5" />
-                    <Polygon Points="175,35 168,52 185,45" Fill="#FFFFFFFF" />
-                    <Line X1="35" Y1="168" X2="45" Y2="178" Stroke="#FFFFFFFF" StrokeThickness="5" />
-                </Canvas>
-            </Viewbox>
-            <TextBlock Text="STAKEOUT" FontFamily="{StaticResource HeadingFont}" FontSize="20" FontWeight="Bold"
-                       Foreground="#DEFFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Margin="0,240,0,0" />
+            <StackPanel x:Name="SplashContent" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0">
+                <Image x:Name="SplashImage" Width="520" Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <TextBlock Text="STAKEOUT" FontFamily="{StaticResource HeadingFont}" FontSize="20" FontWeight="Bold"
+                           Foreground="#DEFFFFFF" HorizontalAlignment="Center" Margin="0,12,0,0" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>
