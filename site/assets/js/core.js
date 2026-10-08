@@ -325,15 +325,19 @@
       else raf = requestAnimationFrame(loop);
     };
 
+    // Follow the canvas box, not only window resizes: zoom/DPR changes and scrollbar
+    // changes alter it without a reliable 'resize' event.
     let rt = 0;
-    window.addEventListener('resize', () => {
+    const onResize = () => {
       clearTimeout(rt);
       rt = setTimeout(() => {
         if (lost) return;
         resize();
         draw();
       }, 120);
-    }, { passive: true });
+    };
+    if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(canvas);
+    window.addEventListener('resize', onResize, { passive: true });
     if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', start);
     canvas.addEventListener('webglcontextlost', (e) => {
       e.preventDefault();
@@ -354,6 +358,19 @@
     draw();
     start();
   }
+
+  /* ---------- same-page navigation (brand on home, current section link): no transition ---------- */
+
+  const samePage = (a, b) => a.replace(/\/index\.html$/, '/') === b.replace(/\/index\.html$/, '/');
+
+  window.addEventListener('pageswap', (e) => {
+    if (!e.viewTransition || !e.activation || !e.activation.entry || !e.activation.entry.url) return;
+    try {
+      if (samePage(new URL(e.activation.entry.url, location.href).pathname, location.pathname)) {
+        e.viewTransition.skipTransition();
+      }
+    } catch (_) { /* unparsable URL: keep the transition */ }
+  });
 
   window.STK = Object.freeze({ $, $$, clamp, reduceMotion, store, boot });
 

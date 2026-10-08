@@ -21,7 +21,9 @@
     // Storage blocked (privacy mode, policy): each page keeps its own clock, and
     // arriving from another page of this site counts as having seen the intro.
     try {
-      introSeen = !!document.referrer && new URL(document.referrer).origin === location.origin;
+      var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+      introSeen = (!!nav && nav.type === 'back_forward') ||
+        (!!document.referrer && new URL(document.referrer).origin === location.origin);
     } catch (_) { /* malformed referrer */ }
   }
 
@@ -36,7 +38,7 @@
   // page transition that would otherwise draw the header and cards on top of it.
   if (!introSeen && root.getAttribute('data-page') === 'home') {
     window.addEventListener('pagereveal', function (e) {
-      if (e.viewTransition) e.viewTransition.skipTransition();
+      if (e.viewTransition && !root.classList.contains('is-ready')) e.viewTransition.skipTransition();
     });
   }
 

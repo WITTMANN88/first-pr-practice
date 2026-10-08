@@ -146,9 +146,10 @@ img { max-width: 100%; }
 
 .bg {
   position: fixed;
-  inset: 0;
+  inset: 0 auto 0 0;
   z-index: 0;
-  width: 100%;
+  /* 100vw: also under the scrollbar gutter that scrollbar-gutter:stable always reserves. */
+  width: 100vw;
   height: 100%;
   display: block;
   background-color: var(--ink);
@@ -158,7 +159,8 @@ img { max-width: 100%; }
 
 .bg-veil {
   position: fixed;
-  inset: 0;
+  inset: 0 auto 0 0;
+  width: 100vw;
   z-index: 0;
   pointer-events: none;
   background: radial-gradient(130% 90% at 50% 20%, transparent 55%, rgba(11, 11, 10, 0.75) 100%);
@@ -179,6 +181,8 @@ main,
   z-index: 20;
   background: var(--ink-veil);
   border-bottom: 1px solid var(--line);
+  /* The scan line travels past the right edge; clip it without making a scroll container. */
+  overflow-x: clip;
 }
 
 .topbar__in {
@@ -306,10 +310,19 @@ main,
   .topnav::-webkit-scrollbar { display: none; }
 }
 
-/* Under 375 px the four links no longer fit one row: tighten, then wrap rather than hide. */
-@media (max-width: 374px) {
+/* Narrow screens (viewport width includes a reserved scrollbar gutter on Windows):
+   tighten the four links, and wrap rather than hide one. */
+@media (max-width: 399px) {
+  :root { --topbar-h: 121px; }
   .topnav { flex-wrap: wrap; gap: 0 14px; overflow: visible; }
   .topnav a { letter-spacing: 0.04em; }
+}
+
+/* Short viewports (landscape phones, 400% zoom): a sticky header would cover most of the
+   screen, so it scrolls away with the page instead. */
+@media (max-height: 480px) {
+  .topbar { position: relative; top: auto; }
+  html { scroll-padding-top: 12px; }
 }
 
 /* ---------- plate primitives: keycaps and giant marquee rows ---------- */
@@ -653,8 +666,8 @@ main,
 
 /* Header: skip the frozen snapshot, show the live new header from the first frame,
    above every other group (entry-only plates included) for the whole transition. */
-::view-transition-group(topbar) { animation: none; z-index: 1; }
-::view-transition-group(nav-bar) { z-index: 2; }
+::view-transition-group(topbar) { animation: none; z-index: 2; }
+::view-transition-group(nav-bar) { z-index: 3; }
 ::view-transition-old(topbar) { display: none; }
 ::view-transition-new(topbar) { animation: none; }
 
@@ -676,6 +689,7 @@ main,
 ::view-transition-group(plate-stories), ::view-transition-group(plate-gear),
 ::view-transition-group(plate-units), ::view-transition-group(plate-guides) {
   overflow: clip;
+  z-index: 1; /* above the incoming page's content, below the header */
 }
 
 ::view-transition-old(plate-stories), ::view-transition-new(plate-stories),
