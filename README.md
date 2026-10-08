@@ -413,6 +413,7 @@ git push origin v1.0.0
 .editorconfig                      стиль кода и конфигурация анализаторов
 .github/workflows/build.yml        CI/CD
 .github/scripts/prepare-release.sh упаковка релиза и changelog
+site/                              статический сайт блога STAKEOUT (HTML, CSS, JS без сборки)
 src/
   Directory.Build.props            анализаторы, warnings as errors
   STAKEOUT.sln
