@@ -10,6 +10,7 @@
     /* Тёмно-серый текст карточек: контраст 3,5:1 с фоном — норма WCAG AA
        для крупного текста. #222222, как у рамки, дал бы 1,3:1 — не читается. */
     --text-dim: #666666;
+    --text: #FFFFFF;
     /* Bahnschrift — системный шрифт Windows 10: виден, пока грузится Oswald. */
     --font: "Oswald", "Bahnschrift", "Arial Narrow", sans-serif;
     --gutter: clamp(1rem, 4vw, 2.5rem);
@@ -122,6 +123,8 @@ body {
     text-decoration: none;
     text-transform: uppercase;
     text-wrap: balance;
+    transition: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 @media (max-width: 40rem) {
@@ -132,4 +135,25 @@ body {
     .card {
         min-height: clamp(6rem, 16vh, 9rem);
     }
+}
+
+/* ---------- Карточки: наведение ----------
+ * Резкая смена состояния: без transition и box-shadow.
+ * Паттерн — два слоя repeating-linear-gradient: частые серые диагонали
+ * и редкие бордовые. Картинок нет, поэтому CSP не нужен img-src data:.
+ * То же состояние — при фокусе с клавиатуры и нажатии на сенсорном экране.
+ */
+.card:hover,
+.card:focus-visible,
+.card:active {
+    border-color: var(--accent);
+    color: var(--text);
+    background-image:
+        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--accent) 60%, transparent) 0 1px, transparent 1px 24px),
+        repeating-linear-gradient(-45deg, color-mix(in srgb, var(--text) 6%, transparent) 0 1px, transparent 1px 6px);
+}
+
+a:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
 }
