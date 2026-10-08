@@ -21,6 +21,8 @@
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   /* Session clock offset, set by boot.js; keeps looping animations in phase across pages. */
   --clock: 0s;
+  /* Sticky header height; core.js measures the real value. */
+  --topbar-h: 57px;
 
   color-scheme: dark;
   background: var(--ink);
@@ -29,6 +31,13 @@
 *,
 *::before,
 *::after { box-sizing: border-box; }
+
+html {
+  /* Classic Windows scrollbars: keep the layout width equal on short and long pages. */
+  scrollbar-gutter: stable;
+  /* Skip link, anchors and Shift+Tab must not land under the sticky header. */
+  scroll-padding-top: calc(var(--topbar-h) + env(safe-area-inset-top, 0px) + 12px);
+}
 
 html.is-locked,
 html.is-locked body { overflow: hidden; }
@@ -283,17 +292,24 @@ main,
 }
 
 @media (max-width: 820px) {
-  .topbar__in { flex-wrap: wrap; row-gap: 0; }
+  :root { --topbar-h: 96px; }
+  .topbar__in { flex-wrap: wrap; row-gap: 0; padding-top: 8px; }
   .status { margin-left: auto; }
   .topnav {
     order: 3;
     margin: 0 calc(var(--gutter) * -1);
-    padding: 0 var(--gutter) 8px;
+    padding: 8px var(--gutter);
     overflow-x: auto;
     scrollbar-width: none;
     width: calc(100% + var(--gutter) * 2);
   }
   .topnav::-webkit-scrollbar { display: none; }
+}
+
+/* Under 375 px the four links no longer fit one row: tighten, then wrap rather than hide. */
+@media (max-width: 374px) {
+  .topnav { flex-wrap: wrap; gap: 0 14px; overflow: visible; }
+  .topnav a { letter-spacing: 0.04em; }
 }
 
 /* ---------- plate primitives: keycaps and giant marquee rows ---------- */
@@ -511,7 +527,10 @@ main,
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--paper);
-  text-shadow: 0.05em 0.05em 0 var(--signal-ink);
+  text-shadow:
+    0.05em 0.05em 0 var(--signal-ink),
+    1px 1px 0 var(--signal-ink), -1px 1px 0 var(--signal-ink),
+    1px -1px 0 var(--signal-ink), -1px -1px 0 var(--signal-ink);
 }
 
 .page__body { padding-top: clamp(22px, 3.4vw, 40px); }
@@ -566,7 +585,7 @@ main,
 
 .page__list .info { color: var(--paper-dim); }
 
-.page__note { margin: 20px 0 0; color: var(--ash); }
+.page__note { margin: 20px 0 0; color: var(--paper-dim); }
 
 .lost {
   padding-block: clamp(48px, 10vw, 140px);
@@ -614,7 +633,14 @@ main,
 }
 
 .topbar { view-transition-name: topbar; }
-main { view-transition-name: page; }
+/* One name per page, so the old and new <main> are never paired: each snapshot keeps its
+   own on-screen box (scroll offset, width) while it fades. */
+[data-page="home"] main { view-transition-name: page-home; }
+[data-page="stories"] main { view-transition-name: page-stories; }
+[data-page="gear"] main { view-transition-name: page-gear; }
+[data-page="units"] main { view-transition-name: page-units; }
+[data-page="guides"] main { view-transition-name: page-guides; }
+[data-page="lost"] main { view-transition-name: page-lost; }
 .card--stories, .plate--stories { view-transition-name: plate-stories; }
 .card--gear, .plate--gear { view-transition-name: plate-gear; }
 .card--units, .plate--units { view-transition-name: plate-units; }
@@ -625,20 +651,33 @@ main { view-transition-name: page; }
   animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1);
 }
 
-/* Header: skip the frozen snapshot, show the live new header from the first frame. */
-::view-transition-group(topbar) { animation: none; }
+/* Header: skip the frozen snapshot, show the live new header from the first frame,
+   above every other group (entry-only plates included) for the whole transition. */
+::view-transition-group(topbar) { animation: none; z-index: 1; }
+::view-transition-group(nav-bar) { z-index: 2; }
 ::view-transition-old(topbar) { display: none; }
 ::view-transition-new(topbar) { animation: none; }
 
-/* Content swaps in place; no box morph between pages of different height. */
-::view-transition-group(page) { animation: none; }
-::view-transition-old(page) { animation: vt-page-out 0.22s cubic-bezier(0.7, 0, 0.2, 1) both; }
-::view-transition-new(page) { animation: vt-page-in 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both; }
+::view-transition-old(page-home), ::view-transition-old(page-stories), ::view-transition-old(page-gear),
+::view-transition-old(page-units), ::view-transition-old(page-guides), ::view-transition-old(page-lost) {
+  animation: vt-page-out 0.22s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+
+::view-transition-new(page-home), ::view-transition-new(page-stories), ::view-transition-new(page-gear),
+::view-transition-new(page-units), ::view-transition-new(page-guides), ::view-transition-new(page-lost) {
+  animation: vt-page-in 0.42s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both;
+}
 
 @keyframes vt-page-out { to { opacity: 0; transform: translateY(-12px); } }
 @keyframes vt-page-in { from { opacity: 0; transform: translateY(18px); } }
 
-/* Card <-> plate morph: crop instead of stretching while the box changes shape. */
+/* Card <-> plate morph: crop instead of stretching while the box changes shape.
+   The group clips, because the image pseudo-elements do not clip their object-fit overflow. */
+::view-transition-group(plate-stories), ::view-transition-group(plate-gear),
+::view-transition-group(plate-units), ::view-transition-group(plate-guides) {
+  overflow: clip;
+}
+
 ::view-transition-old(plate-stories), ::view-transition-new(plate-stories),
 ::view-transition-old(plate-gear), ::view-transition-new(plate-gear),
 ::view-transition-old(plate-units), ::view-transition-new(plate-units),

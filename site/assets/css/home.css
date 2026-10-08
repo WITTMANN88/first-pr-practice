@@ -13,8 +13,10 @@
   animation: loader-failsafe 0.01s 6s forwards;
 }
 
-/* Already played in this browser session: boot.js sets the class before the first paint. */
-.intro-seen .loader { display: none; }
+/* Already played in this browser session: boot.js sets the class before the first paint.
+   Without JavaScript the loader could never finish, so it is not shown at all. */
+.intro-seen .loader,
+html:not(.js) .loader { display: none; }
 
 @keyframes loader-failsafe { to { visibility: hidden; opacity: 0; pointer-events: none; } }
 
@@ -418,7 +420,10 @@
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--paper);
-  text-shadow: 0.05em 0.05em 0 var(--signal-ink);
+  text-shadow:
+    0.05em 0.05em 0 var(--signal-ink),
+    1px 1px 0 var(--signal-ink), -1px 1px 0 var(--signal-ink),
+    1px -1px 0 var(--signal-ink), -1px -1px 0 var(--signal-ink);
   white-space: nowrap;
   transition: font-stretch 0.6s var(--ease-out), letter-spacing 0.6s var(--ease-out);
 }

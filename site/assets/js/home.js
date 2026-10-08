@@ -221,14 +221,23 @@
     const MIN = reduceMotion.matches ? 350 : 2300;
     const MAX = 4500;
     const count = $('#loader-count');
+    const status = $('#loader-status');
     let fontsReady = !doc.fonts;
     let done = false;
     if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(() => { fontsReady = true; });
+
+    // Everything behind the overlay is out of reach until it leaves: Tab stays on «Пропустить».
+    const behind = Array.from(doc.body.children).filter((n) => n !== el && n !== status && n.tagName !== 'SCRIPT');
+    behind.forEach((n) => { n.inert = true; });
+    // One polite announcement instead of a live region that changes every frame.
+    if (status) status.textContent = 'Загрузка STAKEOUT';
 
     const finish = () => {
       if (done) return;
       done = true;
       store.set('stk:intro', '1');
+      behind.forEach((n) => { n.inert = false; });
+      if (status) status.textContent = '';
       if (count) count.textContent = '100';
       const quick = reduceMotion.matches;
       if (!quick) el.classList.add('is-scanned');

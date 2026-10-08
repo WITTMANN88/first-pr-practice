@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-page="home">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -30,18 +30,19 @@
   </defs>
 </svg>
 
-<div class="loader" id="loader" role="status" aria-label="Загрузка STAKEOUT">
+<div class="loader" id="loader">
   <div class="loader__bands" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="loader__inner">
-    <div class="loader__row mono"><span>STAKEOUT // загрузка</span><span class="js-dtg">DTG</span></div>
+    <div class="loader__row mono" aria-hidden="true"><span>STAKEOUT // загрузка</span><span class="js-dtg">DTG</span></div>
     <div class="loader__mark" aria-hidden="true">
       <svg viewBox="0 0 640 910"><use href="#logo-sil" class="logo-sil"/><use href="#logo-ink" class="logo-ink"/></svg>
       <span class="loader__scan"></span>
     </div>
-    <div class="loader__row mono"><span>Наблюдение ведётся</span><span class="loader__count"><b id="loader-count">000</b> %</span></div>
+    <div class="loader__row mono" aria-hidden="true"><span>Наблюдение ведётся</span><span class="loader__count"><b id="loader-count">000</b> %</span></div>
   </div>
   <button class="loader__skip" id="loader-skip" type="button">Пропустить</button>
 </div>
+<p class="visually-hidden" id="loader-status" role="status"></p>
 
 <header class="topbar">
   <div class="wrap topbar__in">

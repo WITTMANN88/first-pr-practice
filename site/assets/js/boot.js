@@ -8,6 +8,7 @@
   var root = document.documentElement;
   var MAX_AGE = 6 * 3600 * 1000; // restart the clock after 6 h: keeps shader time small
   var now = Date.now();
+  var tl = performance.now(); // the same instant on the document timeline
   var t0 = now;
   var introSeen = false;
 
@@ -17,7 +18,11 @@
     else sessionStorage.setItem('stk:t0', String(t0));
     introSeen = sessionStorage.getItem('stk:intro') === '1';
   } catch (e) {
-    // Storage blocked (privacy mode, policy): each page keeps its own clock.
+    // Storage blocked (privacy mode, policy): each page keeps its own clock, and
+    // arriving from another page of this site counts as having seen the intro.
+    try {
+      introSeen = !!document.referrer && new URL(document.referrer).origin === location.origin;
+    } catch (_) { /* malformed referrer */ }
   }
 
   root.classList.add('js');
@@ -27,8 +32,16 @@
   // A negative delay starts each infinite animation at the phase it had on the previous page.
   root.style.setProperty('--clock', ((t0 - now) / 1000).toFixed(3) + 's');
 
+  // First visit to the start screen in this session: the loader will play, so skip the
+  // page transition that would otherwise draw the header and cards on top of it.
+  if (!introSeen && root.getAttribute('data-page') === 'home') {
+    window.addEventListener('pagereveal', function (e) {
+      if (e.viewTransition) e.viewTransition.skipTransition();
+    });
+  }
+
   Object.defineProperty(window, 'STK_BOOT', {
-    value: Object.freeze({ t0: t0, introSeen: introSeen }),
+    value: Object.freeze({ t0: t0, tl: tl, introSeen: introSeen }),
     writable: false,
     configurable: false,
   });
