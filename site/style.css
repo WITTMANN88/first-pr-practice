@@ -10,6 +10,8 @@
     /* Тёмно-серый текст карточек: контраст 3,5:1 с фоном — норма WCAG AA
        для крупного текста. #222222, как у рамки, дал бы 1,3:1 — не читается. */
     --text-dim: #666666;
+    /* Мелкий служебный текст: 5,7:1 (норма для обычного текста — 4,5:1). */
+    --text-muted: #888888;
     --text: #FFFFFF;
     /* Bahnschrift — системный шрифт Windows 10: виден, пока грузится Oswald. */
     --font: "Oswald", "Bahnschrift", "Arial Narrow", sans-serif;
@@ -30,8 +32,6 @@ html {
 
 body {
     margin: 0;
-    min-height: 100vh;
-    background-color: var(--bg);
     font-family: var(--font);
 }
 
@@ -156,4 +156,51 @@ body {
 a:focus-visible {
     outline: 1px solid var(--accent);
     outline-offset: 4px;
+}
+
+/* ---------- Внутренние страницы ---------- */
+.site-header {
+    padding: 1.25rem var(--gutter);
+    border-bottom: 1px solid var(--line);
+}
+
+.logo {
+    display: inline-block;
+    color: var(--accent);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.logo:hover,
+.logo:focus-visible {
+    color: var(--text);
+}
+
+.page {
+    padding: clamp(3rem, 10vh, 6rem) var(--gutter);
+}
+
+.page__title {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(2rem, 8vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+.page__note {
+    margin: 1.5rem 0 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
 }

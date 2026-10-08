@@ -24,5 +24,11 @@
         return;
     }
 
-    preloader.addEventListener('animationend', remove, { once: true });
+    // animationend всплывает: проверка не даст удалить слой раньше времени,
+    // если у логотипа внутри появится своя анимация.
+    preloader.addEventListener('animationend', (event) => {
+        if (event.target === preloader) {
+            remove();
+        }
+    });
 })();
