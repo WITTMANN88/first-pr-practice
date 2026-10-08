@@ -10,6 +10,8 @@
   --line: rgba(236, 230, 218, 0.14);
   --signal: #ff4a1c;
   --signal-ink: #1a0802;
+  /* Dirty print orange: the reference's halftone ink, muted toward brown. 5:1 on --ink. */
+  --rust: #d9572b;
   --halftone: #7f796e;
 
   --f-wide: "Roboto Flex", "Arial Black", "Helvetica Neue", Arial, sans-serif;

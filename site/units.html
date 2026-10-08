@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&amp;display=swap">
 <link rel="stylesheet" href="assets/css/core.css">
+<link rel="stylesheet" href="assets/css/units.css">
 <script src="assets/js/boot.js"></script>
 <script src="assets/js/core.js" defer blocking="render"></script>
 </head>
@@ -55,14 +56,160 @@
   </div>
   <div class="page__body">
     <p class="page__kicker mono"><span class="tag">досье</span><span>Страницы подразделений</span></p>
-    <p class="page__lead">История, отбор, структура и ключевые операции каждого подразделения.</p>
-    <ul class="page__list" aria-label="Материалы раздела">
-      <li><span class="ex">пример</span><span class="name">DEVGRU</span><span class="info mono">США</span></li>
-      <li><span class="ex">пример</span><span class="name">SAS</span><span class="info mono">Великобритания</span></li>
-      <li><span class="ex">пример</span><span class="name">GROM</span><span class="info mono">Польша</span></li>
-      <li><span class="ex">пример</span><span class="name">KSK</span><span class="info mono">Германия</span></li>
-    </ul>
-    <p class="page__note mono">Раздел наполняется. Строки с пометкой «пример» показывают структуру страницы.</p>
+    <p class="page__lead">Сводки по подразделениям: год основания, статус, подчинение, база. Только сведения из открытых источников.</p>
+
+    <section class="term" aria-labelledby="term-title">
+      <div class="term__bar mono">
+        <span class="term__name">STK // архив подразделений</span>
+        <span class="term__lock">Доступ: ограничен</span>
+      </div>
+      <div class="term__screen">
+        <h2 class="visually-hidden" id="term-title">Досье подразделений</h2>
+        <p class="term__line mono" aria-hidden="true"><span class="term__prompt">stk@archive:~$</span> query units --class=sof --sort=founded</p>
+        <p class="term__line mono">Найдено записей: 6 · сортировка по году основания · источник: открытые данные</p>
+        <ol class="dossiers">
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-sas">
+          <header class="dossier__head mono">
+            <span>Зап. 01/06</span>
+            <span>GBR · 1941</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 5 54 13v18c0 14-9 23-22 28C19 54 10 45 10 31V13z"/><path d="M32 12l2.5 6v22h-5V18z"/><path d="M24 40h16M32 40v6"/><path d="M29 26 17 22M29 29l-11-1M29 32l-9 2M35 26l12-4M35 29l11-1M35 32l9 2"/><circle class="emblem__dot" cx="32" cy="49" r="2"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-sas" data-text="22 SAS">22 SAS</h3>
+              <p class="dossier__full mono">22nd Special Air Service Regiment</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>1941 <small>(22 SAS — 1952)</small></dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--classified">Засекречено</span></dd></div>
+            <div><dt>Подчинение</dt><dd>UKSF</dd></div>
+            <div><dt>База</dt><dd>Креденхилл, Херефордшир</dd></div>
+          </dl>
+          <p class="dossier__brief">Полк специального назначения Британской армии. Задачи: контртерроризм, специальная разведка, прямые действия. Отряд L Detachment сформирован в 1941 г., 22-й полк — в 1952 г.</p>
+        </article>
+      </li>
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-delta">
+          <header class="dossier__head mono">
+            <span>Зап. 02/06</span>
+            <span>USA · 1977</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 7 58 53H6z"/><path d="M32 22 46 46H18z"/><path d="M32 31v8"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-delta" data-text="DELTA">DELTA</h3>
+              <p class="dossier__full mono">1st Special Forces Operational Detachment – Delta</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>1977</dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--classified">Засекречено</span></dd></div>
+            <div><dt>Подчинение</dt><dd>JSOC / USASOC</dd></div>
+            <div><dt>База</dt><dd>Форт-Брэгг, Северная Каролина</dd></div>
+          </dl>
+          <p class="dossier__brief">Подразделение специального назначения Армии США. Задачи: контртерроризм, освобождение заложников, прямые действия. Создано полковником Чарльзом Беквитом по модели 22 SAS.</p>
+        </article>
+      </li>
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-devgru">
+          <header class="dossier__head mono">
+            <span>Зап. 03/06</span>
+            <span>USA · 1980</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="26"/><path d="M32 13v38M23 26h18M23 26v-9l-3 4M41 26v-9l3 4M32 13l-4 5M32 13l4 5M27 51h10"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-devgru" data-text="DEVGRU">DEVGRU</h3>
+              <p class="dossier__full mono">Naval Special Warfare Development Group</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>1980 <small>(DEVGRU — 1987)</small></dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--classified">Засекречено</span></dd></div>
+            <div><dt>Подчинение</dt><dd>JSOC / NSWC</dd></div>
+            <div><dt>База</dt><dd>Дам-Нек, Вирджиния</dd></div>
+          </dl>
+          <p class="dossier__brief">Подразделение специального назначения ВМС США. Задачи: морской контртерроризм, освобождение заложников, прямые действия. Сформировано как SEAL Team Six, текущее обозначение — с 1987 г.</p>
+        </article>
+      </li>
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-grom">
+          <header class="dossier__head mono">
+            <span>Зап. 04/06</span>
+            <span>POL · 1990</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 5 59 32 32 59 5 32z"/><path d="M35 15 24 34h8l-3 15 12-21h-8z"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-grom" data-text="GROM">GROM</h3>
+              <p class="dossier__full mono">Jednostka Wojskowa GROM</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>1990</dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--restricted">Ограничен</span></dd></div>
+            <div><dt>Подчинение</dt><dd>DKWS</dd></div>
+            <div><dt>База</dt><dd>Варшава</dd></div>
+          </dl>
+          <p class="dossier__brief">Воинская часть специального назначения Польши, JW 2305. Задачи: контртерроризм, прямые действия, морские операции. Создана под руководством Славомира Петелицкого.</p>
+        </article>
+      </li>
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-ksk">
+          <header class="dossier__head mono">
+            <span>Зап. 05/06</span>
+            <span>DEU · 1996</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M20 52C11 45 9 31 15 20M44 52c9-7 11-21 5-32"/><path d="M13 38 9 36M12 30l-4-1M14 23l-3-3M51 38l4-2M52 30l4-1M50 23l3-3"/><path d="M32 10v30M27 40h10M32 40v7M29.5 15 32 10l2.5 5"/><circle class="emblem__dot" cx="32" cy="50" r="2"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-ksk" data-text="KSK">KSK</h3>
+              <p class="dossier__full mono">Kommando Spezialkräfte</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>1996</dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--restricted">Ограничен</span></dd></div>
+            <div><dt>Подчинение</dt><dd>DSK, Сухопутные войска</dd></div>
+            <div><dt>База</dt><dd>Кальв, Баден-Вюртемберг</dd></div>
+          </dl>
+          <p class="dossier__brief">Командование специальных сил Бундесвера. Задачи: освобождение заложников, эвакуация граждан, специальная разведка. В 2020 г. — расформирование 2-й роты и программа реформ.</p>
+        </article>
+      </li>
+      <li class="dossiers__item">
+        <article class="dossier" aria-labelledby="u-marsoc">
+          <header class="dossier__head mono">
+            <span>Зап. 06/06</span>
+            <span>USA · 2006</span>
+          </header>
+          <div class="dossier__ident">
+            <svg class="emblem" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 4 52 32 32 60 12 32z"/><circle class="emblem__dot" cx="32" cy="17" r="2.4"/><circle class="emblem__dot" cx="32" cy="46" r="2.4"/><circle class="emblem__dot" cx="22.5" cy="33" r="2.1"/><circle class="emblem__dot" cx="41" cy="29" r="2.1"/><circle class="emblem__dot" cx="36.5" cy="38" r="1.4"/></svg>
+            <div class="dossier__names">
+              <h3 class="dossier__name" id="u-marsoc" data-text="MARSOC">MARSOC</h3>
+              <p class="dossier__full mono">Marine Forces Special Operations Command</p>
+            </div>
+          </div>
+          <dl class="dossier__fields mono">
+            <div><dt>Основано</dt><dd>2006</dd></div>
+            <div><dt>Статус</dt><dd><span class="status status--active">Активно</span></dd></div>
+            <div><dt>Гриф</dt><dd><span class="status status--restricted">Ограничен</span></dd></div>
+            <div><dt>Подчинение</dt><dd>USSOCOM</dd></div>
+            <div><dt>База</dt><dd>Кэмп-Леджен, Северная Каролина</dd></div>
+          </dl>
+          <p class="dossier__brief">Командование сил специальных операций Корпуса морской пехоты США. Задачи: прямые действия, специальная разведка, иностранная внутренняя оборона. Операторы — Marine Raiders.</p>
+        </article>
+      </li>
+        </ol>
+        <p class="term__line term__line--end mono" aria-hidden="true">&gt; конец выборки<span class="term__caret"></span></p>
+      </div>
+    </section>
   </div>
 </main>
 

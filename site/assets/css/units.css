@@ -1,0 +1,331 @@
+/* STAKEOUT units page: a closed-archive terminal with dossier cards.
+ * Pure CSS: no JavaScript, canvas or WebGL. Hover effects run only on devices that can
+ * hover and only when the viewer has not asked for reduced motion.
+ * Tokens (--rust, --paper, ...) come from core.css. */
+
+/* ---------- terminal frame ---------- */
+
+.term {
+  margin-top: clamp(4px, 1.4vw, 12px);
+  border: 1px solid var(--line);
+  background: rgba(11, 11, 10, 0.92);
+}
+
+.term__bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  padding: 10px clamp(14px, 2.4vw, 24px);
+  border-bottom: 1px solid var(--line);
+  background: rgba(236, 230, 218, 0.04);
+  color: var(--paper-dim);
+}
+
+.term__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rust);
+}
+
+.term__lock::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--rust);
+}
+
+.term__screen {
+  position: relative;
+  padding: clamp(14px, 2.4vw, 24px);
+  /* CRT scan lines: a static texture, costs nothing per frame. */
+  background-image: repeating-linear-gradient(to bottom, rgba(236, 230, 218, 0.03) 0 1px, transparent 1px 3px);
+}
+
+.term__line {
+  margin: 0 0 6px;
+  color: var(--paper-dim);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.term__prompt { margin-right: 0.6ch; color: var(--rust); }
+
+.term__line--end { margin: 18px 0 0; }
+
+.term__caret {
+  display: inline-block;
+  width: 0.62em;
+  height: 1.15em;
+  margin-left: 0.5ch;
+  vertical-align: -0.22em;
+  background: var(--paper);
+  animation: caret 1.1s steps(1, end) infinite;
+  animation-delay: var(--clock);
+}
+
+@keyframes caret { 50% { opacity: 0; } }
+
+/* ---------- dossier grid: 3 columns on desktop, 2 on tablets, 1 on phones ---------- */
+
+.dossiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr));
+  gap: clamp(10px, 1.4vw, 14px);
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dossiers__item {
+  display: flex;
+  min-width: 0;
+}
+
+/* ---------- dossier card ---------- */
+
+.dossier {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 14px;
+  min-width: 0;
+  padding: 14px 16px 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(23, 22, 20, 0.78);
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+
+.dossier__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--paper-dim);
+  font-size: 10px;
+}
+
+.dossier__ident {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.emblem {
+  display: block;
+  width: 56px;
+  height: 56px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  color: var(--paper);
+  transition: color 0.18s, filter 0.18s;
+}
+
+.emblem__dot { fill: currentColor; stroke: none; }
+
+.dossier__names { min-width: 0; }
+
+.dossier__name {
+  position: relative;
+  margin: 0;
+  font: 900 clamp(22px, 2.1vw, 28px)/1 var(--f-wide);
+  font-stretch: 140%;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.dossier__full {
+  margin: 6px 0 0;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--paper-dim);
+}
+
+.dossier__fields {
+  display: grid;
+  margin: 0;
+  border-top: 1px dashed var(--line);
+}
+
+.dossier__fields > div {
+  display: grid;
+  grid-template-columns: 12ch minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding-block: 7px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.dossier__fields dt { color: var(--paper-dim); }
+
+.dossier__fields dd {
+  margin: 0;
+  color: var(--paper);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+}
+
+.dossier__fields small { font-size: inherit; color: var(--paper-dim); }
+
+.dossier__brief {
+  margin: 0;
+  font: 400 13px/1.6 var(--f-mono);
+  color: var(--paper-dim);
+}
+
+/* ---------- status stamps ---------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.status--active { padding-inline: 0; color: var(--paper); }
+
+.status--active::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--paper);
+  box-shadow: 0 0 6px rgba(236, 230, 218, 0.55);
+}
+
+/* Redaction stamp: ink on hatched rust. */
+.status--classified {
+  color: var(--ink);
+  background: repeating-linear-gradient(-45deg, var(--rust) 0 5px, #c94f27 5px 10px);
+}
+
+.status--restricted {
+  color: var(--rust);
+  box-shadow: inset 0 0 0 1px var(--rust);
+}
+
+/* ---------- hover: rust frame, selection corners, scan band, glitch on the name ---------- */
+
+/* Selection corners of a terminal cursor, drawn with eight gradient strokes. */
+.dossier::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(var(--rust), var(--rust)) top left / 12px 2px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) top left / 2px 12px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) top right / 12px 2px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) top right / 2px 12px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) bottom left / 12px 2px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) bottom left / 2px 12px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) bottom right / 12px 2px no-repeat,
+    linear-gradient(var(--rust), var(--rust)) bottom right / 2px 12px no-repeat;
+  transition: opacity 0.18s;
+}
+
+/* Scan band: a third of the card tall, travels top to bottom. Transform only. */
+.dossier::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to bottom, transparent, rgba(217, 87, 43, 0.08) 70%, rgba(217, 87, 43, 0.3) 97%, transparent);
+  transform: translateY(-100%);
+}
+
+/* Glitch layers: copies of the name, shown in slices for half a second. */
+.dossier__name::before,
+.dossier__name::after {
+  content: attr(data-text);
+  content: attr(data-text) / ""; /* empty alt text: screen readers read the name once */
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.dossier__name::before { color: var(--rust); }
+.dossier__name::after { color: var(--paper); text-shadow: -2px 0 var(--rust); }
+
+@media (hover: hover) {
+  .dossier:hover {
+    border-color: var(--rust);
+    /* Print misregistration: a second, offset edge in thinner ink. */
+    box-shadow: 3px 3px 0 0 rgba(217, 87, 43, 0.28);
+  }
+
+  .dossier:hover::before { opacity: 1; }
+
+  .dossier:hover .emblem { filter: drop-shadow(2px 1px 0 rgba(217, 87, 43, 0.7)); }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .dossier:hover::after {
+    opacity: 1;
+    animation: dossier-scan 2.4s linear infinite;
+  }
+
+  .dossier:hover .dossier__name { animation: glitch-jitter 0.45s steps(1, end) 1; }
+  .dossier:hover .dossier__name::before { animation: glitch-a 0.45s steps(1, end) 1; }
+  .dossier:hover .dossier__name::after { animation: glitch-b 0.45s steps(1, end) 1; }
+}
+
+/* Band height is 32% of the card: 320% of its own height clears the bottom edge. */
+@keyframes dossier-scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(320%); }
+}
+
+@keyframes glitch-jitter {
+  0% { transform: translateX(1px); }
+  30% { transform: translateX(-1px); }
+  60% { transform: translateX(2px); }
+  100% { transform: none; }
+}
+
+@keyframes glitch-a {
+  0% { opacity: 1; clip-path: inset(0 0 62% 0); transform: translateX(-4px); }
+  20% { clip-path: inset(48% 0 22% 0); transform: translateX(3px); }
+  40% { clip-path: inset(18% 0 58% 0); transform: translateX(-2px); }
+  60% { clip-path: inset(70% 0 4% 0); transform: translateX(4px); }
+  80% { clip-path: inset(36% 0 40% 0); transform: translateX(-1px); }
+  100% { opacity: 0; }
+}
+
+@keyframes glitch-b {
+  0% { opacity: 1; clip-path: inset(66% 0 8% 0); transform: translateX(3px); }
+  20% { clip-path: inset(10% 0 70% 0); transform: translateX(-3px); }
+  40% { clip-path: inset(52% 0 26% 0); transform: translateX(2px); }
+  60% { clip-path: inset(4% 0 78% 0); transform: translateX(-4px); }
+  80% { clip-path: inset(58% 0 20% 0); transform: translateX(1px); }
+  100% { opacity: 0; }
+}
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 400px) {
+  .dossier { padding-inline: 12px; }
+  .dossier__ident { grid-template-columns: 48px minmax(0, 1fr); gap: 12px; }
+  .emblem { width: 48px; height: 48px; }
+  .dossier__fields > div { grid-template-columns: 11ch minmax(0, 1fr); gap: 10px; }
+}
