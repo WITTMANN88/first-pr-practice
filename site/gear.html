@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Сборки снаряжения · STAKEOUT</title>
+<meta name="description" content="Сборки снаряжения спецподразделений по операциям и эпохам.">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0b0a">
+<link rel="icon" href="assets/img/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&amp;display=swap">
+<link rel="stylesheet" href="assets/css/core.css">
+<script src="assets/js/boot.js"></script>
+<script src="assets/js/core.js" defer blocking="render"></script>
+</head>
+<body>
+<a class="skip" href="#main">К содержанию</a>
+<canvas class="bg" id="bg" aria-hidden="true"></canvas>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="wrap topbar__in">
+    <a class="brand" href="index.html" aria-label="STAKEOUT, на главную">
+      <img class="brand__mark" src="assets/img/logo.svg" alt="" width="22" height="31">
+      <span class="brand__word">STAKEOUT</span>
+    </a>
+    <nav class="topnav" aria-label="Разделы">
+      <a href="stories.html">Рассказы<span class="topnav__bar" aria-hidden="true"></span></a>
+      <a href="gear.html" aria-current="page">Снаряжение<span class="topnav__bar" aria-hidden="true"></span></a>
+      <a href="units.html">Подразделения<span class="topnav__bar" aria-hidden="true"></span></a>
+      <a href="guides.html">Гайды<span class="topnav__bar" aria-hidden="true"></span></a>
+    </nav>
+    <span class="status">
+      <span class="rec" aria-hidden="true"></span>
+      <span class="dtg" title="Date-time group, UTC"><b>DTG</b> <span class="js-dtg">——————Z———</span></span>
+    </span>
+  </div>
+  <span class="topbar__scan" aria-hidden="true"></span>
+</header>
+
+<main class="wrap page" id="main">
+  <a class="back" href="index.html">← На главную</a>
+  <div class="plate plate--gear">
+    <span class="corner" aria-hidden="true"><span class="mark">S.</span><span class="note">— stakeout<br>раздел: снаряжение<br>сборки по эпохам</span></span>
+    <span class="keys" aria-hidden="true"><span class="key"><span>С</span></span><span class="key"><span>Н</span></span><span class="key"><span>А</span></span><span class="key"><span>Р</span></span><span class="key"><span>Я</span></span><span class="key"><span>Ж</span></span><span class="key"><span>Е</span></span><span class="key"><span>Н</span></span><span class="key"><span>И</span></span><span class="key"><span>Е</span></span></span>
+    <h1 class="visually-hidden">Сборки снаряжения</h1>
+  </div>
+  <div class="page__body">
+    <p class="page__kicker mono"><span class="tag">сборки</span><span>Снаряжение по эпохам</span></p>
+    <p class="page__lead">Комплекты по операциям и периодам: что носили, зачем и как это менялось.</p>
+    <ul class="page__list" aria-label="Материалы раздела">
+      <li><span class="ex">пример</span><span class="name">Плитник и разгрузка</span><span class="info mono">Категория</span></li>
+      <li><span class="ex">пример</span><span class="name">Шлем и навесное</span><span class="info mono">Категория</span></li>
+      <li><span class="ex">пример</span><span class="name">Связь и оптика</span><span class="info mono">Категория</span></li>
+    </ul>
+    <p class="page__note mono">Раздел наполняется. Строки с пометкой «пример» показывают структуру страницы.</p>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot__in mono">
+    <span class="mark" aria-hidden="true">S.</span>
+    <span>© 2026 STAKEOUT</span>
+    <span>Наблюдение ведётся</span>
+    <a href="#top">Наверх ↑</a>
+  </div>
+</footer>
+</body>
+</html>

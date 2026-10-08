@@ -1,8 +1,9 @@
 # Security headers for Cloudflare Pages / Netlify (same file format on both).
-# The page has no inline scripts or styles and writes text only via textContent,
-# so the CSP needs no 'unsafe-inline' and Trusted Types can be enforced.
+# Every page is static HTML with external scripts and styles only: no inline code,
+# no HTML parsing from strings, text written via textContent. So the CSP needs no
+# 'unsafe-inline' or 'unsafe-eval', and Trusted Types are enforced with no policies.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types 'none'
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -11,5 +12,6 @@
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
 
+# Asset names are not content-hashed: keep the cache short so a deploy reaches readers within an hour.
 /assets/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=3600
