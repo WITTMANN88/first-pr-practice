@@ -325,19 +325,30 @@
       else raf = requestAnimationFrame(loop);
     };
 
-    // Follow the canvas box, not only window resizes: zoom/DPR changes and scrollbar
-    // changes alter it without a reliable 'resize' event.
+    // Follow the canvas box and the pixel ratio, not only window resizes: scrollbar changes
+    // and moving the window to a monitor with another Windows scale fire no 'resize'.
     let rt = 0;
+    const stale = () => {
+      const d = Math.min(window.devicePixelRatio || 1, 1.5);
+      return Math.round((canvas.clientWidth || window.innerWidth) * d) !== W ||
+        Math.round((canvas.clientHeight || window.innerHeight) * d) !== H || 7 * d !== cell;
+    };
     const onResize = () => {
       clearTimeout(rt);
       rt = setTimeout(() => {
-        if (lost) return;
+        if (lost || !stale()) return;
         resize();
         draw();
       }, 120);
     };
     if ('ResizeObserver' in window) new ResizeObserver(onResize).observe(canvas);
     window.addEventListener('resize', onResize, { passive: true });
+    const watchDpr = () => {
+      const mq = window.matchMedia('(resolution: ' + (window.devicePixelRatio || 1) + 'dppx)');
+      if (!mq.addEventListener) return;
+      mq.addEventListener('change', () => { onResize(); watchDpr(); }, { once: true });
+    };
+    watchDpr();
     if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', start);
     canvas.addEventListener('webglcontextlost', (e) => {
       e.preventDefault();

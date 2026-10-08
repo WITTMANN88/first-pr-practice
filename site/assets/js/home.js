@@ -170,6 +170,8 @@
     };
     fit();
     if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(fit);
+    // Font faces can finish after 'ready' resolved (e.g. a late unicode-range subset).
+    if (doc.fonts && doc.fonts.addEventListener) doc.fonts.addEventListener('loadingdone', fit);
     let t = 0;
     window.addEventListener('resize', () => {
       cancelAnimationFrame(t);
