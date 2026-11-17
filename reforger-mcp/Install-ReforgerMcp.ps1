@@ -788,13 +788,17 @@ try {
                 $addonNote = 'АДДОН НЕ СКОПИРОВАН'
                 Write-Warn "Аддон не скопирован: запустите Blender один раз и перезапустите скрипт, либо установите вручную $blenderDir\addon.py (Edit > Preferences > Add-ons > Install from Disk)."
             }
+            # Аддон при старте Blender скачивает addon.py из ветки main и предлагает кнопкой заменить себя
+            # непроверенной версией. Переменная окружения отключает эту проверку.
+            [Environment]::SetEnvironmentVariable('BLENDERMCP_NO_UPDATE_CHECK', '1', 'User')
+            $env:BLENDERMCP_NO_UPDATE_CHECK = '1'
 
             Register-McpStdio 'blender' @{
                 DISABLE_TELEMETRY     = 'true'
                 BLENDER_MCP_SAFE_MODE = '1'
                 PYTHONUTF8            = '1'
             } $script:Uv @('--directory', $blenderDir, 'run', '--frozen', '--no-dev', 'mcp-for-blender')
-            Add-Result 'blender' 'OK' "телеметрия выкл., safe mode вкл.; $addonNote"
+            Add-Result 'blender' 'OK' "телеметрия выкл., safe mode вкл., автообновление аддона выкл.; $addonNote"
         }
         catch { Write-Warn $_.Exception.Message; Add-Result 'blender' 'FAILED' $_.Exception.Message }
     }
@@ -1128,7 +1132,7 @@ try {
     Write-Host 'Дальше вручную:' -ForegroundColor Cyan
     Write-Host '  1. Claude Desktop: значок в трее > Quit, затем откройте снова. Во вкладке Code начните новый сеанс и проверьте серверы командой /mcp.'
     Write-Host '  2. Workbench: File > Options > General > Net API = Enabled (порт 5775) - для wb_* у enfusion-mcp.'
-    Write-Host '  3. Blender: Edit > Preferences > Add-ons > включите MCP for Blender, запустите его сервер. Официальный аддон Blender Lab одновременно не включайте: оба слушают порт 9876.'
+    Write-Host '  3. Blender: Edit > Preferences > Add-ons > включите MCP for Blender, запустите его сервер. Кнопку обновления в панели аддона не нажимайте. Официальный аддон Blender Lab одновременно не включайте: оба слушают порт 9876.'
     Write-Host '  4. Obsidian: obsidian-vault работает с файлами хранилища и без запущенного Obsidian. Для skill obsidian-cli включите CLI (Settings > General).'
     Write-Host '     Для -WithObsidian: плагин Local REST API with MCP с включённым HTTP-сервером (порт 27123). Удаление заметок и команды Obsidian запрещены.'
     Write-Host '     Cursor (-WithCursor): перезапустите Cursor, серверы появятся в Customize > MCP; skills он берёт из ~/.claude/skills.'
