@@ -309,7 +309,7 @@ function Find-SteamApp([string]$Folder) {
         $props = Get-ItemProperty -Path $key -ErrorAction SilentlyContinue
         if (-not $props) { continue }
         foreach ($name in @('SteamPath', 'InstallPath')) {
-            if ($props.PSObject.Properties[$name] -and $props.$name) { $roots.Add(([string]$props.$name) -replace '/', '\') }
+            if ($props.PSObject.Properties[$name] -and $props.$name) { $roots.Add((([string]$props.$name) -replace '/', '\')) }
         }
     }
     $libraries = New-Object System.Collections.Generic.List[string]
