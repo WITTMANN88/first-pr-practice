@@ -236,6 +236,19 @@ function Get-PinnedRepo([string]$Url, [string]$Commit, [string]$Dir, [string[]]$
     Write-Ok "$Url @ $($Commit.Substring(0, 12))"
 }
 
+# Папка - рабочий клон именно этого репозитория (а не чужая папка, сломанный .git или репозиторий уровнем выше).
+function Test-PinnedClone([string]$Dir, [string]$Url) {
+    if (-not (Test-Path -LiteralPath (Join-Path $Dir '.git'))) { return $false }
+    $top = Invoke-Native $script:Git @('-C', $Dir, 'rev-parse', '--show-toplevel') -AllowFail -Quiet
+    if ($top.ExitCode -ne 0) { return $false }
+    $topPath = ([string]($top.Output | Select-Object -First 1)).Trim().Replace('/', '\')
+    if ((Get-FullPath $topPath) -ne (Get-FullPath $Dir)) { return $false }
+    $origin = Invoke-Native $script:Git @('-C', $Dir, 'remote', 'get-url', 'origin') -AllowFail -Quiet
+    if ($origin.ExitCode -ne 0) { return $false }
+    $originUrl = ([string]($origin.Output | Select-Object -First 1)).Trim()
+    return (($originUrl -replace '\.git$', '').TrimEnd('/') -eq $Url)
+}
+
 function Test-Marker([string]$Dir, [string]$Commit, [string]$Artifact) {
     $marker = Join-Path $Dir '.mcp-installed-commit'
     if (-not (Test-Path -LiteralPath $marker) -or -not (Test-Path -LiteralPath $Artifact)) { return $false }
@@ -785,23 +798,40 @@ try {
     if ($SkipSkill) { Add-Result 'reforger-skills' 'SKIPPED' '-SkipSkill' }
     else {
         Write-Step 'Skills для Arma Reforger'
+        # Каждый источник ставится отдельно: сбой одного не отменяет остальные.
+        $skillsRoot = Join-Path $env:USERPROFILE '.claude\skills'
+        $done = @()
+        $kept = @()
+        $failed = @()
+
         try {
-            $skillsRoot = Join-Path $env:USERPROFILE '.claude\skills'
-            $done = @()
-
             $skillDir = Join-Path $skillsRoot 'arma-reforger-modding'
-            Get-PinnedRepo $Pins.Skill.Url $Pins.Skill.Commit $skillDir
-            $done += 'arma-reforger-modding'
+            # Своя папка с тем же именем (например, собственный SKILL.md) не перезаписывается.
+            if ((Test-Path -LiteralPath $skillDir) -and -not (Test-PinnedClone $skillDir $Pins.Skill.Url)) {
+                Write-Warn "В $skillDir уже лежит свой skill (не клон Mavericktfius) - оставлен как есть."
+                $kept += 'arma-reforger-modding (свой)'
+            }
+            else {
+                Get-PinnedRepo $Pins.Skill.Url $Pins.Skill.Commit $skillDir
+                $done += 'arma-reforger-modding'
+            }
+        }
+        catch { Write-Warn $_.Exception.Message; $failed += "arma-reforger-modding: $($_.Exception.Message)" }
 
+        try {
             # Reidond/stavka - большой репозиторий, из него берём только три skill-а (только Markdown, проверено).
             $reidondRepo = Join-Path $InstallRoot 'reidond-stavka'
             Get-PinnedRepo $Pins.ReidondSkills.Url $Pins.ReidondSkills.Commit $reidondRepo
             $done += @(Install-SkillDirs (Join-Path $reidondRepo '.agents\skills') @('arma-reforger', 'arma-reforger-server-config', 'arma-reforger-server-hosting') $Pins.ReidondSkills.Commit)
+        }
+        catch { Write-Warn $_.Exception.Message; $failed += "Reidond: $($_.Exception.Message)" }
 
+        try {
             $ownDir = Join-Path $skillsRoot 'reforger-obsidian-workflow'
             $ownMarker = Join-Path $ownDir '.installed-by-reforger-mcp'
             if ((Test-Path -LiteralPath $ownDir) -and -not (Test-Path -LiteralPath $ownMarker)) {
                 Write-Warn 'Оставлен существующий skill: reforger-obsidian-workflow'
+                $kept += 'reforger-obsidian-workflow (свой)'
             }
             else {
                 New-Item -ItemType Directory -Path $ownDir -Force | Out-Null
@@ -811,9 +841,13 @@ try {
                 Set-Content -LiteralPath $ownMarker -Value 'Install-ReforgerMcp.ps1' -Encoding ASCII
                 $done += 'reforger-obsidian-workflow'
             }
-            Add-Result 'reforger-skills' 'OK' ($done -join ', ')
         }
-        catch { Write-Warn $_.Exception.Message; Add-Result 'reforger-skills' 'FAILED' $_.Exception.Message }
+        catch { Write-Warn $_.Exception.Message; $failed += "workflow: $($_.Exception.Message)" }
+
+        $note = 'установлены: {0}' -f ($done -join ', ')
+        if ($kept.Count -gt 0) { $note += '; оставлены: {0}' -f ($kept -join ', ') }
+        if ($failed.Count -gt 0) { Add-Result 'reforger-skills' 'FAILED' ('{0}; ошибки: {1}' -f $note, ($failed -join ' | ')) }
+        else { Add-Result 'reforger-skills' 'OK' $note }
     }
 
     # -----------------------------------------------------------------------
