@@ -109,8 +109,12 @@ function Save-Download([string]$Url, [string]$Path, [string]$Sha256) {
     Write-Host "    загрузка: $Url"
     $curl = Join-Path $env:SystemRoot 'System32\curl.exe'
     if (Test-Path -LiteralPath $curl) {
-        # Без перенаправления stderr: так виден прогресс, и Windows PowerShell 5.1 не считает его ошибкой.
-        & $curl -fL --retry 3 --progress-bar -o $Path $Url
+        # -sS: без индикатора прогресса. Когда stderr перенаправлен (например, запуск из Claude Code),
+        # Windows PowerShell 5.1 превращает любой вывод curl в stderr в ошибку, поэтому EAP здесь 'Continue'.
+        $prevEap = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try { & $curl -fsSL --retry 3 -o $Path $Url 2>&1 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray } }
+        finally { $ErrorActionPreference = $prevEap }
         if ($LASTEXITCODE -ne 0) { throw "Загрузка не удалась (curl, код $LASTEXITCODE): $Url" }
     }
     else {
@@ -387,7 +391,12 @@ try {
     # 7. Obsidian
     # -----------------------------------------------------------------------
     $obsidianDir = Join-Path $AppsRoot 'Obsidian'
-    $obsidianKnown = @((Join-Path $obsidianDir 'Obsidian.exe'), (Join-Path $env:LOCALAPPDATA 'Programs\Obsidian\Obsidian.exe')) | Where-Object { Test-Path -LiteralPath $_ }
+    # Установщик Obsidian по умолчанию ставит его в %LOCALAPPDATA%\Obsidian.
+    $obsidianKnown = @(
+        (Join-Path $obsidianDir 'Obsidian.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Obsidian\Obsidian.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Programs\Obsidian\Obsidian.exe')
+    ) | Where-Object { Test-Path -LiteralPath $_ }
     if ($SkipObsidian) { Add-Result 'obsidian' 'SKIPPED' '-SkipObsidian' }
     elseif (@($obsidianKnown).Count -gt 0) { Add-Result 'obsidian' 'OK' ('уже установлен: {0}' -f @($obsidianKnown)[0]) }
     elseif (-not $winget) { Add-Result 'obsidian' 'FAILED' 'нет winget' }
@@ -396,7 +405,13 @@ try {
         try {
             $null = Invoke-Native $winget @('install', '--id', 'Obsidian.Obsidian', '-e', '--source', 'winget', '--location', $obsidianDir,
                 '--silent', '--accept-package-agreements', '--accept-source-agreements')
-            Add-Result 'obsidian' 'OK' $obsidianDir
+            # winget может не учесть --location (например, обновляя уже установленный пакет): пишем фактический путь.
+            $actual = @(
+                (Join-Path $obsidianDir 'Obsidian.exe'),
+                (Join-Path $env:LOCALAPPDATA 'Obsidian\Obsidian.exe'),
+                (Join-Path $env:LOCALAPPDATA 'Programs\Obsidian\Obsidian.exe')
+            ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+            Add-Result 'obsidian' 'OK' $(if ($actual) { $actual } else { "$obsidianDir (путь не подтверждён)" })
         }
         catch { Write-Warn $_.Exception.Message; Add-Result 'obsidian' 'FAILED' $_.Exception.Message }
     }
