@@ -670,6 +670,9 @@ try {
     $AssetsRoot = Get-FullPath $AssetsRoot
 
     $env:DISABLE_TELEMETRY = 'true'
+    # Python в русской Windows пишет в консоль в cp1251 и падает на символах вроде стрелки.
+    # Режим UTF-8 для всех Python-программ, которые запускает этот скрипт.
+    $env:PYTHONUTF8 = '1'
 
     # -----------------------------------------------------------------------
     # 1. enfusion-mcp (создание модов)
@@ -754,6 +757,7 @@ try {
                 ENFUSION_CLI      = $cli
                 REFORGER_DATA_DIR = (Join-Path $GamePath 'addons\data')
                 REFORGER_MODS_DIR = $auditWorkshop
+                PYTHONUTF8        = '1'
             } $script:Uv @('--directory', $argaDir, 'run', '--frozen', '--no-dev', 'arga-enfusion-mcp')
             Add-Result 'arga-enfusion' 'OK' 'только чтение'
         }
@@ -779,15 +783,18 @@ try {
             }
 
             $addon = Invoke-Native $script:Uv @('run', '--frozen', '--no-dev', 'mcp-for-blender', 'install-addon') -WorkingDirectory $blenderDir -AllowFail
+            $addonNote = 'аддон скопирован'
             if ($addon.ExitCode -ne 0) {
+                $addonNote = 'АДДОН НЕ СКОПИРОВАН'
                 Write-Warn "Аддон не скопирован: запустите Blender один раз и перезапустите скрипт, либо установите вручную $blenderDir\addon.py (Edit > Preferences > Add-ons > Install from Disk)."
             }
 
             Register-McpStdio 'blender' @{
                 DISABLE_TELEMETRY     = 'true'
                 BLENDER_MCP_SAFE_MODE = '1'
+                PYTHONUTF8            = '1'
             } $script:Uv @('--directory', $blenderDir, 'run', '--frozen', '--no-dev', 'mcp-for-blender')
-            Add-Result 'blender' 'OK' 'телеметрия выкл., safe mode вкл.'
+            Add-Result 'blender' 'OK' "телеметрия выкл., safe mode вкл.; $addonNote"
         }
         catch { Write-Warn $_.Exception.Message; Add-Result 'blender' 'FAILED' $_.Exception.Message }
     }
@@ -930,6 +937,7 @@ try {
                 SP_MCP_MESH_ROOTS      = $painterFolders['meshes']
                 SP_MCP_BAKE_MESH_ROOTS = $painterFolders['meshes']
                 SP_MCP_RESOURCE_ROOTS  = $painterFolders['resources']
+                PYTHONUTF8             = '1'
             } $script:Uv @('--directory', $painterDir, 'run', '--frozen', '--no-dev', 'substance-painter-mcp')
             Add-Result 'substance-painter' 'OK' "папки: $AssetsRoot"
         }
