@@ -3,3 +3,6 @@
 # would convert OFL.txt to CRLF, change its hash and force a re-download.
 src/STAKEOUT/Assets/Fonts/** -text
 *.ttf binary
+
+# Install scripts are SHA-256 verified on download: keep their bytes (UTF-8 BOM, CRLF) as-is.
+reforger-mcp/*.ps1 -text
